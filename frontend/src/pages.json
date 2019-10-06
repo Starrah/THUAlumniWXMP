@@ -1,13 +1,22 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/activityList/activityList",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "activityList"
 			}
 		},
 		{
-			"path": "pages/activityList/example/example"
+			"path": "pages/newActivity/newActivity",
+			"style": {
+				"navigationBarTitleText": "newActivity"
+			}
+		},
+		{
+			"path": "pages/me/me",
+			"style": {
+				"navigationBarTitleText": "me"
+			}
 		}
 	],
 	"globalStyle": {
@@ -15,5 +24,31 @@
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#007AFF",
+		"borderStyle": "black",
+		"backgroundColor": "#F8F8F8",
+		"list": [
+			{
+				"pagePath": "pages/activityList/activityList",
+				"iconPath": "static/activityList.png",
+				"selectedIconPath": "static/activityList.png",
+				"text": "活动列表"
+			},
+			{
+				"pagePath": "pages/newActivity/newActivity",
+				"iconPath": "static/newActivity.png",
+				"selectedIconPath": "static/newActivity.png",
+				"text": "发起活动"
+			},
+			{
+				"pagePath": "pages/me/me",
+				"iconPath": "static/me.png",
+				"selectedIconPath": "static/me.png",
+				"text": "我的"
+			}
+		]
 	}
 }
