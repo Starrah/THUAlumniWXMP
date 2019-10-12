@@ -1,12 +1,21 @@
 {
 	"pages": [
 		{
+<<<<<<< HEAD
 			"path": "pages/activityList/activityList",
+=======
+			"path": "pages/activityList/mainList/mainList"
+		},
+		{
+			"path": "pages/newActivity/newActivity",
+>>>>>>> 0126d59... feat: 活动列表；创建活动；查看活动详情；参加活动
 			"style": {
 				"navigationBarTitleText": "activityList"
 			}
 		},
+
 		{
+<<<<<<< HEAD
 			"path": "pages/newActivity/newActivity",
 			"style": {
 				"navigationBarTitleText": "newActivity"
@@ -17,6 +26,9 @@
 			"style": {
 				"navigationBarTitleText": "me"
 			}
+=======
+			"path": "pages/activityList/activityDetail/activityDetail"
+>>>>>>> 0126d59... feat: 活动列表；创建活动；查看活动详情；参加活动
 		}
 	],
 	"globalStyle": {
