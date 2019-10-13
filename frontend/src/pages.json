@@ -1,22 +1,17 @@
 {
 	"pages": [
 		{
-			"path": "pages/activityList/activityList",
-			"style": {
-				"navigationBarTitleText": "activityList"
-			}
+			"path": "pages/activityList/mainList/mainList"
 		},
 		{
 			"path": "pages/newActivity/newActivity",
 			"style": {
-				"navigationBarTitleText": "newActivity"
+				"navigationBarTitleText": "activityList"
 			}
 		},
+
 		{
-			"path": "pages/me/me",
-			"style": {
-				"navigationBarTitleText": "me"
-			}
+			"path": "pages/activityList/activityDetail/activityDetail"
 		}
 	],
 	"globalStyle": {
