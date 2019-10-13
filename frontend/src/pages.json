@@ -6,12 +6,14 @@
 		{
 			"path": "pages/newActivity/newActivity",
 			"style": {
-				"navigationBarTitleText": "activityList"
+				"navigationBarTitleText": "newActivity"
 			}
 		},
-
 		{
 			"path": "pages/activityList/activityDetail/activityDetail"
+		},
+		{
+			"path": "pages/me/me"
 		}
 	],
 	"globalStyle": {
@@ -27,7 +29,7 @@
 		"backgroundColor": "#F8F8F8",
 		"list": [
 			{
-				"pagePath": "pages/activityList/activityList",
+				"pagePath": "pages/activityList/mainList/mainList",
 				"iconPath": "static/activityList.png",
 				"selectedIconPath": "static/activityList.png",
 				"text": "活动列表"
