@@ -22,6 +22,7 @@
 			}
 		},
 		{
+<<<<<<< HEAD
 			"path": "pages/me/me",
 			"style": {
 				"navigationBarTitleText": "me"
@@ -29,6 +30,18 @@
 =======
 			"path": "pages/activityList/activityDetail/activityDetail"
 >>>>>>> 0126d59... feat: 活动列表；创建活动；查看活动详情；参加活动
+=======
+			"path": "pages/me/me"
+		},
+		{
+			"path": "pages/me/history"
+		},
+		{
+			"path": "pages/me/myParticipate"
+		},
+		{
+			"path": "pages/me/mySponsor"
+>>>>>>> 4d526fd... Add three entry of pages in "me"
 		}
 	],
 	"globalStyle": {

@@ -1,8 +1,19 @@
 <script lang="ts">
     import Vue from 'vue';
     export default Vue.extend({
-        mpType: 'app',
-        globalData:{
+        globalData: {
+            "openid":"xxxxx",
+            "name": "小明",
+            "education": [{
+                "type": "under",
+                "start": "2013",
+                "department": "软件学院",
+            }, {
+                "type": "master",
+                "start": "2017",
+                "department": "精仪系",
+            }],
+            "flag":"unverified",
             baseUrl: "http://thaluapitest.starrah.cn",
             openId: ""
         },
