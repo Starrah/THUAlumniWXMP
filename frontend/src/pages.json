@@ -2,6 +2,7 @@
 	"pages": [
 		{
 <<<<<<< HEAD
+<<<<<<< HEAD
 			"path": "pages/activityList/activityList",
 =======
 			"path": "pages/activityList/mainList/mainList"
@@ -12,6 +13,9 @@
 			"style": {
 				"navigationBarTitleText": "activityList"
 			}
+=======
+			"path": "pages/activityList/mainList/mainList"
+>>>>>>> 73a47b5cd69e8c3939d5473f23db25fe1541f9e2
 		},
 
 		{
@@ -23,6 +27,7 @@
 		},
 		{
 <<<<<<< HEAD
+<<<<<<< HEAD
 			"path": "pages/me/me",
 			"style": {
 				"navigationBarTitleText": "me"
@@ -31,6 +36,11 @@
 			"path": "pages/activityList/activityDetail/activityDetail"
 >>>>>>> 0126d59... feat: 活动列表；创建活动；查看活动详情；参加活动
 =======
+=======
+			"path": "pages/activityList/activityDetail/activityDetail"
+		},
+		{
+>>>>>>> 73a47b5cd69e8c3939d5473f23db25fe1541f9e2
 			"path": "pages/me/me"
 		},
 		{
@@ -41,7 +51,10 @@
 		},
 		{
 			"path": "pages/me/mySponsor"
+<<<<<<< HEAD
 >>>>>>> 4d526fd... Add three entry of pages in "me"
+=======
+>>>>>>> 73a47b5cd69e8c3939d5473f23db25fe1541f9e2
 		}
 	],
 	"globalStyle": {
@@ -57,7 +70,7 @@
 		"backgroundColor": "#F8F8F8",
 		"list": [
 			{
-				"pagePath": "pages/activityList/activityList",
+				"pagePath": "pages/activityList/mainList/mainList",
 				"iconPath": "static/activityList.png",
 				"selectedIconPath": "static/activityList.png",
 				"text": "活动列表"

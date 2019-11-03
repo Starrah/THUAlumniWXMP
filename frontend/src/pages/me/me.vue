@@ -27,8 +27,9 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
+<script>
+import Vue from "vue";
+const app = getApp();
 export default Vue.extend({
   data() {
     return {
@@ -39,7 +40,7 @@ export default Vue.extend({
       colorList: ["blue", "cyan", "olive"]
     };
   }
-})
+});
 </script>
 
 <style>
