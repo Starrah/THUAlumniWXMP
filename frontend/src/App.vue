@@ -5,7 +5,7 @@
             "openid":"xxxxx",
             "name": "小明",
             "education": [{
-                "type": "undergraduate",
+                "type": "under",
                 "start": "2013",
                 "department": "软件学院",
             }, {

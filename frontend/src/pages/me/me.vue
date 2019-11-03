@@ -1,44 +1,29 @@
 <template>
-  <div class="me-bg">
-    <view class="cu-card dynamic">
-      <view class="cu-item shadow">
-        <view class="cu-list menu-avatar">
-          <view class="cu-item">
-            <view
-              class="cu-avatar round lg"
-              :style="'backgroundImage: url(/static/' + gender + '.png);'"
-            ></view>
-            <view class="content flex-sub">
-              <view>{{name}}</view>
-              <view class="text-gray text-sm flex justify-between">已验证 清华大学软件学院</view>
-            </view>
-          </view>
-        </view>
-        <view class="cu-list menu-avatar comment">
-          <view class="cu-timeline">
-            <view class="cu-time">如今</view>
-            <view class="cu-item cur cuIcon-evaluate_fill">
-              <view class="content">
-                <view class="cu-capsule radius">
-                  <view class="cu-tag bg-cyan">软件学院</view>
-                  <view class="cu-tag line-cyan">2018</view>
-                </view>
-                <view class="margin-top">博士生</view>
-              </view>
-            </view>
-            <view class="cu-item cur cuIcon-evaluate_fill">
-              <view class="content">
-                <view class="cu-capsule radius">
-                  <view class="cu-tag bg-blue">软件学院</view>
-                  <view class="cu-tag line-blue">2014</view>
-                </view>
-                <view class="margin-top">本科生</view>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
+  <div>
+    <view class="cu-card flex mecard">
+      <div
+        class="cu-avatar round xl mecardavatar"
+        :style="'background-image:url(/static/' + gender + '.png);'"
+      ></div>
+      <div class="content mecardtext" style="">
+        <div class="name">{{name}}</div>
+        <div v-for="(item, idx) in education" :key="idx" :class="'cu-capsule round'">
+          <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
+          <span :class="'cu-tag line-' + colorList[idx]">{{item.type}}</span>
+        </div>
+      </div>
     </view>
+    <div class="cu-card flex mycard2 cu-list grid">
+      <div class="cu-item" key="1">
+        <navigator url="/pages/me/myParticipate">我参与的</navigator>
+      </div>
+      <div class="cu-item" key="2">
+        <navigator url="/pages/me/mySponsor">我发起的</navigator>
+      </div>
+      <div class="cu-item" key="3">
+        <navigator url="/pages/me/history">历史记录</navigator>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -50,13 +35,49 @@ export default Vue.extend({
     return {
       name: app.globalData.name,
       globalData: app.globalData,
-      gender: app.globalData.gender || "male"
+      gender: app.globalData.gender || "male",
+      education: app.globalData.education,
+      colorList: ["blue", "cyan", "olive"]
     };
   }
 });
 </script>
 
 <style>
+.mecard {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  background-color: #fff;
+}
+
+.mycard2 {
+  background-color: #fff;
+  margin-top: 10px;
+}
+
+.mecardavatar {
+  vertical-align: middle;
+  margin-left: 10%;
+}
+
+.mecardtext {
+  vertical-align: middle;
+  padding-left: 12px;
+}
+
+.me-info {
+  height: 180px;
+}
+
+.name {
+  font-size: 18px;
+}
+
+.tag {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 .me-avatar {
   width: 70px;
   height: 70px;
