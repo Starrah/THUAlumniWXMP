@@ -17,10 +17,7 @@
             baseUrl: "http://thaluapitest.starrah.cn",
             openId: ""
         },
-<<<<<<< HEAD
-=======
         mpType: 'app',
->>>>>>> 73a47b5cd69e8c3939d5473f23db25fe1541f9e2
         onLaunch() {
             console.log('App Launch')
         },
