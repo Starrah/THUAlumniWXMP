@@ -60,7 +60,6 @@
     import dateFormat from 'dateformat'
     import promisify from '../../apps/Promisify'
     import delay from 'delay';
-
     @Component
     export default class newActivity extends Vue{
         name: "newActivity";
@@ -117,5 +116,4 @@
 </script>
 
 <style scoped>
-
 </style>

@@ -6,6 +6,12 @@
 		{
 			"path": "pages/newActivity/newActivity",
 			"style": {
+				"navigationBarTitleText": "activityList"
+			}
+		},
+		{
+			"path": "pages/newActivity/newActivity",
+			"style": {
 				"navigationBarTitleText": "newActivity"
 			}
 		},
@@ -14,6 +20,15 @@
 		},
 		{
 			"path": "pages/me/me"
+		},
+		{
+			"path": "pages/me/history"
+		},
+		{
+			"path": "pages/me/myParticipate"
+		},
+		{
+			"path": "pages/me/mySponsor"
 		}
 	],
 	"globalStyle": {
