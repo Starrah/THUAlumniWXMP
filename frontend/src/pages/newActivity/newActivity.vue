@@ -13,17 +13,17 @@
             <view class="title">活动名称</view>
             <input name="name" />
         </view>
-<!--        <view class="cu-form-group margin-top-sm">-->
-<!--        <view class="title">活动类型</view>-->
-<!--        <picker mode="multiSelector" @change="MultiChange" @columnchange="MultiColumnChange" :value="multiIndex" :range="multiArray">-->
-<!--            <view class="picker">-->
-<!--                {{multiArray[0][multiIndex[0]]}}，{{multiArray[1][multiIndex[1]]}}，{{multiArray[2][multiIndex[2]]}}-->
-<!--            </view>-->
-<!--        </picker>-->
-<!--        </view>-->
+        <view class="cu-form-group margin-top-sm">
+            <view class="title">活动类型</view>
+            <picker mode="multiSelector" @change="typeMultiChange" @columnchange="typeMultiColumnChange" :value="typeMultiIndex" :range="typeMultiArray" name="type">
+                <view class="picker">
+                    {{typeMultiShowText}}
+                </view>
+            </picker>
+        </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">地点</view>
-            <input name="space" />
+            <input name="place" />
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">开始时间</view>
@@ -52,7 +52,9 @@
             </picker>
         </view>
         <view class="cu-form-group margin-top">
-            <view class="title">最大人数</view>
+            <view class="title">人数</view>
+            <input name="minUser" style="text-align: right" />
+            <text style="font-size: 30upx" class="margin-lr-lg">~</text>
             <input name="maxUser" />
         </view>
         <view style="display: flex;justify-content: center">
@@ -79,38 +81,44 @@
         startTime: string = "请选择";
         endDate: string = "请选择";
         endTime: string = "请选择";
-        typeMultiData: Array<{name: string, children: Array<{name: string, children?: any}>}> = [
-            {
-                name: "个人活动",
-                children: [
-                    {
-                        name: "聚餐"
-                    },
-                    {
-                        name: "唱歌"
-                    },
-                    {
-                        name: "跑步"
-                    }
-                ]
-            },
-            {
-                name:"班级活动",
-                children: [
-                    {
-                        name: "聚餐"
-                    },
-                    {
-                        name: "唱歌"
-                    },
-                    {
-                        name: "跑步"
-                    }
-                ]
-            }
-        ];
+        typeMultiData: Array<{name: string, children: Array<{name: string, children?: any}>}> = [];
         typeMultiIndex: Array<number> = [];
-        typeMultiArray: Array<Array<string>>;
+        typeMultiArray: Array<Array<string>> = [];
+        updateTypeMultiData(){
+            this.typeMultiData = [
+                {
+                    name: "个人活动",
+                    children: [
+                        {
+                            name: "聚餐"
+                        },
+                        {
+                            name: "唱歌"
+                        },
+                        {
+                            name: "跑步"
+                        }
+                    ]
+                },
+                {
+                    name:"班级活动",
+                    children: [
+                        {
+                            name: "聚餐"
+                        },
+                        {
+                            name: "唱歌"
+                        },
+                        {
+                            name: "跑步"
+                        }
+                    ]
+                }
+            ];
+            this.typeMultiArray[0] = this.typeMultiData.map((v)=>v.name);
+            this.typeMultiArray[1] = this.typeMultiData[0].children.map((v)=>v.name);
+            this.typeMultiIndex = [0, 0];
+        }
         typeMultiChange(e){
             this.typeMultiIndex = e.detail.value
         }
@@ -121,8 +129,22 @@
             };
             let column = e.detail.column;
             data.index[column] = e.detail.value;
+            if(column === 0){
+                data.array[1] = this.typeMultiData[data.index[column]].children.map((v)=>v.name)
+                data.index[1] = 0
+            }
+            this.typeMultiIndex = data.index;
+            this.typeMultiArray = data.array;
         }
-
+        get typeMultiShowText(){
+            let r = "";
+            for(let i=0;i<this.typeMultiIndex.length-1;i++){
+                r += (this.typeMultiArray[i][this.typeMultiIndex[i]] + " - ");
+            }
+            let i = this.typeMultiIndex.length-1;
+            r += this.typeMultiArray[i][this.typeMultiIndex[i]];
+            return r;
+        }
         get minStartTime(): string{
             if(this.endDate <= this.startDate){
                 return this.startTime
@@ -152,9 +174,13 @@
                 data: {
                     name: formData.name,
                     place: formData.place,
-                    start: this.startDate + " " + this.startTime,
-                    end: this.endDate + " " + this.endTime,
-                    maxUser: formData.maxUser
+                    start: this.startDate + " " + this.startTime + ":00",
+                    end: this.endDate + " " + this.endTime + ":00",
+                    type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
+                    maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
+                    minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
+                    status: 2,
+                    canBeSearched: true
                 }
             });
             console.log(res.data);
@@ -163,6 +189,9 @@
             uni.navigateTo({
                 url: `../activityList/activityDetail/activityDetail?activityId=${res.data.id}`
             })
+        }
+        mounted(){
+            this.updateTypeMultiData();
         }
     }
 </script>
