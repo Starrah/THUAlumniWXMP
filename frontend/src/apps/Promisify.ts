@@ -21,16 +21,17 @@ class Promisify{
             options["fail"] = reject;
             uni.request(options)
         });
-        if(raw.statusCode >= 400){
-            if(raw.data && typeof(raw.data) === 'object' && raw.data.errid && raw.data.errid >= 500 && raw.data.errid <= 599) {
+        let res = new CorrectedRequestSuccessCallbackResult(raw.data, raw.statusCode, raw.header)
+        if(res.statusCode >= 400){
+            if(res.data && typeof(res.data) === 'object' && res.data.errid && res.data.errid >= 500 && res.data.errid <= 599) {
                 uni.showToast({
-                    title: raw.data.errmsg || "发生错误，请稍后重试",
+                    title: res.data.errmsg || "发生错误，请稍后重试",
                     icon: "none"
                 });
             }
-            throw raw;
+            throw res;
         }
-        return new CorrectedRequestSuccessCallbackResult(raw.data, raw.statusCode, raw.header)
+        return res
     }
 }
 
