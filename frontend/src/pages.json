@@ -10,12 +10,6 @@
 			}
 		},
 		{
-			"path": "pages/newActivity/newActivity",
-			"style": {
-				"navigationBarTitleText": "newActivity"
-			}
-		},
-		{
 			"path": "pages/activityList/activityDetail/activityDetail"
 		},
 		{

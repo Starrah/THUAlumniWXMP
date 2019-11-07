@@ -29,14 +29,16 @@
 
 <script>
 import Vue from "vue";
-const app = getApp();
+
 export default Vue.extend({
   data() {
+    const app = getApp();
+    console.log(app);
     return {
-      name: app.globalData.name,
+      name: app.globalData.userInfo.name,
       globalData: app.globalData,
-      gender: app.globalData.gender || "male",
-      education: app.globalData.education,
+      gender: app.globalData.userInfo.gender || "male",
+      education: app.globalData.userInfo.education,
       colorList: ["blue", "cyan", "olive"]
     };
   }

@@ -94,7 +94,7 @@
             console.log(e.detail.value);
             let formData = e.detail.value;
             let res = await promisify.request({
-                url: getApp().globalData.baseUrl + `/createActivity?openId=getApp().globalData.openId`,
+                url: getApp().globalData.baseUrl + `/createActivity`,
                 method: "POST",
                 dataType: "json",
                 data: {
