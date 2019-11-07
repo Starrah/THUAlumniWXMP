@@ -1,3 +1,14 @@
+class CorrectedRequestSuccessCallbackResult{
+    data?: string | any | ArrayBuffer;
+    statusCode?: number;
+    header?: any;
+    constructor(data, statusCode, header){
+        this.data = data;
+        this.statusCode = statusCode;
+        this.header = header
+    }
+}
+
 class Promisify{
     async request(options?:RequestOptions){
         if(options.url.indexOf("?") == -1){
@@ -19,7 +30,7 @@ class Promisify{
             }
             throw raw;
         }
-        return raw
+        return res
     }
 }
 
