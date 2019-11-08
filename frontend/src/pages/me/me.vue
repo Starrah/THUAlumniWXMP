@@ -5,7 +5,7 @@
         class="cu-avatar round xl mecardavatar"
         :style="'background-image:url(/static/' + gender + '.png);'"
       ></div>
-      <div class="content mecardtext" style="">
+      <div class="content mecardtext" style>
         <div class="name">{{name}}</div>
         <div v-for="(item, idx) in education" :key="idx" :class="'cu-capsule round'">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
@@ -13,27 +13,58 @@
         </div>
       </div>
     </view>
-    <div class="cu-card flex mycard2 cu-list grid">
-      <div class="cu-item" key="1">
-        <navigator url="/pages/me/myParticipate">我参与的</navigator>
-      </div>
-      <div class="cu-item" key="2">
-        <navigator url="/pages/me/mySponsor">我发起的</navigator>
-      </div>
-      <div class="cu-item" key="3">
-        <navigator url="/pages/me/history">历史记录</navigator>
+
+    <div class="cu-card mycard2">
+      <div class="cu-list grid no-border justify-around">
+        <div class="cu-item" key="1">
+          <navigator url="/pages/me/myParticipate">
+            <div>100</div>
+            <div class="margin-top-xs">我参与的</div>
+          </navigator>
+        </div>
+        <div class="cu-item" key="2">
+          <navigator url="/pages/me/mySponsor">
+            <div>200</div>
+            <div class="margin-top-xs">我发起的</div>
+          </navigator>
+        </div>
+        <div class="cu-item" key="3">
+          <navigator url="/pages/me/history">
+            <div>300</div>
+            <div class="margin-top-xs">历史记录</div>
+          </navigator>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import Vue from "vue";
 
-export default Vue.extend({
+<script lang="ts">
+import Vue from "vue";
+import { Component } from "vue-property-decorator";
+import promisify from "../../apps/Promisify";
+
+@Component
+export default class me extends Vue {
+  name!: "me";
+
+  mounted() {
+    this.updateUserInfo();
+  }
+
+  async updateUserInfo() {
+    let res = await promisify.request({
+      url: getApp().globalData.baseUrl + "/userData",
+      method: "GET",
+      dataType: "json"
+    });
+    console.log(res);
+    getApp().globalData.userInfo = res.data;
+  }
+
   data() {
     const app = getApp();
-    console.log(app);
     return {
       name: app.globalData.userInfo.name,
       globalData: app.globalData,
@@ -42,8 +73,9 @@ export default Vue.extend({
       colorList: ["blue", "cyan", "olive"]
     };
   }
-});
+}
 </script>
+
 
 <style>
 .mecard {
