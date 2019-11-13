@@ -1,18 +1,15 @@
 <script lang="ts">
     import Vue from 'vue';
     import initialGlobalData from './apps/typesDeclare/InitialGlobalData'
+    import store from "./store";
+    import apiService from "./commons/api";
+
+    apiService.init("aaa", "http://yapi.starrah.cn/mock/11");
+
     export default Vue.extend({
         globalData: initialGlobalData,
-        mpType: 'app',
-        onLaunch() {
-            console.log('App Launch')
-        },
-        onShow() {
-            console.log('App Show')
-        },
-        onHide() {
-            console.log('App Hide')
-        }
+        store,
+        mpType: 'app'
     });
 </script>
 

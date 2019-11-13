@@ -3,13 +3,13 @@
     <view class="cu-card flex mecard">
       <div
         class="cu-avatar round xl mecardavatar"
-        :style="'background-image:url(/static/' + gender + '.png);'"
+        :style="'background-image:url(/static/male.png);'"
       ></div>
       <div class="content mecardtext" style>
-        <div class="name">{{name}}</div>
-        <div v-for="(item, idx) in education" :key="idx" :class="'cu-capsule round'">
+        <div class="name">{{profile.name}}</div>
+        <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
-          <span :class="'cu-tag line-' + colorList[idx]">{{item.type}}</span>
+          <span :class="'cu-tag line-' + colorList[idx]">{{item.enrollmentType}}</span>
         </div>
       </div>
     </view>
@@ -41,39 +41,26 @@
 
 
 <script lang="ts">
-import Vue from "vue";
-import { Component } from "vue-property-decorator";
-import promisify from "../../apps/Promisify";
+import { mapState } from "vuex";
+import { FETCH_PROFILE } from "../../store/action";
+import { SET_PROFILE } from "../../store/mutation";
 
-@Component
-export default class me extends Vue {
-  name!: "me";
+export default {
+  data() {
+    return { colorList: ["cyan", "blue", "orange", "yellow"] };
+  },
+
+  computed: {
+    ...mapState(["profile"])
+  },
 
   mounted() {
-    this.updateUserInfo();
-  }
-
-  async updateUserInfo() {
-    let res = await promisify.request({
-      url: getApp().globalData.baseUrl + "/userData",
-      method: "GET",
-      dataType: "json"
+    this.$store.commit(SET_PROFILE, {
+      name: "wahaha"
     });
-    console.log(res);
-    getApp().globalData.userInfo = res.data;
+    this.$store.dispatch(FETCH_PROFILE);
   }
-
-  data() {
-    const app = getApp();
-    return {
-      name: app.globalData.userInfo.name,
-      globalData: app.globalData,
-      gender: app.globalData.userInfo.gender || "male",
-      education: app.globalData.userInfo.education,
-      colorList: ["blue", "cyan", "olive"]
-    };
-  }
-}
+};
 </script>
 
 
