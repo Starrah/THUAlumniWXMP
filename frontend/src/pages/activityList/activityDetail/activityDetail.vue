@@ -54,6 +54,7 @@
     import Vue from 'vue'
     import {Component, Prop} from 'vue-property-decorator'
     import promisify from "@/apps/Promisify";
+    import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 
     @Component
     export default class activityDetail extends Vue{
