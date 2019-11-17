@@ -11,21 +11,24 @@
         </view>
         <scroll-view scroll-y="true" >
             <view class="cu-list menu">
-                <view class="cu-item arrow" style="display: block" v-for="activity in activities_toShow" :key="activity.id" @click="jumpToActivityDetail($event, activity)">
-                    <view>
-                        <text class="cuIcon-activity"></text>
-                        <text class="text-black text-xl">{{activity.name}}</text>
+                <view class="cu-item arrow" style="flex-direction: row;display: flex;border-left-width: 4px;border-left-style: solid;border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238);border-top-width: 4px;border-top-style: solid;border-top-color: rgb(238,238,238)" v-for="activity in activities_toShow" :key="activity.id" @click="jumpToActivityDetail($event, activity)">
+                    <view style="flex-basis: 80%">
+                        <view>
+                            <text class="cuIcon-activity"></text>
+                            <text class="text-black text-xl">{{activity.name}}</text>
+                        </view>
+                        <view style="display: flex;justify-content: space-between;">
+                            <view class="basis-df">
+                                <view class="text-grey text-xs" style="width: max-content">开始时间:{{activity.start.substr(0,16)}}</view>
+                                <view class="text-grey text-xs" style="width: max-content">结束时间:{{activity.end.substr(0,16)}}</view>
+                                <view class="text-grey text-xs">地点:{{activity.place}}</view>
+                            </view>
+                        </view>
                     </view>
-                    <view style="display: flex;justify-content: space-between;">
-                        <view class="basis-df">
-                            <view class="text-grey text-xs">时间:{{activity.start}}-{{activity.end}}</view>
-                            <view class="text-grey text-xs">地点:{{activity.place}}</view>
-                        </view>
-                        <view class="basis-xs">
-                            <text class="text-lg text-green">{{activity.curUser}}</text>
-                            <text class="text-lg text-black">/</text>
-                            <text class="text-lg text-red">{{activity.maxUser}}</text>
-                        </view>
+                    <view style="flex-basis: 19%" class="basis-xs" :class="activity.curUser<activity.maxUser?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
+                        <text class="text-lg text-green">{{activity.curUser}}</text>
+                        <text class="text-lg text-black">/</text>
+                        <text class="text-lg text-red">{{activity.maxUser}}</text>
                     </view>
                 </view>
             </view>

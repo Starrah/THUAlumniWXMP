@@ -10,7 +10,7 @@
     </view>
     <view>
         <view>
-            <text class="text-black text-bold text-df">{{activityData.name}}</text>
+            <text class="text-black text-bold text-sm">{{activityData.name}}</text>
         </view>
         <view>
             <text class="text-black text-bold text-df">时间：{{activityData.start}}-{{activityData.end}}</text>
