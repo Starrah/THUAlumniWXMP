@@ -20,8 +20,8 @@ class ApiService {
             });
         });
         let code = res["statusCode"];
-        let data = res["data"]
-        if (code >= 400 || data["errcode"]) throw Error(data["errmsg"]);
+        let data = res["data"];
+        if (code >= 400) throw data;
         return data;
     }
 
