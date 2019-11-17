@@ -6,7 +6,7 @@
         :style="'background-image:url(/static/male.png);'"
       ></div>
       <div class="content mecardtext" style>
-        <div class="name">{{profile.name}}</div>
+        <div class="name" @click="nameClick">{{profile.name}}</div>
         <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
           <span :class="'cu-tag line-' + colorList[idx]">{{item.enrollmentType}}</span>
@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { mapState } from "vuex";
-import { FETCH_PROFILE } from "../../store/action";
+import { LOGIN, FETCH_PROFILE } from "../../store/action";
 import { SET_PROFILE } from "../../store/mutation";
 
 export default {
@@ -54,12 +54,13 @@ export default {
     ...mapState(["profile"])
   },
 
-  mounted() {
-    this.$store.commit(SET_PROFILE, {
-      name: "wahaha"
-    });
-    this.$store.dispatch(FETCH_PROFILE);
-  }
+  methods: {
+    nameClick(param) {
+      if (!this.profile.logined) {
+        this.$store.dispatch(LOGIN);
+      }
+    }
+  },
 };
 </script>
 

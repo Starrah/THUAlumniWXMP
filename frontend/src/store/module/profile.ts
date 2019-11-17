@@ -1,28 +1,38 @@
 import apiService from "../../commons/api";
-import { FETCH_PROFILE } from "../action";
+import { LOGIN, FETCH_PROFILE } from "../action";
 import { SET_PROFILE } from "../mutation";
 
 const state = {
   name: "未登录",
-  campusIdentity: []
+  campusIdentity: [],
+  logined: false
 };
 
 const mutations = {
-  [SET_PROFILE](state, profile) {
-    console.log(state.name)
-    Object.assign(state, profile)
-    console.log(state.name)
+  [SET_PROFILE](state, newProfile) {
+    Object.assign(state, newProfile);
   }
 };
 
 const actions = {
-  async [FETCH_PROFILE](context) {
+  async [LOGIN]({ dispatch }) {
+    uni.login({
+      provider: "weixin",
+      success: loginRes => {
+        apiService.session = loginRes["code"];
+        dispatch(FETCH_PROFILE);
+      }
+    })
+  },
+
+  async [FETCH_PROFILE]({ commit, rootState }) {
     return apiService.get("/userData").then(data => {
-      console.log("fetch data")
-      context.commit(SET_PROFILE, data)
+      commit(SET_PROFILE, {
+        ...data,
+        logined: true
+      });
     }).catch(err => {
-      console.log("fetch error")
-      console.log(err)
+      rootState.errMsg = err.message;
     });
   }
 };

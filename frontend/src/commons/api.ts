@@ -9,21 +9,20 @@ class ApiService {
 
     async request(method: "GET" | "POST" | "PUT" | "DELETE", resource: string, param: object = {}) {
         let res = await new Promise((resolve, reject) => {
+            let url = this.baseUrl + resource + "?session=" + this.session;
             uni.request({
-                url: this.baseUrl + resource,
+                url,
                 method: method,
                 dataType: "json",
-                data: {
-                    session: this.session,
-                    ...param
-                },
+                data: param,
                 success: resolve,
                 fail: reject
             });
         });
         let code = res["statusCode"];
-        if (code >= 400) throw Error(code);
-        return res["data"];
+        let data = res["data"]
+        if (code >= 400 || data["errcode"]) throw Error(data["errmsg"]);
+        return data;
     }
 
     get(resource: string, param: object = {}) {
