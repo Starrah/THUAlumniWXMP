@@ -3,47 +3,67 @@
     <view class="cu-card flex mecard">
       <div
         class="cu-avatar round xl mecardavatar"
-        :style="'background-image:url(/static/' + gender + '.png);'"
+        :style="'background-image:url(/static/male.png);'"
       ></div>
-      <div class="content mecardtext" style="">
-        <div class="name">{{name}}</div>
-        <div v-for="(item, idx) in education" :key="idx" :class="'cu-capsule round'">
+      <div class="content mecardtext" style>
+        <div class="name" @click="nameClick">{{profile.name}}</div>
+        <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
-          <span :class="'cu-tag line-' + colorList[idx]">{{item.type}}</span>
+          <span :class="'cu-tag line-' + colorList[idx]">{{item.enrollmentType}}</span>
         </div>
       </div>
     </view>
-    <div class="cu-card flex mycard2 cu-list grid">
-      <div class="cu-item" key="1">
-        <navigator url="/pages/me/myParticipate">我参与的</navigator>
-      </div>
-      <div class="cu-item" key="2">
-        <navigator url="/pages/me/mySponsor">我发起的</navigator>
-      </div>
-      <div class="cu-item" key="3">
-        <navigator url="/pages/me/history">历史记录</navigator>
+
+    <div class="cu-card mycard2">
+      <div class="cu-list grid no-border justify-around">
+        <div class="cu-item" key="1">
+          <navigator url="/pages/me/myParticipate">
+            <div>100</div>
+            <div class="margin-top-xs">我参与的</div>
+          </navigator>
+        </div>
+        <div class="cu-item" key="2">
+          <navigator url="/pages/me/mySponsor">
+            <div>200</div>
+            <div class="margin-top-xs">我发起的</div>
+          </navigator>
+        </div>
+        <div class="cu-item" key="3">
+          <navigator url="/pages/me/history">
+            <div>300</div>
+            <div class="margin-top-xs">历史记录</div>
+          </navigator>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import Vue from "vue";
 
-export default Vue.extend({
+<script lang="ts">
+import { mapState } from "vuex";
+import { LOGIN, FETCH_PROFILE } from "../../store/action";
+import { SET_PROFILE } from "../../store/mutation";
+
+export default {
   data() {
-    const app = getApp();
-    console.log(app);
-    return {
-      name: app.globalData.userInfo.name,
-      globalData: app.globalData,
-      gender: app.globalData.userInfo.gender || "male",
-      education: app.globalData.userInfo.education,
-      colorList: ["blue", "cyan", "olive"]
-    };
-  }
-});
+    return { colorList: ["cyan", "blue", "orange", "yellow"] };
+  },
+
+  computed: {
+    ...mapState(["profile"])
+  },
+
+  methods: {
+    nameClick(param) {
+      if (!this.profile.logined) {
+        this.$store.dispatch(LOGIN);
+      }
+    }
+  },
+};
 </script>
+
 
 <style>
 .mecard {
