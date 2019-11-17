@@ -15,11 +15,17 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动类型</view>
-            <picker mode="multiSelector" @change="typeMultiChange" @columnchange="typeMultiColumnChange" :value="typeMultiIndex" :range="typeMultiArray" name="type">
+            <picker mode="multiSelector" @change="typeMultiIndex = $event.detail.value" @columnchange="typeMultiColumnChange" :value="typeMultiIndex" :range="typeMultiArray" name="type">
                 <view class="picker">
                     {{typeMultiShowText}}
                 </view>
             </picker>
+        </view>
+        <view class="cu-form-group margin-top">
+            <view class="title">公开活动</view>
+            <text>开启则可被公开检索到</text>
+            <switch @change="switchCanBeSearched = $event.detail.value" :class="switchCanBeSearched?'checked':''" :checked="switchCanBeSearched">
+            </switch>
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">地点</view>
@@ -27,12 +33,12 @@
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">开始时间</view>
-            <picker mode="date" :value="startDate" :start="today" :end="maxDate" @change="onStartDateChange" name="startDate">
+            <picker mode="date" :value="startDate" :start="today" :end="maxDate" @change="startDate = $event.detail.value" name="startDate">
                 <view class="picker">
                     {{startDate}}
                 </view>
             </picker>
-            <picker mode="time" :value="startTime" start="00:00" end="23:59" @change="onStartTimeChange" name="startTime">
+            <picker mode="time" :value="startTime" start="00:00" end="23:59" @change="startTime = $event.detail.value" name="startTime">
                 <view class="picker">
                     {{startTime}}
                 </view>
@@ -40,16 +46,48 @@
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">结束时间</view>
-            <picker mode="date" :value="endDate" :start="startDate" :end="maxDate" @change="onEndDateChange" name="endDate">
+            <picker mode="date" :value="endDate" :start="startDate" :end="maxDate" @change="endDate = $event.detail.value" name="endDate">
                 <view class="picker">
                     {{endDate}}
                 </view>
             </picker>
-            <picker mode="time" :value="endTime" :start="minStartTime" end="23:59" @change="onEndTimeChange" name="endTime">
+            <picker mode="time" :value="endTime" :start="minStartTime" end="23:59" @change="endTime = $event.detail.value" name="endTime">
                 <view class="picker">
                     {{endTime}}
                 </view>
             </picker>
+        </view>
+        <view class="cu-form-group margin-top">
+            <view class="title">报名开始</view>
+            <text v-if="!switchSignupBegin">发布活动后立即可报名</text>
+            <picker v-if="switchSignupBegin" mode="date" :value="signupBeginAtDate" :start="today" :end="startDate" @change="signupBeginAtDate = $event.detail.value" name="signupBeginAtDate">
+                <view class="picker">
+                    {{signupBeginAtDate}}
+                </view>
+            </picker>
+            <picker v-if="switchSignupBegin" mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime">
+                <view class="picker">
+                    {{signupBeginAtTime}}
+                </view>
+            </picker>
+            <switch @change="switchSignupBegin = $event.detail.value" class="signupBegin" :class="switchSignupBegin?'checked':''" :checked="switchSignupBegin">
+            </switch>
+        </view>
+        <view class="cu-form-group margin-top">
+            <view class="title">报名结束</view>
+            <text v-if="!switchSignupStop">直到活动开始时间</text>
+            <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
+                <view class="picker">
+                    {{signupStopAtDate}}
+                </view>
+            </picker>
+            <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime">
+                <view class="picker">
+                    {{signupStopAtTime}}
+                </view>
+            </picker>
+            <switch @change="switchSignupStop = $event.detail.value" class="signupEnd" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
+            </switch>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>
@@ -70,6 +108,8 @@
     import dateFormat from 'dateformat'
     import promisify from '../../apps/Promisify'
     import delay from 'delay';
+    import {SET_NEW_ACTIVITY} from "@/store/mutation";
+    import {SUBMIT_NEW_ACTIVITY} from "@/store/action";
     @Component
     export default class newActivity extends Vue{
         name: "newActivity";
@@ -81,9 +121,16 @@
         startTime: string = "请选择";
         endDate: string = "请选择";
         endTime: string = "请选择";
+        switchSignupBegin: boolean = false;
+        switchSignupStop: boolean = false;
+        signupBeginAtDate: string = "请选择";
+        signupBeginAtTime: string = "请选择";
+        signupStopAtDate: string = "请选择";
+        signupStopAtTime: string = "请选择";
         typeMultiData: Array<{name: string, children: Array<{name: string, children?: any}>}> = [];
         typeMultiIndex: Array<number> = [];
         typeMultiArray: Array<Array<string>> = [];
+        switchCanBeSearched: boolean = true;
         updateTypeMultiData(){
             this.typeMultiData = [
                 {
@@ -142,7 +189,7 @@
                 r += (this.typeMultiArray[i][this.typeMultiIndex[i]] + " - ");
             }
             let i = this.typeMultiIndex.length-1;
-            r += this.typeMultiArray[i][this.typeMultiIndex[i]];
+            if(i >= 0) r += this.typeMultiArray[i][this.typeMultiIndex[i]];
             return r;
         }
         get minStartTime(): string{
@@ -151,50 +198,63 @@
             }
             else return "00:00"
         }
-        onStartDateChange(e){
-            console.log("qwq");
-            this.startDate = e.detail.value
-        }
-        onStartTimeChange(e){
-            this.startTime = e.detail.value
-        }
-        onEndDateChange(e){
-            this.endDate = e.detail.value
-        }
-        onEndTimeChange(e){
-            this.endTime = e.detail.value
-        }
         async submitNewActivity(e){
             console.log(e.detail.value);
             let formData = e.detail.value;
-            let res = await promisify.request({
-                url: getApp().globalData.baseUrl + `/createActivity`,
-                method: "POST",
-                dataType: "json",
-                data: {
-                    name: formData.name,
-                    place: formData.place,
-                    start: this.startDate + " " + this.startTime + ":00",
-                    end: this.endDate + " " + this.endTime + ":00",
-                    type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
-                    maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
-                    minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
-                    status: 2,
-                    canBeSearched: true
-                }
-            });
-            console.log(res.data);
+            let data = {
+                name: formData.name,
+                place: formData.place,
+                start: this.startDate + " " + this.startTime + ":00",
+                end: this.endDate + " " + this.endTime + ":00",
+                signupBeginAt: this.switchSignupBegin?this.signupBeginAtDate + " " + this.signupBeginAtTime + ":00":undefined,
+                signupStopAt: this.switchSignupStop?this.signupStopAtDate + " " + this.signupStopAtTime + ":00":undefined,
+                type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
+                maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
+                minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
+                canBeSearched: this.switchCanBeSearched
+            };
+            this.$store.commit(SET_NEW_ACTIVITY, data);
+            let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
             uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
             uni.navigateTo({
-                url: `../activityList/activityDetail/activityDetail?activityId=${res.data.id}`
+                url: `../activityList/activityDetail/activityDetail?activityId=${activityId}`
             })
         }
         mounted(){
             this.updateTypeMultiData();
+            // setInterval(()=>console.log(this.switchCanBeSearched), 1000)
         }
     }
 </script>
 
 <style scoped>
+    switch.signupBegin::before{
+        font-family: inherit;
+        content: "立即";
+        transform: scaleX(0.5);
+        width: 100%;
+        transform-origin: right;
+    }
+    switch.signupBegin::after{
+        font-family: inherit;
+        content: "指定";
+        transform: scaleX(0.5);
+        width: 100%;
+        transform-origin: left;
+    }
+    switch.signupEnd::before{
+        font-family: inherit;
+        content: "默认";
+        transform: scaleX(0.5);
+        width: 100%;
+        transform-origin: right;
+    }
+    switch.signupBegin::after{
+        font-family: inherit;
+        content: "指定";
+        transform: scaleX(0.5);
+        width: 100%;
+        transform-origin: left;
+    }
 </style>

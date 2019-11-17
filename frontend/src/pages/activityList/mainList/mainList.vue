@@ -1,5 +1,6 @@
 <template>
     <view>
+<!--        <text>{{debugCode}}</text>-->
         <view class="cu-bar search bg-white">
             <view class="search-form round">
                 <text class="cuIcon-search"></text>
@@ -37,10 +38,13 @@
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
     import promisify from "@/apps/Promisify";
+    import apiService from '@/commons/api'
+    import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 
     @Component
     export default class mainList extends Vue{
         name!: "mainList";
+        debugCode?:string = "";
         activities_toShow: ActivitySchema[] = [];
         async updateAllActivity(){
             let res = await promisify.request({
@@ -54,6 +58,13 @@
             uni.showToast({title: "尚未支持", icon:"none"})
         }
         mounted(){
+            // uni.login({
+            //     provider: "weixin",
+            //     success: loginRes => {
+            //         console.log(loginRes["code"]);
+            //         this.debugCode = loginRes["code"];
+            //     }
+            // });
             // this.activities_toShow = [
             //     {name: "aaa", place: "bbb"},
             //     {name: "aaa", place: "bbb"},
