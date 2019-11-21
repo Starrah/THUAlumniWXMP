@@ -4,15 +4,15 @@ import initialGlobalData from "./apps/typesDeclare/InitialGlobalData";
 import store from "./store";
 import apiService from "./commons/api";
 
-apiService.init("aaa", "http://yapi.starrah.cn/mock/11");
+apiService.init("aaa", "https://thalu.starrah.cn");
 
 export default Vue.extend({
   globalData: initialGlobalData,
   store,
   mounted: () => {
     store.watch(
-      state     => (state.errMsg),  //watch state.errMsg
-      newErrMsg => {                //when new errMsg come
+      state => state.errMsg, //watch state.errMsg
+      newErrMsg => {         //when new errMsg come
         console.error(newErrMsg);
         uni.showToast({
           title: String(newErrMsg) || "无法预知的错误，请稍后重试",
@@ -20,6 +20,11 @@ export default Vue.extend({
         });
       }
     );
+  },
+  //@ts-ignore
+  onShow(res) {
+    console.log("onShow");
+    console.log(res);
   },
   mpType: "app"
 });
