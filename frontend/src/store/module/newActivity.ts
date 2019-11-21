@@ -51,8 +51,12 @@ const mutations = {
 
 const actions = {
     async [SUBMIT_NEW_ACTIVITY]({state, commit, rootState}){
-        let res = await apiService.post('/createActivity', state);
-        return res.activityId;
+        try {
+            let res = await apiService.post('/createActivity', state);
+            return res.activityId;
+        }catch (e) {
+            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+        }
     }
 };
 
