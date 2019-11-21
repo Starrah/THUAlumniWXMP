@@ -8,22 +8,44 @@
             活动详情
         </view>
     </view>
+        <view>
+            <view class="cu-form-group margin-top-sm">
+                <view class="title">活动名称</view>
+                <text>{{activityData.name}}</text>
+            </view>
+            <view class="cu-form-group margin-top-sm">
+                <view class="title">活动类型</view>
+                <text>{{activityData.type}}</text>
+            </view>
+            <view class="cu-form-group margin-top-sm">
+                <view class="title">地点</view>
+                <text>{{activityData.place}}</text>
+            </view>
+            <view class="cu-form-group margin-top">
+                <view class="title">开始时间</view>
+                <view class="picker">
+                    {{startDate}}
+                </view>
+                <view class="picker">
+                    {{startTime}}
+                </view>
+            </view>
+            <view class="cu-form-group margin-top">
+                <view class="title">结束时间</view>
+                <view class="picker">
+                    {{endDate}}
+                </view>
+                <view class="picker">
+                    {{endTime}}
+                </view>
+            </view>
+            <view class="cu-form-group margin-top">
+                <view class="title">人数</view>
+                <text>{{userCountString}}</text>
+            </view>
+        </view>
     <view>
-        <view>
-            <text class="text-black text-bold text-sm">{{activityData.name}}</text>
-        </view>
-        <view>
-            <text class="text-black text-bold text-df">时间：{{activityData.start}}-{{activityData.end}}</text>
-        </view>
-        <view>
-            <text class="text-black text-bold text-df">地点：{{activityData.place}}</text>
-        </view>
-        <view>
-            <text class="text-black text-bold text-df">人数：{{activityData.curUser}}/{{activityData.maxUser}}</text>
-        </view>
-    </view>
-    <view>
-        <button class="cu-btn bg-green lg" @click="attendCurActivity">立即报名</button>
+        <button class="cu-btn bg-green lg align-center" @click="attendCurActivity">立即报名</button>
     </view>
     </view>
 </template>
@@ -32,6 +54,7 @@
     import Vue from 'vue'
     import {Component, Prop} from 'vue-property-decorator'
     import promisify from "@/apps/Promisify";
+    import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 
     @Component
     export default class activityDetail extends Vue{
@@ -50,9 +73,10 @@
         }
         async attendCurActivity(){
             let res = await promisify.request({
-                url: getApp().globalData.baseUrl + `/joinActivity?openId=${getApp().globalData.openId}&activityId=${this.activityId}`,
+                url: getApp().globalData.baseUrl + `/joinActivity?activityId=${this.activityId}`,
                 method: "POST",
                 dataType: "json",
+                data:{}
             });
             uni.showToast({
                 title: res.data.result === "success"?"参加成功":"参加失败",
@@ -65,6 +89,29 @@
         }
         back(){
             uni.navigateBack();
+        }
+        get startDate(){
+            return this.activityData.start.split(" ")[0];
+        }
+        get startTime(){
+            return this.activityData.start.split(" ")[1].substr(0, 5)
+        }
+        get endDate(){
+            return this.activityData.end.split(" ")[0];
+        }
+        get endTime(){
+            return this.activityData.end.split(" ")[1].substr(0, 5)
+        }
+        get userCountString(){
+            let r2 = "";
+            if(this.activityData.minUser && !this.activityData.maxUser){
+                r2 = `最少${this.activityData.minUser}人`
+            }else if(!this.activityData.minUser && this.activityData.maxUser){
+                r2 = `最多${this.activityData.maxUser}人`
+            }else if(this.activityData.minUser && this.activityData.maxUser){
+                r2 = `需要${this.activityData.minUser}~${this.activityData.maxUser}人`
+            }
+            return `当前${this.activityData.curUser}人/${r2}`;
         }
     }
 </script>

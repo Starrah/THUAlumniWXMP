@@ -14,7 +14,7 @@ var initialGlobalData: GlobalData = {
         }],
         "flag":"unverified",
     },
-    session: "aaa",
+    session: "bbb",
     baseUrl: "http://thalu.starrah.cn",
     devData: {}
 };
