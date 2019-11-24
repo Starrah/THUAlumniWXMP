@@ -108,13 +108,16 @@
     import apiService from '../../../commons/api'
     import SureToast from "@/components/SureToast.vue";
     import {SET_ACTIVITY_DETAIL_ID} from "@/store/mutation";
-    import {FETCH_ACTIVITY_DETAIL} from "@/store/action";
+    import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
 
     @Component({
         components: {SureToast}
     })
     export default class activityDetail extends Vue{
         name!: "activityDetail";
+        get activityId(){
+            return this.$store.state.activityDetail.id;
+        }
         get activityData(){
             console.log(this.$store.state.activityDetail);
             return this.$store.state.activityDetail.activity;
@@ -198,9 +201,9 @@
             try {
                 if (this.activityData.ruleForMe === 'accept') {
                     await ((this.$refs.SureToast as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
-                    res = apiService.post(`/joinActivity?activityId=${this.$store.state.activityDetail.id}`, {})
+                    res = apiService.post(`/joinActivity?activityId=${this.activityId}`, {})
                 } else if (this.activityData.ruleForMe === 'needAudit') {
-                    res = apiService.post(`/joinActivity?activityId=${this.$store.state.activityDetail.id}`, {reason: this.auditReason})
+                    res = apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason})
                 }
             }finally {}
             if(res && res.result === 'success'){
@@ -216,7 +219,7 @@
             this.updateActivityData()
         }
         async exitCurActivity(){
-            let res = await apiService.post(`/cancelJoinActivity?activityId=${this.$store.state.activityDetail.id}`, {});
+            let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
             if(res && res.result === 'success'){
                 uni.showToast({
                     title: this.activityData.selfStatus === UserStatus.WaitValidate?"取消加入申请成功":"取消报名成功",
@@ -244,16 +247,16 @@
             this.updateActivityData()
         }
         async startSignin(){
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: ActivityStatus.Signin});
             uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+                title: "成功",
             });
             this.updateActivityData()
         }
         async endSignin(){
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: ActivityStatus.SigninPaused});
             uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+                title: "成功",
             });
             this.updateActivityData()
         }
@@ -279,11 +282,10 @@
             this.updateActivityData()
         }
         async cancelActivityAdmin(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
-            });
-            this.updateActivityData()
+            await ((this.$refs.SureToast as any).show("您确定要取消这个活动吗？一旦确认，活动将被彻底取消，无法恢复！"));
+            await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
+            //TODO 跳转
+            //this.updateActivityData()
         }
     }
 </script>
