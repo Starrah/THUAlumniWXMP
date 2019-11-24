@@ -9,7 +9,7 @@ class ApiService {
 
     async request(method: "GET" | "POST" | "PUT" | "DELETE", resource: string, param: object = {}) {
         let res = await new Promise((resolve, reject) => {
-            let url = this.baseUrl + resource + "?session=" + this.session;
+            let url = this.baseUrl.includes("?")?this.baseUrl + resource + "&session=" + this.session:this.baseUrl + resource + "?session=" + this.session;
             uni.request({
                 url,
                 method: method,

@@ -74,7 +74,7 @@
             </switch>
         </view>
         <view class="cu-form-group margin-top">
-            <view class="title">报名结束</view>
+            <view class="title">报名截止</view>
             <text v-if="!switchSignupStop">直到活动开始时间</text>
             <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
                 <view class="picker">
@@ -99,6 +99,7 @@
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
     </form>
+    <SureToast ref="SureToast"></SureToast>
     </view>
 </template>
 
@@ -111,7 +112,12 @@
     import {SET_NEW_ACTIVITY} from "@/store/mutation";
     import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
     import activityTypeList from "@/store/module/activityTypeList";
-    @Component
+    import {withSec} from "@/apps/utils/DateStringFormat";
+    import SureToast from "@/components/SureToast.vue";
+
+    @Component({components: {
+        SureToast
+        }})
     export default class newActivity extends Vue{
         name: "newActivity";
         get today(): string{
@@ -184,8 +190,8 @@
             let data = {
                 name: formData.name,
                 place: formData.place,
-                start: this.startDate + " " + this.startTime + ":00",
-                end: this.endDate + " " + this.endTime + ":00",
+                start: withSec(this.startDate + " " + this.startTime),
+                end: withSec(this.endDate + " " + this.endTime),
                 signupBeginAt: this.switchSignupBegin?this.signupBeginAtDate + " " + this.signupBeginAtTime + ":00":undefined,
                 signupStopAt: this.switchSignupStop?this.signupStopAtDate + " " + this.signupStopAtTime + ":00":undefined,
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
@@ -193,6 +199,7 @@
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
                 canBeSearched: this.switchCanBeSearched
             };
+            await ((this.$refs.SureToast as any).show("您确定要发起这个活动吗？"));
             this.$store.commit(SET_NEW_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
             uni.showToast({title: "成功", icon: "none"});
@@ -236,5 +243,8 @@
         transform: scaleX(0.5);
         width: 100%;
         transform-origin: left;
+    }
+    .cu-form-group .title{
+        min-width: calc(4em + 30upx);
     }
 </style>

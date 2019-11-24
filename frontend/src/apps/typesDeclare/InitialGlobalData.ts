@@ -15,8 +15,10 @@ var initialGlobalData: GlobalData = {
         "flag":"unverified",
     },
     session: "bbb",
-    baseUrl: "http://thalu.starrah.cn",
-    devData: {}
+    baseUrl: "http://thaluapitest.starrah.cn",
+    devData: {
+        DEFAULT_AVATARURL: "http://starrah.cn/test.png"
+    }
 };
 
 export default initialGlobalData;

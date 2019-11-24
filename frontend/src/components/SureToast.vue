@@ -30,12 +30,10 @@
         onPressOK(){
             this.isShowing = false;
             this.resolv();
-            console.log("OK")
         }
         onPressCancel(){
             this.isShowing = false;
             this.rejec();
-            console.log("cancel");
         }
 
         async show(content: string){

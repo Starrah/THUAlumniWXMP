@@ -52,6 +52,10 @@
         search(){
             uni.showToast({title: "尚未支持", icon:"none"})
         }
+        async onPullDownRefresh(){
+            await this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+            uni.stopPullDownRefresh();
+        }
         mounted(){
             // uni.login({
             //     provider: "weixin",

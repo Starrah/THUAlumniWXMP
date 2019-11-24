@@ -3,3 +3,5 @@ export const SET_ERROR = "setError";
 export const SET_NEW_ACTIVITY = "setNewActivityData";
 export const SET_ACTIVITY_TYPE_LIST = "setActivityTypeList";
 export const SET_ALL_ACTIVITY_LIST = "setAllActivityList";
+export const SET_ACTIVITY_DETAIL = "setActivityDetail";
+export const SET_ACTIVITY_DETAIL_ID = "setActivityDetailId";

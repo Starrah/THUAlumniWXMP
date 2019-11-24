@@ -5,6 +5,7 @@ import profile from "./module/profile";
 import newActivity from "./module/newActivity"
 import activityTypeList from "@/store/module/activityTypeList";
 import allActivityList from "@/store/module/allActivityList";
+import activityDetail from "@/store/module/activityDetail";
 
 Vue.use(Vuex);
 
@@ -16,6 +17,7 @@ export default new Vuex.Store({
     profile,
     newActivity,
     activityTypeList,
-    allActivityList
+    allActivityList,
+    activityDetail
   }
 })

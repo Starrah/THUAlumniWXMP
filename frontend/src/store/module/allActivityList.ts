@@ -4,21 +4,6 @@ import {SET_ALL_ACTIVITY_LIST, SET_NEW_ACTIVITY} from "../mutation";
 import {ActivityStatus} from "@/apps/typesDeclare/ActivityEnum";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 
-// interface NewActivitySchema {
-//     name: string;
-//     place: string;
-//     type: string;
-//     start: string;
-//     end: string
-//     signupBeginAt?: string;
-//     signupStopAt?: string;
-//     maxUser?: number;
-//     minUser?: number;
-//     status?: ActivityStatus;
-//     canBeSearched: boolean;
-//     rules?: SignupRule
-// }
-
 const state: {
     activityList: Array<ActivitySchema>
 } = {
