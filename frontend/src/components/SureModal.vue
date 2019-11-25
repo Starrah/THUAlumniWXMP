@@ -16,13 +16,9 @@
     import Vue from 'vue';
     import {Component, Prop} from "vue-property-decorator";
 
-    interface SureToastInterface{
-        show(content: string);
-    }
-
     @Component
-    export default class SureToast extends Vue implements SureToastInterface{
-        name: "SureToast";
+    export default class SureModal extends Vue{
+        name: "SureModal";
         content: string = "";
         isShowing: boolean = false;
         resolv: Function = null;
@@ -45,7 +41,6 @@
                 this.rejec = reject;
             })
         }
-
     }
 </script>
 

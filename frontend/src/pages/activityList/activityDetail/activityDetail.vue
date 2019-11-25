@@ -1,3 +1,8 @@
+import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
+import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
+import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
+import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
+import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
     <view class="cu-bar bg-white">
@@ -49,7 +54,7 @@
                 <view class="title">人数</view>
                 <view>
                     <view class="cu-avatar-group">
-                        <view v-for="ava in avatarShowList" class="cu-avatar round sm" :style="'background-image:url('+ ava +');'"></view>
+                        <view v-for="ava in avatarShowList" :key="ava" class="cu-avatar round sm" :style="'background-image:url('+ ava +');'"></view>
                     </view>
                     <text>等{{activityData.curUser}}人</text>
                     <text>/</text>
@@ -65,7 +70,7 @@
             <button v-if="activityData.status === ActivityStatus.BeforeSignup" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
             <button v-if="activityData.status === ActivityStatus.Signup && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" @click="onPressAttend" :disabled="activityData.ruleForMe === 'reject'">{{signupButtonWords}}</button>
             <button v-if="activityData.status === ActivityStatus.SignupPaused && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" :disabled="true">报名已暂停</button>
-            <button v-if="(activityData.status === ActivityStatus.Signup || activityData.status === ActivityStatus.SignupPaused) && activityData.selfStatus === UserStatus.WaitValidate" class="cu-btn bg-red lg align-center" @click="exitCurActivity">撤回审核申请</button>
+            <button v-if="(activityData.status === ActivityStatus.Signup || activityData.status === ActivityStatus.SignupPaused) && activityData.selfStatus === UserStatus.WaitValidate" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消加入申请</button>
             <button v-if="(activityData.status === ActivityStatus.Signup || activityData.status === ActivityStatus.SignupPaused) && activityData.selfStatus === UserStatus.Joined" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消报名</button>
             <button v-if="activityData.status === ActivityStatus.SignupStopped" class="cu-btn lg align-center" :class="(activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)?'bg-green':'bg-red'" :disabled="true">报名已截止</button>
         </view>
@@ -80,19 +85,39 @@
             <button v-if="activityData.status === ActivityStatus.Signin" class="cu-btn bg-red lg align-center" @click="endSignin">停止签到</button>
         </view>
         <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-yellow lg align-center" @click="openSetStatusInfoModal">修改活动状态</button>
+            <button class="cu-btn bg-yellow lg align-center" @click="setStatusChangeShowing(true)">修改活动状态</button>
             <button class="cu-btn bg-yellow lg align-center" @click="openSetActivityInfoPage">修改活动信息</button>
         </view>
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
         </view>
-        <SureToast ref="SureToast"></SureToast>
-        <view class="cu-modal" :class="auditReasonShowing?'show':''">
-            <view>
-                <text>您报名后需要审核。申请留言（可选，不超过300字）：</text>
-                <textarea style="width: 90%;height: 100px;" v-model="auditReason"></textarea>
+        <SureModal ref="SureModal"></SureModal>
+        <view class="cu-modal" :class="auditModalShowing?'show':''">
+            <view class="cu-dialog">
+                <text>您报名后需要审核，您可在下方输入申请留言：</text>
+                <view class="cu-form-group">
+                <textarea style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
+                </view>
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
+            </view>
+        </view>
+        <view class="cu-modal" :class="statusChangeShowing?'show':''">
+            <view class="cu-dialog">
+            <view>
+                <text>活动当前状态为：</text>
+                <text class="text-bold">{{ActivityStatusShowStrings[activityData.status]}}</text>
+            </view>
+            <view>
+                <text>您要修改为：</text>
+                <picker @change="statusInChangelistCurIndex = $event.detail.value" :value="statusInChangelistCurIndex" :range="statusInChangelistStrs">
+                    {{statusInChangelistCurIndex !== -1?ActivityStatusShowStrings[statusInChangelistCurIndex]:ActivityStatusShowStrings[activityData.status]}}
+                </picker>
+            </view>
+            <view>
+                <button class="cu-btn bg-green" @click="setStatus">确定</button>
+                <button class="cu-btn bg-red" @click="setStatusChangeShowing(true)">取消</button>
+            </view>
             </view>
         </view>
     </view>
@@ -106,12 +131,12 @@
     import {ActivityStatus, ActivityStatusShowStrings} from "@/apps/typesDeclare/ActivityEnum";
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
     import apiService from '../../../commons/api'
-    import SureToast from "@/components/SureToast.vue";
+    import SureModal from "@/components/SureModal.vue";
     import {SET_ACTIVITY_DETAIL_ID} from "@/store/mutation";
     import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
 
     @Component({
-        components: {SureToast}
+        components: {SureModal}
     })
     export default class activityDetail extends Vue{
         name!: "activityDetail";
@@ -197,15 +222,17 @@
             this.auditModalShowing = false;
         }
         async attendCurActivity(){
+            this.auditModalShowing = false;
             let res = null;
             try {
                 if (this.activityData.ruleForMe === 'accept') {
-                    await ((this.$refs.SureToast as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
-                    res = apiService.post(`/joinActivity?activityId=${this.activityId}`, {})
+                    await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {})
                 } else if (this.activityData.ruleForMe === 'needAudit') {
-                    res = apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason})
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason})
                 }
             }finally {}
+            console.log(res);
             if(res && res.result === 'success'){
                 uni.showToast({
                     title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
@@ -219,6 +246,7 @@
             this.updateActivityData()
         }
         async exitCurActivity(){
+            await ((this.$refs.SureToast as any).show("您确认要取消报名吗？"));
             let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
             if(res && res.result === 'success'){
                 uni.showToast({
@@ -247,6 +275,7 @@
             this.updateActivityData()
         }
         async startSignin(){
+            await ((this.$refs.SureToast as any).show("您确认要开放签到吗？"));
             await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: ActivityStatus.Signin});
             uni.showToast({
                 title: "成功",
@@ -254,24 +283,29 @@
             this.updateActivityData()
         }
         async endSignin(){
+            await ((this.$refs.SureToast as any).show("您确认要暂停签到吗？"));
             await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: ActivityStatus.SigninPaused});
             uni.showToast({
                 title: "成功",
             });
             this.updateActivityData()
         }
-        async openSetStatusInfoModal(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
-            });
-            this.updateActivityData()
+        statusChangeShowing: boolean = false;
+        statusInChangelist: Array<ActivityStatus> = [ActivityStatus.Signup, ActivityStatus.SignupPaused, ActivityStatus.Signin, ActivityStatus.SigninPaused, ActivityStatus.Finish]
+        statusInChangelistCurIndex: number = -1;
+        get statusInChangelistStrs(){
+            return this.statusInChangelist.map((v)=>ActivityStatusShowStrings[v]);
+        }
+        async setStatusChangeShowing(b){
+            if(b)this.statusInChangelistCurIndex = -1;
+            this.statusChangeShowing = b;
         }
         async setStatus(){
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: this.statusInChangelist[this.statusInChangelistCurIndex]});
             uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+                title: "成功",
             });
+            this.statusChangeShowing = false;
             this.updateActivityData()
         }
         async openSetActivityInfoPage(){
@@ -282,7 +316,7 @@
             this.updateActivityData()
         }
         async cancelActivityAdmin(){
-            await ((this.$refs.SureToast as any).show("您确定要取消这个活动吗？一旦确认，活动将被彻底取消，无法恢复！"));
+            await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？一旦确认，活动将被彻底取消，无法恢复！"));
             await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
             //TODO 跳转
             //this.updateActivityData()

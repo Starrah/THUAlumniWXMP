@@ -99,7 +99,7 @@
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
     </form>
-    <SureToast ref="SureToast"></SureToast>
+        <SureModal ref="SureModal"></SureModal>
     </view>
 </template>
 
@@ -113,11 +113,10 @@
     import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
     import activityTypeList from "@/store/module/activityTypeList";
     import {withSec} from "@/apps/utils/DateStringFormat";
-    import SureToast from "@/components/SureToast.vue";
-
-    @Component({components: {
-        SureToast
-        }})
+    import SureModal from "@/components/SureModal.vue";
+    @Component({
+        components: {SureModal}
+    })
     export default class newActivity extends Vue{
         name: "newActivity";
         get today(): string{
@@ -199,7 +198,7 @@
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
                 canBeSearched: this.switchCanBeSearched
             };
-            await ((this.$refs.SureToast as any).show("您确定要发起这个活动吗？"));
+            await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
             this.$store.commit(SET_NEW_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
             uni.showToast({title: "成功", icon: "none"});
@@ -211,6 +210,7 @@
         mounted(){
             // this.updateTypeMultiData();
             // setInterval(()=>console.log(this.switchCanBeSearched), 1000)
+            console.log(this.$SureModal);
         }
     }
 </script>
