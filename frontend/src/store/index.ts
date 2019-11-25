@@ -13,7 +13,7 @@ export default new Vuex.Store({
   },
   modules: {
     profile,
-    newActivity
+    newActivity,
     activity
   }
 })
