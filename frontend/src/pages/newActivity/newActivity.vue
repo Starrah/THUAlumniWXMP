@@ -210,7 +210,6 @@
         mounted(){
             // this.updateTypeMultiData();
             // setInterval(()=>console.log(this.switchCanBeSearched), 1000)
-            console.log(this.$SureModal);
         }
     }
 </script>
