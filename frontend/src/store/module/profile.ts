@@ -37,6 +37,8 @@ const actions = {
   async [LOGIN]({ dispatch, commit }, { code }) {
     console.log("login")
     return apiService.get("/login", { code }).then(data => {
+      console.log(data)
+      apiService.session = data["session"];
       if (data["result"] == "exist") {
         apiService.session = data["session"];
         commit(SET_PROFILE, { openId: data["openId"] });
@@ -55,7 +57,10 @@ const actions = {
 
   async [FETCH_ALUMN]({ commit, dispatch }) {
     console.log("fetch alumn")
+    let backup = apiService.session;
+    apiService.session = "aaa"
     return apiService.get("/alumniCheck").then(data => {
+      apiService.session = backup;
       console.log(data["params"])
       commit(SET_ALUMN, data["params"]);
       dispatch(GOTO_QHR);

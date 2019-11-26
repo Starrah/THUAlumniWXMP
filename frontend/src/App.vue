@@ -3,6 +3,7 @@ import Vue from "vue";
 import initialGlobalData from "./apps/typesDeclare/InitialGlobalData";
 import store from "./store";
 import apiService from "./commons/api";
+import {WEIXIN_LOGIN, FETCH_SESSION, LOGIN} from "./store/action";
 
 apiService.init("aaa", "https://thalu.starrah.cn");
 
@@ -25,6 +26,9 @@ export default Vue.extend({
   onShow(res) {
     console.log("onShow");
     console.log(res);
+    if(!!res && !!res["referrerInfo"] && !!res["referrerInfo"]["extraData"]["oAuthSuccess"]) {
+      store.dispatch(WEIXIN_LOGIN);
+    }
   },
   mpType: "app"
 });
