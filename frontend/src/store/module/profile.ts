@@ -75,7 +75,9 @@ const actions = {
         logined: true
       });
     }).catch(err => {
-      rootState.errMsg = err.message;
+      if(err.errid && err.errid >= 500 && err.errid <= 599) {
+        rootState.errMsg = err.errmsg;
+      }
     });
   }
 };

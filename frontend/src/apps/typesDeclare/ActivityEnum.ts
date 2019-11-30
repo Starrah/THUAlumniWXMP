@@ -8,3 +8,14 @@ export enum ActivityStatus {
     SigninPaused = 6, //签到被暂停
     Finish = 7, //活动已结束（到达设定的活动结束时间）
 }
+
+export var ActivityStatusShowStrings = [
+    "活动被取消",
+    "报名尚未开始",
+    "报名中",
+    "报名暂停",
+    "报名已截止",
+    "可以签到",
+    "签到停止",
+    "已结束"
+];

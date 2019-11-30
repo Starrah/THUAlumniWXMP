@@ -15,7 +15,7 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动类型</view>
-            <picker mode="multiSelector" @change="typeMultiIndex = $event.detail.value" @columnchange="typeMultiColumnChange" :value="typeMultiIndex" :range="typeMultiArray" name="type">
+            <picker mode="multiSelector" @change="typeMultiChange" @columnchange="typeMultiColumnChange" :value="typeMultiIndex" :range="typeMultiArray" name="type">
                 <view class="picker">
                     {{typeMultiShowText}}
                 </view>
@@ -74,7 +74,7 @@
             </switch>
         </view>
         <view class="cu-form-group margin-top">
-            <view class="title">报名结束</view>
+            <view class="title">报名截止</view>
             <text v-if="!switchSignupStop">直到活动开始时间</text>
             <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
                 <view class="picker">
@@ -99,6 +99,7 @@
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
     </form>
+        <SureModal ref="SureModal"></SureModal>
     </view>
 </template>
 
@@ -109,8 +110,13 @@
     import promisify from '../../apps/Promisify'
     import delay from 'delay';
     import {SET_NEW_ACTIVITY} from "@/store/mutation";
-    import {SUBMIT_NEW_ACTIVITY} from "@/store/action";
-    @Component
+    import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
+    import activityTypeList from "@/store/module/activityTypeList";
+    import {withSec} from "@/apps/utils/DateStringFormat";
+    import SureModal from "@/components/SureModal.vue";
+    @Component({
+        components: {SureModal}
+    })
     export default class newActivity extends Vue{
         name: "newActivity";
         get today(): string{
@@ -127,61 +133,40 @@
         signupBeginAtTime: string = "请选择";
         signupStopAtDate: string = "请选择";
         signupStopAtTime: string = "请选择";
-        typeMultiData: Array<{name: string, children: Array<{name: string, children?: any}>}> = [];
-        typeMultiIndex: Array<number> = [];
-        typeMultiArray: Array<Array<string>> = [];
-        switchCanBeSearched: boolean = true;
-        updateTypeMultiData(){
-            this.typeMultiData = [
-                {
-                    name: "个人活动",
-                    children: [
-                        {
-                            name: "聚餐"
-                        },
-                        {
-                            name: "唱歌"
-                        },
-                        {
-                            name: "跑步"
-                        }
-                    ]
-                },
-                {
-                    name:"班级活动",
-                    children: [
-                        {
-                            name: "聚餐"
-                        },
-                        {
-                            name: "唱歌"
-                        },
-                        {
-                            name: "跑步"
-                        }
-                    ]
-                }
-            ];
-            this.typeMultiArray[0] = this.typeMultiData.map((v)=>v.name);
-            this.typeMultiArray[1] = this.typeMultiData[0].children.map((v)=>v.name);
-            this.typeMultiIndex = [0, 0];
+        get typeMultiData(){
+            let temp = this.$store.state.activityTypeList;
+            if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
+            if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
+            return temp;
         }
+        typeMultiIndex: Array<number> = [];
+        get typeMultiArray(){
+            let data = this.typeMultiData;
+            let res = [];
+
+            let curNode = data.types;
+            res.push(curNode.map((v)=>v.name));
+
+            for(let i=0;i<this.typeMultiIndex.length-1;i++){
+                curNode = curNode[this.typeMultiIndex[i]].children;
+                res.push(curNode.map((v)=>v.name));
+            }
+            return res;
+        }
+        switchCanBeSearched: boolean = true;
         typeMultiChange(e){
-            this.typeMultiIndex = e.detail.value
+            this.typeMultiIndex = e.detail.value;
         }
         typeMultiColumnChange(e){
-            let data = {
-                index: this.typeMultiIndex,
-                array: this.typeMultiArray
-            };
             let column = e.detail.column;
-            data.index[column] = e.detail.value;
-            if(column === 0){
-                data.array[1] = this.typeMultiData[data.index[column]].children.map((v)=>v.name)
-                data.index[1] = 0
+            if(this.typeMultiIndex[column] === e.detail.value)return;
+            let newIndex = [];
+            for(let i=0;i<this.typeMultiIndex.length;i++){
+                if(i < column)newIndex.push(this.typeMultiIndex[i]);
+                else if(i === column)newIndex.push(e.detail.value);
+                else newIndex.push(0);
             }
-            this.typeMultiIndex = data.index;
-            this.typeMultiArray = data.array;
+            this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
             let r = "";
@@ -204,8 +189,8 @@
             let data = {
                 name: formData.name,
                 place: formData.place,
-                start: this.startDate + " " + this.startTime + ":00",
-                end: this.endDate + " " + this.endTime + ":00",
+                start: withSec(this.startDate + " " + this.startTime),
+                end: withSec(this.endDate + " " + this.endTime),
                 signupBeginAt: this.switchSignupBegin?this.signupBeginAtDate + " " + this.signupBeginAtTime + ":00":undefined,
                 signupStopAt: this.switchSignupStop?this.signupStopAtDate + " " + this.signupStopAtTime + ":00":undefined,
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
@@ -213,6 +198,7 @@
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
                 canBeSearched: this.switchCanBeSearched
             };
+            await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
             this.$store.commit(SET_NEW_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
             uni.showToast({title: "成功", icon: "none"});
@@ -222,7 +208,7 @@
             })
         }
         mounted(){
-            this.updateTypeMultiData();
+            // this.updateTypeMultiData();
             // setInterval(()=>console.log(this.switchCanBeSearched), 1000)
         }
     }
@@ -256,5 +242,8 @@
         transform: scaleX(0.5);
         width: 100%;
         transform-origin: left;
+    }
+    .cu-form-group .title{
+        min-width: calc(4em + 30upx);
     }
 </style>

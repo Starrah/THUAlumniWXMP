@@ -1,7 +1,10 @@
 {
 	"pages": [
 		{
-			"path": "pages/activityList/mainList/mainList"
+			"path": "pages/activityList/mainList/mainList",
+			"style": {
+				"enablePullDownRefresh": true
+			}
 		},
 		{
 			"path": "pages/newActivity/newActivity",

@@ -1,5 +1,10 @@
 export const SET_PROFILE = "setProfile";
 export const SET_ERROR = "setError";
+export const SET_NEW_ACTIVITY = "setNewActivityData";
+export const SET_ACTIVITY_TYPE_LIST = "setActivityTypeList";
+export const SET_ALL_ACTIVITY_LIST = "setAllActivityList";
+export const SET_ACTIVITY_DETAIL = "setActivityDetail";
+export const SET_ACTIVITY_DETAIL_ID = "setActivityDetailId";
 export const SET_ALUMN = "setAlumn";
 export const SET_ADVANCE_RULE = "setAdvanceRule";
 export const SET_NEW_ACTIVITY = "setNewActivityData";

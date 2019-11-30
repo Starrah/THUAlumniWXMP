@@ -43,22 +43,21 @@
     import promisify from "@/apps/Promisify";
     import apiService from '@/commons/api'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
+    import {FETCH_ALL_ACTIVITY_LIST} from "@/store/action";
 
     @Component
     export default class mainList extends Vue{
         name!: "mainList";
         debugCode?:string = "";
-        activities_toShow: ActivitySchema[] = [];
-        async updateAllActivity(){
-            let res = await promisify.request({
-                url: getApp().globalData.baseUrl + `/getAllActivity`,
-                method: "GET",
-                dataType: "json",
-            });
-            this.activities_toShow = res.data.activityList
+        get activities_toShow(){
+            return this.$store.state.allActivityList.activityList;
         }
         search(){
             uni.showToast({title: "尚未支持", icon:"none"})
+        }
+        async onPullDownRefresh(){
+            await this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+            uni.stopPullDownRefresh();
         }
         mounted(){
             // uni.login({
@@ -76,7 +75,7 @@
             //     {name: "aaa", place: "bbb"},
             //     {name: "aaa", place: "bbb"}
             // ]
-            this.updateAllActivity();
+            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
         }
         jumpToActivityDetail(event, a: ActivitySchema){
             uni.navigateTo({

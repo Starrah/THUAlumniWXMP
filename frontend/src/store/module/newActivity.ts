@@ -1,5 +1,5 @@
 import apiService from "../../commons/api";
-import {SUBMIT_NEW_ACTIVITY} from "../action";
+import {SUBMIT_ACTIVITY_STATUS_CHANGE, SUBMIT_NEW_ACTIVITY} from "../action";
 import {SET_NEW_ACTIVITY} from "../mutation";
 import {ActivityStatus} from "@/apps/typesDeclare/ActivityEnum";
 
@@ -51,8 +51,20 @@ const mutations = {
 
 const actions = {
     async [SUBMIT_NEW_ACTIVITY]({state, commit, rootState}){
-        let res = await apiService.post('/createActivity', state);
-        return res.activityId;
+        try {
+            let res = await apiService.post('/createActivity', state);
+            return res.activityId;
+        }catch (e) {
+            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+        }
+    },
+    async [SUBMIT_ACTIVITY_STATUS_CHANGE]({state, commit, rootState}, {activityId, newStatus}){
+        try {
+            let res = await apiService.post(`/modifyActivity?activityId=${activityId}`, {status: newStatus});
+            return res.activityId;
+        }catch (e) {
+            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+        }
     }
 };
 
