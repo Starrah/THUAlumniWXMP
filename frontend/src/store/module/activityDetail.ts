@@ -14,7 +14,8 @@ const state: {
 
 const mutations = {
     [SET_ACTIVITY_DETAIL](state, ne) {
-        Object.assign(state.activity, ne);
+        state.activity = ne;
+        // Object.assign(state.activity, ne);
     },
     [SET_ACTIVITY_DETAIL_ID](state, ne){
         state.id = ne;
@@ -28,6 +29,7 @@ const actions = {
             commit(SET_ACTIVITY_DETAIL, res)
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     }
 };

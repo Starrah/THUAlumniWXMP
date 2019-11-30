@@ -23,6 +23,7 @@ const actions = {
             commit(SET_ALL_ACTIVITY_LIST, res)
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     }
 };

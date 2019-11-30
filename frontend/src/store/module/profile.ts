@@ -37,11 +37,11 @@ const actions = {
   async [LOGIN]({ dispatch, commit }, { code }) {
     console.log("login")
     return apiService.get("/login", { code }).then(data => {
-      console.log(data)
+      console.log(data);
       apiService.session = data["session"];
+      commit(SET_PROFILE, { openId: data["openId"] });
+      console.log(apiService.session);
       if (data["result"] == "exist") {
-        apiService.session = data["session"];
-        commit(SET_PROFILE, { openId: data["openId"] });
         dispatch(FETCH_PROFILE);
       } else {
         uni.showModal({
@@ -57,10 +57,7 @@ const actions = {
 
   async [FETCH_ALUMN]({ commit, dispatch }) {
     console.log("fetch alumn")
-    let backup = apiService.session;
-    apiService.session = "aaa"
     return apiService.get("/alumniCheck").then(data => {
-      apiService.session = backup;
       console.log(data["params"])
       commit(SET_ALUMN, data["params"]);
       dispatch(GOTO_QHR);
@@ -73,13 +70,18 @@ const actions = {
     );
   },
 
-  async [FETCH_PROFILE]({ commit, rootState }) {
+  async [FETCH_PROFILE]({ dispatch, commit, rootState }) {
     return apiService.get("/userData").then(data => {
       commit(SET_PROFILE, {
         ...data,
         logined: true
       });
     }).catch(err => {
+      if (err.errid && err.errid === 101){
+        setTimeout(()=>{
+          dispatch(FETCH_PROFILE)
+        }, 500)
+      }
       if(err.errid && err.errid >= 500 && err.errid <= 599) {
         rootState.errMsg = err.errmsg;
       }

@@ -3,9 +3,9 @@ import Vue from "vue";
 import initialGlobalData from "./apps/typesDeclare/InitialGlobalData";
 import store from "./store";
 import apiService from "./commons/api";
-import {WEIXIN_LOGIN, FETCH_SESSION, LOGIN} from "./store/action";
+import {WEIXIN_LOGIN, LOGIN, FETCH_PROFILE} from "./store/action";
 
-apiService.init("aaa", "https://thalu.starrah.cn");
+apiService.init(null, "http://thalu.starrah.cn");
 
 export default Vue.extend({
   globalData: initialGlobalData,
@@ -13,12 +13,15 @@ export default Vue.extend({
   mounted: () => {
     store.watch(
       state => state.errMsg, //watch state.errMsg
-      newErrMsg => {         //when new errMsg come
-        console.error(newErrMsg);
-        uni.showToast({
-          title: String(newErrMsg) || "无法预知的错误，请稍后重试",
-          icon: "none"
-        });
+      newErrMsg => {
+          if(newErrMsg && newErrMsg !== ""){//when new errMsg come
+              console.error(newErrMsg);
+              uni.showToast({
+                  title: String(newErrMsg) || "无法预知的错误，请稍后重试",
+                  icon: "none"
+              });
+              store.state.errMsg = ""
+          }
       }
     );
   },
@@ -26,11 +29,16 @@ export default Vue.extend({
   onShow(res) {
     console.log("onShow");
     console.log(res);
-    if(!!res && !!res["referrerInfo"] && !!res["referrerInfo"]["extraData"]["oAuthSuccess"]) {
-      store.dispatch(WEIXIN_LOGIN);
+    if(!!res && !!res["referrerInfo"] && !!res["referrerInfo"]["extraData"] && !!res["referrerInfo"]["extraData"]["oAuthSuccess"]) {
+      store.dispatch(FETCH_PROFILE);
     }
   },
-  mpType: "app"
+  mpType: "app",
+    onLaunch(){
+        uni.setEnableDebug({
+            enableDebug: true
+        })
+    }
 });
 </script>
 

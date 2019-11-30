@@ -1,4 +1,5 @@
 export function withoutSec(str) {
+    if(!str)return str;
     let arr = str.split(' ');
     let res = "";
     for(let part of arr){
@@ -10,10 +11,11 @@ export function withoutSec(str) {
         }
         res += " "
     }
-    return res.trimEnd()
+    return res.trimRight()
 }
 
 export function withSec(str) {
+    if(!str)return str;
     let arr = str.split(' ');
     let res = "";
     for(let part of arr){
@@ -25,5 +27,5 @@ export function withSec(str) {
         }
         res += " "
     }
-    return res.trimEnd()
+    return res.trimRight();
 }

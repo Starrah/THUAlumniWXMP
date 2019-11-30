@@ -29,6 +29,7 @@ const mutations = {
     [SET_ACTIVITY_TYPE_LIST](state: ActivityTypeListSchema, ne: ActivityTypeListSchema) {
         ne["initialized"] = ne["initialized"] || true;
         Object.assign(state, ne);
+        console.log(state);
     }
 };
 
@@ -39,6 +40,7 @@ const actions = {
             commit(SET_ACTIVITY_TYPE_LIST, res);
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     }
 };

@@ -19,8 +19,6 @@ interface NewActivitySchema {
 }
 
 const state: NewActivitySchema = {
-    signupBeginAt: "",
-    signupStopAt: "",
     name: "",
     place: "",
     start: "",
@@ -56,6 +54,7 @@ const actions = {
             return res.activityId;
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     },
     async [SUBMIT_ACTIVITY_STATUS_CHANGE]({state, commit, rootState}, {activityId, newStatus}){
@@ -64,6 +63,7 @@ const actions = {
             return res.activityId;
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     }
 };

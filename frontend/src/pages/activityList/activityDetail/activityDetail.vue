@@ -28,7 +28,7 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             </view>
             <view class="cu-form-group margin-top">
                 <view class="title">公开活动</view>
-                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" ></checkbox>
+                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" @click.prevent="console.log(activityData);"></checkbox>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">地点</view>
@@ -96,7 +96,7 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <view class="cu-dialog">
                 <text>您报名后需要审核，您可在下方输入申请留言：</text>
                 <view class="cu-form-group">
-                <textarea style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
+                    <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
                 </view>
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
@@ -111,12 +111,12 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <view>
                 <text>您要修改为：</text>
                 <picker @change="statusInChangelistCurIndex = $event.detail.value" :value="statusInChangelistCurIndex" :range="statusInChangelistStrs">
-                    {{statusInChangelistCurIndex !== -1?ActivityStatusShowStrings[statusInChangelistCurIndex]:ActivityStatusShowStrings[activityData.status]}}
+                    {{statusInChangelistCurIndex !== -1?ActivityStatusShowStrings[statusInChangelist[statusInChangelistCurIndex]]:ActivityStatusShowStrings[activityData.status]}}
                 </picker>
             </view>
             <view>
                 <button class="cu-btn bg-green" @click="setStatus">确定</button>
-                <button class="cu-btn bg-red" @click="setStatusChangeShowing(true)">取消</button>
+                <button class="cu-btn bg-red" @click="setStatusChangeShowing(false)">取消</button>
             </view>
             </view>
         </view>
@@ -140,26 +140,34 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
     })
     export default class activityDetail extends Vue{
         name!: "activityDetail";
+        console = console;
         get activityId(){
             return this.$store.state.activityDetail.id;
         }
         get activityData(){
+            console.log("activityDataChANGED");
             console.log(this.$store.state.activityDetail);
             return this.$store.state.activityDetail.activity;
         }
         AVATAR_GROUP_MAX = 4;
         get avatarShowList(){
+            console.log(this.activityData);
+            console.log(this.activityData, this.activityData.participants);
             if(this.activityData && this.activityData.participants){
+                console.log(this.activityData.participants);
                 let n = this.activityData.participants.length > this.AVATAR_GROUP_MAX?this.AVATAR_GROUP_MAX:this.activityData.participants.length;
                 let res = [];
                 for(let i=0;i<n;i++) {
                     res.push(this.activityData.participants[i].avatarUrl)
                 }
+                console.log(res);
                 return res;
             }
             else return [];
         }
         get signupButtonWords(){
+            console.log(this.activityData);
+            console.log(this.activityData.ruleForMe);
             if(this.activityData.ruleForMe === 'accept')return '立即报名';
             else if(this.activityData.ruleForMe === 'needAudit')return '申请报名';
             else return '您不可参加';
@@ -178,13 +186,13 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             return this.activityData.start.split(" ")[0];
         }
         get startTime(){
-            return this.activityData.start.split(" ")[1].substr(0, 5)
+            return this.activityData.start.split(" ")[1]?this.activityData.start.split(" ")[1].substr(0, 5):undefined
         }
         get endDate(){
             return this.activityData.end.split(" ")[0];
         }
         get endTime(){
-            return this.activityData.end.split(" ")[1].substr(0, 5)
+            return this.activityData.end.split(" ")[1]?this.activityData.end.split(" ")[1].substr(0, 5):undefined
         }
         get userNeedString(){
             let r2 = "";

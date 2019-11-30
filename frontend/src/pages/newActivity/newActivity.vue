@@ -148,6 +148,7 @@
             res.push(curNode.map((v)=>v.name));
 
             for(let i=0;i<this.typeMultiIndex.length-1;i++){
+                console.log(curNode);
                 curNode = curNode[this.typeMultiIndex[i]].children;
                 res.push(curNode.map((v)=>v.name));
             }
@@ -191,8 +192,8 @@
                 place: formData.place,
                 start: withSec(this.startDate + " " + this.startTime),
                 end: withSec(this.endDate + " " + this.endTime),
-                signupBeginAt: this.switchSignupBegin?this.signupBeginAtDate + " " + this.signupBeginAtTime + ":00":undefined,
-                signupStopAt: this.switchSignupStop?this.signupStopAtDate + " " + this.signupStopAtTime + ":00":undefined,
+                signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):undefined,
+                signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):undefined,
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,

@@ -78,8 +78,13 @@
             //     {name: "aaa", place: "bbb"},
             //     {name: "aaa", place: "bbb"}
             // ]
-            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+            // this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
         }
+
+        onShow(){
+            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST)
+        }
+
         jumpToActivityDetail(event, a: ActivitySchema){
             uni.navigateTo({
                 url: `../activityDetail/activityDetail?activityId=${a.id}`
