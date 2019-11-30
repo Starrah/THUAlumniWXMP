@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { mapState } from "vuex";
-import { LOGIN, FETCH_PROFILE } from "../../store/action";
+import { LOGIN, FETCH_PROFILE, WEIXIN_LOGIN } from "../../store/action";
 import { SET_PROFILE } from "../../store/mutation";
 
 export default {
@@ -57,7 +57,7 @@ export default {
   methods: {
     nameClick(param) {
       if (!this.profile.logined) {
-        this.$store.dispatch(LOGIN);
+        this.$store.dispatch(WEIXIN_LOGIN);
       }
     }
   },
