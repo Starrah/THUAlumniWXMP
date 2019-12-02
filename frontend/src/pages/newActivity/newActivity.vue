@@ -11,7 +11,7 @@
     <form @submit="submitNewActivity">
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动名称</view>
-            <input name="name" />
+            <input ref="name" name="name" />
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动类型</view>
@@ -21,6 +21,10 @@
                 </view>
             </picker>
         </view>
+        <view class="cu-form-group margin-top-sm">
+            <view class="title">标签</view>
+            <input ref="tag" name="tag" placeholder="多个标签之间以逗号或空格分隔"/>
+        </view>
         <view class="cu-form-group margin-top">
             <view class="title">公开活动</view>
             <text>开启则可被公开检索到</text>
@@ -29,7 +33,7 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">地点</view>
-            <input name="place" />
+            <input ref="place" name="place" />
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">开始时间</view>
@@ -89,11 +93,15 @@
             <switch @change="switchSignupStop = $event.detail.value" class="signupEnd" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
             </switch>
         </view>
+        <view class="cu-form-group margin-top arrow">
+            <view class="title">报名规则</view>
+            <view @click="openAdvancedRulePage">尚未实现</view>
+        </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>
-            <input name="minUser" style="text-align: right" />
+            <input ref="minUser" name="minUser" style="text-align: right" />
             <text style="font-size: 30upx" class="margin-lr-lg">~</text>
-            <input name="maxUser" />
+            <input ref="maxUser" name="maxUser" />
         </view>
         <view style="display: flex;justify-content: center">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
@@ -119,42 +127,60 @@
     })
     export default class newActivity extends Vue{
         name: "newActivity";
+        DEFAULT_TIMEPICKER_VALUE = "请选择";
+        initialForm(){
+            let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"]
+            for(let refname of inputRefnameList){
+                (this.$refs[refname] as any).value = "";
+            }
+            this.startDate = this.DEFAULT_TIMEPICKER_VALUE;
+            this.startTime = this.DEFAULT_TIMEPICKER_VALUE;
+            this.endDate = this.DEFAULT_TIMEPICKER_VALUE;
+            this.endDate = this.DEFAULT_TIMEPICKER_VALUE;
+            this.signupBeginAtDate = this.DEFAULT_TIMEPICKER_VALUE;
+            this.signupBeginAtTime = this.DEFAULT_TIMEPICKER_VALUE;
+            this.signupStopAtDate = this.DEFAULT_TIMEPICKER_VALUE;
+            this.signupStopAtTime = this.DEFAULT_TIMEPICKER_VALUE;
+            this.switchSignupBegin = false;
+            this.switchSignupStop = false;
+            this.switchCanBeSearched = true;
+            for(let i = 0; i < this.typeMultiIndex.length;i++){
+                this.typeMultiIndex[i] = 0;
+            }
+        }
         get today(): string{
             return dateFormat(new Date(), "yyyy-mm-dd")
         }
         maxDate = "2020-12-31";
-        startDate: string = "请选择";
-        startTime: string = "请选择";
-        endDate: string = "请选择";
-        endTime: string = "请选择";
+        startDate: string = this.DEFAULT_TIMEPICKER_VALUE;
+        startTime: string = this.DEFAULT_TIMEPICKER_VALUE;
+        endDate: string = this.DEFAULT_TIMEPICKER_VALUE;
+        endTime: string = this.DEFAULT_TIMEPICKER_VALUE;
         switchSignupBegin: boolean = false;
         switchSignupStop: boolean = false;
-        signupBeginAtDate: string = "请选择";
-        signupBeginAtTime: string = "请选择";
-        signupStopAtDate: string = "请选择";
-        signupStopAtTime: string = "请选择";
+        signupBeginAtDate: string = this.DEFAULT_TIMEPICKER_VALUE;
+        signupBeginAtTime: string = this.DEFAULT_TIMEPICKER_VALUE;
+        signupStopAtDate: string = this.DEFAULT_TIMEPICKER_VALUE;
+        signupStopAtTime: string = this.DEFAULT_TIMEPICKER_VALUE;
+        typeMultiIndex: Array<number> = [];
+        switchCanBeSearched: boolean = true;
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
             if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
             return temp;
         }
-        typeMultiIndex: Array<number> = [];
         get typeMultiArray(){
             let data = this.typeMultiData;
             let res = [];
-
             let curNode = data.types;
             res.push(curNode.map((v)=>v.name));
-
             for(let i=0;i<this.typeMultiIndex.length-1;i++){
-                console.log(curNode);
                 curNode = curNode[this.typeMultiIndex[i]].children;
                 res.push(curNode.map((v)=>v.name));
             }
             return res;
         }
-        switchCanBeSearched: boolean = true;
         typeMultiChange(e){
             this.typeMultiIndex = e.detail.value;
         }
@@ -192,6 +218,7 @@
                 place: formData.place,
                 start: withSec(this.startDate + " " + this.startTime),
                 end: withSec(this.endDate + " " + this.endTime),
+                tags: formData.tag.split(/[, ]/),
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):undefined,
                 signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):undefined,
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
@@ -208,9 +235,11 @@
                 url: `../activityList/activityDetail/activityDetail?activityId=${activityId}`
             })
         }
-        mounted(){
-            // this.updateTypeMultiData();
-            // setInterval(()=>console.log(this.switchCanBeSearched), 1000)
+        openAdvancedRulePage(){
+            uni.showToast({
+                title: "尚未实现",
+                icon: "none"
+            })
         }
     }
 </script>
@@ -246,5 +275,22 @@
     }
     .cu-form-group .title{
         min-width: calc(4em + 30upx);
+    }
+    .arrow {
+        padding-right: 90upx
+    }
+
+    .arrow:before {
+        position: absolute;
+        right: 30upx;
+        display: block;
+        width: 30upx;
+        height: 30upx;
+        color: #8799a3;
+        content: "\e6a3";
+        text-align: center;
+        font-size: 34upx;
+        font-family: cuIcon;
+        line-height: 30upx
     }
 </style>
