@@ -29,3 +29,10 @@ export function withSec(str) {
     }
     return res.trimRight();
 }
+
+export function isDateTimePast(dateTime: string | Date, comparedTo?: string | Date | undefined) {
+    if(!comparedTo)comparedTo = new Date();
+    else if(typeof comparedTo === "string")comparedTo = new Date(Date.parse(comparedTo.replace(/-/, "/")))
+    if(typeof dateTime === "string")dateTime = new Date(Date.parse(dateTime.replace(/-/, "/")))
+    return dateTime < comparedTo;
+}

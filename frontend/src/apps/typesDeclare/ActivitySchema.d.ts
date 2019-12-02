@@ -1,5 +1,6 @@
 import {UserRole, UserStatus} from "@/apps/typesDeclare/UserEnum";
 import {ActivityGlobalStatus, ActivityCheckStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
+import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 
 interface ActivitySchema{
     id: string;
@@ -7,6 +8,7 @@ interface ActivitySchema{
     place: string;
     start: string; //yyyy-mm-dd hh:MM:ss
     end: string; //yyyy-mm-dd hh:MM:ss
+    createTime?: string
     avatarUrl?: string;
     minUser?: number
     maxUser?: number;

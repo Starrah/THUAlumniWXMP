@@ -1,4 +1,5 @@
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
+import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
 
 export function defaultBlankActivity(): ActivitySchema {
     return {
@@ -18,14 +19,3 @@ export function defaultBlankActivity(): ActivitySchema {
     }
 }
 
-function assertSameOneSpecificSignupRule() {
-    
-}
-
-export function assertSameRule(r1: SignupRule, r2: SignupRule) {
-    if(r1.ruleType !== r2.ruleType)return false;
-    if(r1.accept.length !== r2.accept.length)return false;
-    for(let i=0;i<r1.accept.length;i++){
-        if()
-    }
-}

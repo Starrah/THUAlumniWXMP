@@ -1,7 +1,6 @@
 import apiService from "../../commons/api";
 import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "../action";
 import {SET_ACTIVITY_TYPE_LIST, SET_NEW_ACTIVITY} from "../mutation";
-import {ActivityStatus} from "@/apps/typesDeclare/ActivityEnum";
 
 interface ActivityTypeListSchema {
     types: Array<{

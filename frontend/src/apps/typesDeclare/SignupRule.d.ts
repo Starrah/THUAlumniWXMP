@@ -1,3 +1,5 @@
+import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
+
 interface SignupRule {
     ruleType: RuleType;
     accept?: Array<OneSpecificSingupRule>;
@@ -10,12 +12,4 @@ interface OneSpecificSingupRule{
     minEnrollmentYear?: number;
     maxEnrollmentYear?: number;
     department?: string
-}
-
-
-
-declare enum RuleType{
-    ACCEPT = 0,
-    AUDIT = 1,
-    REJECT = 2
 }

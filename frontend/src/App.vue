@@ -3,9 +3,9 @@ import Vue from "vue";
 import initialGlobalData from "./apps/typesDeclare/InitialGlobalData";
 import store from "./store";
 import apiService from "./commons/api";
-import {WEIXIN_LOGIN, LOGIN, FETCH_PROFILE} from "./store/action";
+import {FETCH_PROFILE} from "./store/action";
 
-apiService.init(null, "http://thalu.starrah.cn");
+apiService.init(null, "http://thaluapitest.starrah.cn");
 
 export default Vue.extend({
   globalData: initialGlobalData,
@@ -27,8 +27,6 @@ export default Vue.extend({
   },
   //@ts-ignore
   onShow(res) {
-    console.log("onShow");
-    console.log(res);
     if(!!res && !!res["referrerInfo"] && !!res["referrerInfo"]["extraData"] && !!res["referrerInfo"]["extraData"]["oAuthSuccess"]) {
       store.dispatch(FETCH_PROFILE);
     }
