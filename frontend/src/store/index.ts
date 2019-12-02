@@ -6,7 +6,7 @@ import newActivity from "./module/newActivity"
 import activityTypeList from "@/store/module/activityTypeList";
 import allActivityList from "@/store/module/allActivityList";
 import activityDetail from "@/store/module/activityDetail";
-import activity from "./module/activity";
+import advancedRule from "./module/advancedRule";
 
 Vue.use(Vuex);
 
@@ -20,6 +20,6 @@ export default new Vuex.Store({
     activityTypeList,
     allActivityList,
     activityDetail,
-    activity
+    advancedRule
   }
 })

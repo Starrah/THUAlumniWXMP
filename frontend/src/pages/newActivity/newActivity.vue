@@ -117,7 +117,7 @@
     import dateFormat from 'dateformat'
     import promisify from '../../apps/Promisify'
     import delay from 'delay';
-    import {SET_NEW_ACTIVITY} from "@/store/mutation";
+    import {SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "@/store/mutation";
     import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
     import activityTypeList from "@/store/module/activityTypeList";
     import {withSec} from "@/apps/utils/DateStringFormat";
@@ -236,6 +236,7 @@
             })
         }
         openAdvancedRulePage(){
+            this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state);
             uni.showToast({
                 title: "尚未实现",
                 icon: "none"
