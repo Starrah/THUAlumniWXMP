@@ -1,9 +1,11 @@
+import {ActivityCheckStatus} from "../../../apps/typesDeclare/ActivityEnum";
+import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
     <form @submit="modifyNewActivity">
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动名称</view>
-            <input ref="name" name="name" />
+            <input ref="name" name="name" :value="activityName"/>
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动类型</view>
@@ -15,7 +17,7 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">标签</view>
-            <input ref="tag" name="tag" placeholder="多个标签之间以逗号或空格分隔"/>
+            <input ref="tag" name="tag" placeholder="多个标签之间以逗号或空格分隔" :value="tag"/>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">公开活动</view>
@@ -25,7 +27,7 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">地点</view>
-            <input ref="place" name="place" />
+            <input ref="place" name="place" :value="place"/>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">开始时间</view>
@@ -86,14 +88,30 @@
             </switch>
         </view>
         <view class="cu-form-group margin-top arrow">
+            <view class="title">报名状态</view>
+            <picker @change="statusJoin = $event.detail.value" :value="statusJoin" :range="STATUS_JOIN_WORDS">
+                <view class="picker">
+                    {{STATUS_JOIN_WORDS[statusJoin]}}
+                </view>
+            </picker>
+        </view>
+        <view class="cu-form-group margin-top arrow">
+            <view class="title">签到状态</view>
+            <picker @change="statusCheck = $event.detail.value" :value="statusCheck" :range="STATUS_CHECK_WORDS">
+                <view class="picker">
+                    {{STATUS_CHECK_WORDS[statusCheck]}}
+                </view>
+            </picker>
+        </view>
+        <view class="cu-form-group margin-top arrow">
             <view class="title">报名规则</view>
             <view @click="openAdvancedRulePage">尚未实现</view>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>
-            <input ref="minUser" name="minUser" style="text-align: right" />
+            <input ref="minUser" name="minUser" style="text-align: right" :value="minUser"/>
             <text style="font-size: 30upx" class="margin-lr-lg">~</text>
-            <input ref="maxUser" name="maxUser" />
+            <input ref="maxUser" name="maxUser" :value="maxUser"/>
         </view>
         <view style="display: flex;justify-content: center">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
@@ -107,42 +125,34 @@
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
     import dateFormat from 'dateformat'
-    import promisify from '../../apps/Promisify'
     import delay from 'delay';
     import {SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "@/store/mutation";
-    import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
-    import activityTypeList from "@/store/module/activityTypeList";
-    import {withSec} from "@/apps/utils/DateStringFormat";
+    import {
+        FETCH_ACTIVITY_TYPE_LIST,
+        SET_CHANGE_ACTIVITY,
+        SUBMIT_ACTIVITY_CHANGE,
+        SUBMIT_NEW_ACTIVITY
+    } from "@/store/action";
+    import {withoutSec, withSec} from "@/apps/utils/DateStringFormat";
     import SureModal from "@/components/SureModal.vue";
+    import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
+    import {ActivityCheckStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
+
     @Component({
         components: {SureModal}
     })
     export default class newActivity extends Vue{
-        name: "newActivity";
+        name: "modifyActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
-        initialForm(){
-            let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"]
-            for(let refname of inputRefnameList){
-                (this.$refs[refname] as any).value = "";
-            }
-            this.startDate = this.DEFAULT_TIMEPICKER_VALUE;
-            this.startTime = this.DEFAULT_TIMEPICKER_VALUE;
-            this.endDate = this.DEFAULT_TIMEPICKER_VALUE;
-            this.endDate = this.DEFAULT_TIMEPICKER_VALUE;
-            this.signupBeginAtDate = this.DEFAULT_TIMEPICKER_VALUE;
-            this.signupBeginAtTime = this.DEFAULT_TIMEPICKER_VALUE;
-            this.signupStopAtDate = this.DEFAULT_TIMEPICKER_VALUE;
-            this.signupStopAtTime = this.DEFAULT_TIMEPICKER_VALUE;
-            this.switchSignupBegin = false;
-            this.switchSignupStop = false;
-            this.switchCanBeSearched = true;
-            for(let i = 0; i < this.typeMultiIndex.length;i++){
-                this.typeMultiIndex[i] = 0;
-            }
-        }
+        activityId: string;
         get today(): string{
             return dateFormat(new Date(), "yyyy-mm-dd")
         }
+        activityName: string = "";
+        place: string = "";
+        minUser: number = 0;
+        maxUser: number = -1;
+        tag: string = "";
         maxDate = "2020-12-31";
         startDate: string = this.DEFAULT_TIMEPICKER_VALUE;
         startTime: string = this.DEFAULT_TIMEPICKER_VALUE;
@@ -156,6 +166,11 @@
         signupStopAtTime: string = this.DEFAULT_TIMEPICKER_VALUE;
         typeMultiIndex: Array<number> = [];
         switchCanBeSearched: boolean = true;
+        statusJoin: ActivityJoinStatus = ActivityJoinStatus.Before;
+        statusCheck: ActivityCheckStatus = ActivityCheckStatus.Before;
+        STATUS_JOIN_WORDS = ["报名尚未开始", "报名中", "报名已暂停", "报名已截止"];
+        STATUS_CHECK_WORDS = ["签到尚未开始", "签到中", "签到已暂停", "签到已截止"];
+        createDateTime: string = "";
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
@@ -202,7 +217,7 @@
             }
             else return "00:00"
         }
-        async submitNewActivity(e){
+        async modifyNewActivity(e){
             console.log(e.detail.value);
             let formData = e.detail.value;
             let data = {
@@ -211,21 +226,21 @@
                 start: withSec(this.startDate + " " + this.startTime),
                 end: withSec(this.endDate + " " + this.endTime),
                 tags: formData.tag.split(/[, ]/),
-                signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):undefined,
-                signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):undefined,
+                signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):this.createDateTime,
+                signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):withSec(this.startDate + " " + this.startTime),
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
-                maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
-                minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
-                canBeSearched: this.switchCanBeSearched
+                maxUser: formData.maxUser?Number.parseInt(formData.maxUser):-1,
+                minUser: formData.minUser?Number.parseInt(formData.minUser):0,
+                canBeSearched: this.switchCanBeSearched,
+                statusJoin: this.statusJoin,
+                statusCheck: this.statusCheck
             };
-            await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
-            this.$store.commit(SET_NEW_ACTIVITY, data);
-            let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
+            await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
+            this.$store.commit(SET_CHANGE_ACTIVITY, data);
+            let activityId = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
             uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
-            uni.navigateTo({
-                url: `../activityList/activityDetail/activityDetail?activityId=${activityId}`
-            })
+            uni.navigateBack();
         }
         openAdvancedRulePage(){
             this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state);
@@ -233,6 +248,50 @@
                 title: "尚未实现",
                 icon: "none"
             })
+        }
+        showCurrentValue(){
+            let obj = this.$store.state.activityDetail.changeBuffer as ActivitySchema;
+            this.activityId = obj.id;
+            this.activityName = obj.name;
+            this.place = obj.place;
+            this.tag = obj.tags.join(",");
+            this.minUser = obj.minUser;
+            this.maxUser = obj.maxUser;
+            this.switchCanBeSearched = obj.canBeSearched;
+            let startArr = withoutSec(obj.start).split(" ");
+            this.startDate = startArr[0];
+            this.startTime = startArr[1];
+            let endArr = withoutSec(obj.end).split(" ");
+            this.endDate = endArr[0];
+            this.endTime = endArr[1];
+            let signupBeiginAtArr = withoutSec(obj.signupBeginAt).split(" ");
+            this.signupBeginAtDate = signupBeiginAtArr[0];
+            this.signupBeginAtTime = signupBeiginAtArr[1];
+            this.switchSignupBegin = (obj.signupBeginAt === obj.createTime);
+            let signupEndAtArr = withoutSec(obj.signupStopAt).split(" ");
+            this.signupStopAtDate = signupEndAtArr[0];
+            this.signupStopAtTime = signupEndAtArr[1];
+            this.switchSignupStop = (obj.signupStopAt === obj.start);
+            let typeArr = obj.type.split("-");
+            let tempMultiIndex = [];
+            let curNode: Array<any> = this.typeMultiData.types;
+            for(let i=0;i<typeArr.length;i++){
+                if(!curNode)break;
+                let j = 0;
+                for(j=0;j<curNode.length;j++){
+                    if(curNode[j].name === typeArr[i])break;
+                }
+                if(j >= curNode.length)j=0;
+                tempMultiIndex.push(j);
+                curNode = curNode[j].children;
+            }
+            this.typeMultiIndex = tempMultiIndex;
+            this.statusJoin = obj.statusJoin;
+            this.statusCheck = obj.statusCheck;
+            this.createDateTime = obj.createTime;
+        }
+        mounted(){
+            this.showCurrentValue();
         }
     }
 </script>

@@ -67,6 +67,10 @@
                 <text>{{UserStatusShowStrings[activityData.selfStatus]}}</text>
             </view>
         </view>
+        <view style="display: flex;justify-content: space-around;">
+            <button class="cu-btn bg-green lg align-center" @click="onPressShare">分享给好友</button>
+            <button v-if="activityData.selfRole !== UserRole.Creator" class="cu-btn bg-green lg align-center" @click="onPressReport">举报此活动</button>
+        </view>
         <view v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)" style="display: flex;justify-content: space-around;">
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" @click="onPressAttend" :disabled="activityData.ruleForMe === 'reject'">{{signupButtonWords}}</button>
@@ -89,7 +93,7 @@
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignin">暂停签到</button>
         </view>
         <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-yellow lg align-center" @click="openSetActivityInfoPage">修改活动信息</button>
+            <button class="cu-btn bg-yellow lg align-center" @click="openModifyPage">修改活动信息</button>
         </view>
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
@@ -116,7 +120,7 @@
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
-    import {SET_ACTIVITY_DETAIL_ID} from "@/store/mutation";
+    import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
     import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
 
@@ -159,9 +163,6 @@
         onLoad(param: any){
             this.$store.commit(SET_ACTIVITY_DETAIL_ID, param.activityId);
             this.updateActivityData();
-        }
-        back(){
-            uni.navigateBack();
         }
         get startDate(){
             return this.activityData.start.split(" ")[0];
@@ -323,18 +324,31 @@
             });
             this.updateActivityData()
         }
-        async openSetActivityInfoPage(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+        async openModifyPage(){
+            this.$store.commit(SYNC_CHANGE_ACTIVITY_DATA);
+            uni.navigateTo({
+                url: `../modifyActivity/modifyActivity?activityId=${this.activityId}`
             });
-            this.updateActivityData()
         }
         async cancelActivityAdmin(){
             await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？一旦确认，活动将被彻底取消，无法恢复！"));
             await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
-            //TODO 跳转
-            //this.updateActivityData()
+            uni.showToast({
+                title: "活动已被取消",
+            });
+            this.updateActivityData()
+        }
+        async onPressShare(){
+            uni.showToast({
+                title: "尚未实现",
+                icon: "none"
+            });
+        }
+        async onPressReport(){
+            uni.showToast({
+                title: "尚未实现",
+                icon: "none"
+            });
         }
     }
 </script>
