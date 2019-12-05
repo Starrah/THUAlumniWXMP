@@ -29,10 +29,10 @@
                             </view>
                         </view>
                     </view>
-                    <view style="flex-basis: 19%" class="basis-xs" :class="activity.curUser<activity.maxUser?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
+                    <view style="flex-basis: 19%" class="basis-xs" :class="(activity.curUser<activity.maxUser||activity.maxUser==-1)?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
                         <text class="text-lg text-green">{{activity.curUser}}</text>
-                        <text class="text-lg text-black">/</text>
-                        <text class="text-lg text-red">{{activity.maxUser}}</text>
+                        <text class="text-lg text-black" :style="activity.maxUser==-1?'display:none':''">/</text>
+                        <text class="text-lg text-red" :style="activity.maxUser==-1?'display:none':''">{{activity.maxUser}}</text>
                     </view>
                 </view>
             </view>
