@@ -7,4 +7,6 @@ export const SET_ACTIVITY_DETAIL = "setActivityDetail";
 export const SET_ACTIVITY_DETAIL_ID = "setActivityDetailId";
 export const SET_ALUMN = "setAlumn";
 export const SET_ADVANCE_RULE = "setAdvanceRule";
-export const SET_NEW_ACTIVITY = "setNewActivityData";
+export const SYNC_CHANGE_ACTIVITY_DATA = "syncChangeActivityData";
+export const SYNC_RULE_NEW_ACTIVITY = "syncRuleNewActivity";
+export const SYNC_RULE_MODIFY_ACTIVITY = "syncRuleModifyActivity";

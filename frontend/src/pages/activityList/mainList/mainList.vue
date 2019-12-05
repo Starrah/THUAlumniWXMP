@@ -13,7 +13,10 @@
         <scroll-view scroll-y="true" >
             <view class="cu-list menu">
                 <view class="cu-item arrow" style="flex-direction: row;display: flex;border-left-width: 4px;border-left-style: solid;border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238);border-top-width: 4px;border-top-style: solid;border-top-color: rgb(238,238,238)" v-for="activity in activities_toShow" :key="activity.id" @click="jumpToActivityDetail($event, activity)">
-                    <view style="flex-basis: 80%">
+                    <view style="flex-basis: 20%">
+                        <view class="cu-avatar radius" style="background-image:url(../../../static/me.png);"></view>
+                    </view>
+                    <view style="flex-basis: 60%">
                         <view>
                             <text class="cuIcon-activity"></text>
                             <text class="text-black text-xl">{{activity.name}}</text>
@@ -75,8 +78,13 @@
             //     {name: "aaa", place: "bbb"},
             //     {name: "aaa", place: "bbb"}
             // ]
-            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+            // this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
         }
+
+        onShow(){
+            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST)
+        }
+
         jumpToActivityDetail(event, a: ActivitySchema){
             uni.navigateTo({
                 url: `../activityDetail/activityDetail?activityId=${a.id}`

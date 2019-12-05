@@ -1,7 +1,6 @@
 import apiService from "../../commons/api";
 import {FETCH_ALL_ACTIVITY_LIST, SUBMIT_NEW_ACTIVITY} from "../action";
 import {SET_ALL_ACTIVITY_LIST, SET_NEW_ACTIVITY} from "../mutation";
-import {ActivityStatus} from "@/apps/typesDeclare/ActivityEnum";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 
 const state: {
@@ -23,6 +22,7 @@ const actions = {
             commit(SET_ALL_ACTIVITY_LIST, res)
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     }
 };

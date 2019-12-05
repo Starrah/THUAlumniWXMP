@@ -1,7 +1,6 @@
 import apiService from "../../commons/api";
 import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "../action";
 import {SET_ACTIVITY_TYPE_LIST, SET_NEW_ACTIVITY} from "../mutation";
-import {ActivityStatus} from "@/apps/typesDeclare/ActivityEnum";
 
 interface ActivityTypeListSchema {
     types: Array<{
@@ -29,6 +28,7 @@ const mutations = {
     [SET_ACTIVITY_TYPE_LIST](state: ActivityTypeListSchema, ne: ActivityTypeListSchema) {
         ne["initialized"] = ne["initialized"] || true;
         Object.assign(state, ne);
+        console.log(state);
     }
 };
 
@@ -39,6 +39,7 @@ const actions = {
             commit(SET_ACTIVITY_TYPE_LIST, res);
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
         }
     }
 };

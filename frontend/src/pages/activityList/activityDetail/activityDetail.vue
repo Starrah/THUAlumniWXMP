@@ -1,8 +1,3 @@
-import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
-import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
-import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
-import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
-import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
     <view class="cu-bar bg-white">
@@ -23,12 +18,18 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 <text>{{activityData.type}}</text>
             </view>
             <view class="cu-form-group margin-top-sm">
+                <view class="title">标签</view>
+                <view>
+                    <view v-for="tagObj in tagsList" :key="tagObj.tag" class="cu-tag" :class="'bg-' + tagObj.color">{{tagObj.tag}}</view>
+                </view>
+            </view>
+            <view class="cu-form-group margin-top-sm">
                 <view class="title">当前状态</view>
-                <text>{{ActivityStatusShowStrings[activityData.status]}}</text>
+                <text>{{statusStr}}</text>
             </view>
             <view class="cu-form-group margin-top">
                 <view class="title">公开活动</view>
-                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" ></checkbox>
+                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" @click.prevent="console.log(activityData);"></checkbox>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">地点</view>
@@ -54,7 +55,7 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 <view class="title">人数</view>
                 <view>
                     <view class="cu-avatar-group">
-                        <view v-for="ava in avatarShowList" :key="ava" class="cu-avatar round sm" :style="'background-image:url('+ ava +');'"></view>
+                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ user.avatarUrl +');'"></view>
                     </view>
                     <text>等{{activityData.curUser}}人</text>
                     <text>/</text>
@@ -66,26 +67,28 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 <text>{{UserStatusShowStrings[activityData.selfStatus]}}</text>
             </view>
         </view>
-        <view v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None" style="display: flex;justify-content: space-around;">
-            <button v-if="activityData.status === ActivityStatus.BeforeSignup" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
-            <button v-if="activityData.status === ActivityStatus.Signup && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" @click="onPressAttend" :disabled="activityData.ruleForMe === 'reject'">{{signupButtonWords}}</button>
-            <button v-if="activityData.status === ActivityStatus.SignupPaused && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" :disabled="true">报名已暂停</button>
-            <button v-if="(activityData.status === ActivityStatus.Signup || activityData.status === ActivityStatus.SignupPaused) && activityData.selfStatus === UserStatus.WaitValidate" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消加入申请</button>
-            <button v-if="(activityData.status === ActivityStatus.Signup || activityData.status === ActivityStatus.SignupPaused) && activityData.selfStatus === UserStatus.Joined" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消报名</button>
-            <button v-if="activityData.status === ActivityStatus.SignupStopped" class="cu-btn lg align-center" :class="(activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)?'bg-green':'bg-red'" :disabled="true">报名已截止</button>
+        <view v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)" style="display: flex;justify-content: space-around;">
+            <button v-if="activityData.statusJoin === ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
+            <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" @click="onPressAttend" :disabled="activityData.ruleForMe === 'reject'">{{signupButtonWords}}</button>
+            <button v-if="activityData.statusJoin === ActivityJoinStatus.Paused && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" :disabled="true">报名已暂停</button>
+            <button v-if="(activityData.statusJoin === ActivityJoinStatus.Continue || activityData.statusJoin === ActivityJoinStatus.Paused) && activityData.selfStatus === UserStatus.WaitValidate" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消加入申请</button>
+            <button v-if="(activityData.statusJoin === ActivityJoinStatus.Continue || activityData.statusJoin === ActivityJoinStatus.Paused) && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消报名</button>
+            <button v-if="activityData.statusJoin === ActivityJoinStatus.Stopped && activityData.statusCheck === ActivityCheckStatus.Before" class="cu-btn lg align-center" :class="(activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)?'bg-green':'bg-red'" :disabled="true">报名已截止</button>
         </view>
-        <view v-if="activityData.selfRole === UserRole.Common" style="display: flex;justify-content: space-around;">
-            <button v-if="activityData.status === ActivityStatus.Signin && activityData.selfStatus === UserStatus.NotChecked" class="cu-btn bg-green lg align-center" @click="signinActivity">签到</button>
-            <button v-if="activityData.status === ActivityStatus.Signin && activityData.selfStatus === UserStatus.Checked" class="cu-btn bg-green lg align-center" :disabled="true">您已签到</button>
-            <button v-if="activityData.status === ActivityStatus.SigninPaused && activityData.selfStatus === UserStatus.NotChecked" class="cu-btn bg-green lg align-center" :disabled="true">签到已停止</button>
-        </view>
-        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button v-if="activityData.status === ActivityStatus.SignupStopped || activityData.status === ActivityStatus.SignupPaused || activityData.status === ActivityStatus.Signup" class="cu-btn bg-green lg align-center" @click="openAuditPage">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</button>
-            <button v-if="activityData.status === ActivityStatus.SignupStopped || activityData.status === ActivityStatus.SignupPaused || activityData.status === ActivityStatus.SigninPaused" class="cu-btn bg-green lg align-center" @click="startSignin">开放签到</button>
-            <button v-if="activityData.status === ActivityStatus.Signin" class="cu-btn bg-red lg align-center" @click="endSignin">停止签到</button>
+        <view v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager" style="display: flex;justify-content: space-around;">
+            <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" @click="signinActivity">签到</button>
+            <button v-if="activityData.selfStatus === UserStatus.Checked" class="cu-btn bg-green lg align-center" :disabled="true">您已签到</button>
+            <button v-if="activityData.statusCheck === ActivityCheckStatus.Paused && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已暂停</button>
+            <button v-if="activityData.statusCheck === ActivityCheckStatus.Stopped && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已停止</button>
         </view>
         <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-yellow lg align-center" @click="setStatusChangeShowing(true)">修改活动状态</button>
+            <button v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" class="cu-btn bg-green lg align-center" @click="openAuditPage">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</button>
+            <button v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" class="cu-btn bg-green lg align-center" @click="startSignup">开放报名</button>
+            <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignup">暂停报名</button>
+            <button v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" @click="startSignin">开放签到</button>
+            <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignin">暂停签到</button>
+        </view>
+        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-yellow lg align-center" @click="openSetActivityInfoPage">修改活动信息</button>
         </view>
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
@@ -96,28 +99,10 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <view class="cu-dialog">
                 <text>您报名后需要审核，您可在下方输入申请留言：</text>
                 <view class="cu-form-group">
-                <textarea style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
+                    <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
                 </view>
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
-            </view>
-        </view>
-        <view class="cu-modal" :class="statusChangeShowing?'show':''">
-            <view class="cu-dialog">
-            <view>
-                <text>活动当前状态为：</text>
-                <text class="text-bold">{{ActivityStatusShowStrings[activityData.status]}}</text>
-            </view>
-            <view>
-                <text>您要修改为：</text>
-                <picker @change="statusInChangelistCurIndex = $event.detail.value" :value="statusInChangelistCurIndex" :range="statusInChangelistStrs">
-                    {{statusInChangelistCurIndex !== -1?ActivityStatusShowStrings[statusInChangelistCurIndex]:ActivityStatusShowStrings[activityData.status]}}
-                </picker>
-            </view>
-            <view>
-                <button class="cu-btn bg-green" @click="setStatus">确定</button>
-                <button class="cu-btn bg-red" @click="setStatusChangeShowing(true)">取消</button>
-            </view>
             </view>
         </view>
     </view>
@@ -127,23 +112,25 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
-    import {withoutSec} from "@/apps/utils/DateStringFormat";
-    import {ActivityStatus, ActivityStatusShowStrings} from "@/apps/typesDeclare/ActivityEnum";
+    import {isDateTimePast, withoutSec} from "@/apps/utils/DateStringFormat";
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
     import {SET_ACTIVITY_DETAIL_ID} from "@/store/mutation";
     import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
+    import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
 
     @Component({
         components: {SureModal}
     })
     export default class activityDetail extends Vue{
         name!: "activityDetail";
+        console = console;
         get activityId(){
             return this.$store.state.activityDetail.id;
         }
-        get activityData(){
+        get activityData(): ActivitySchema{
+            console.log("activityDataChANGED");
             console.log(this.$store.state.activityDetail);
             return this.$store.state.activityDetail.activity;
         }
@@ -153,13 +140,15 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 let n = this.activityData.participants.length > this.AVATAR_GROUP_MAX?this.AVATAR_GROUP_MAX:this.activityData.participants.length;
                 let res = [];
                 for(let i=0;i<n;i++) {
-                    res.push(this.activityData.participants[i].avatarUrl)
+                    res.push(this.activityData.participants[i])
                 }
                 return res;
             }
             else return [];
         }
         get signupButtonWords(){
+            console.log(this.activityData);
+            console.log(this.activityData.ruleForMe);
             if(this.activityData.ruleForMe === 'accept')return '立即报名';
             else if(this.activityData.ruleForMe === 'needAudit')return '申请报名';
             else return '您不可参加';
@@ -178,39 +167,65 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             return this.activityData.start.split(" ")[0];
         }
         get startTime(){
-            return this.activityData.start.split(" ")[1].substr(0, 5)
+            return this.activityData.start.split(" ")[1]?this.activityData.start.split(" ")[1].substr(0, 5):undefined
         }
         get endDate(){
             return this.activityData.end.split(" ")[0];
         }
         get endTime(){
-            return this.activityData.end.split(" ")[1].substr(0, 5)
+            return this.activityData.end.split(" ")[1]?this.activityData.end.split(" ")[1].substr(0, 5):undefined
         }
         get userNeedString(){
             let r2 = "";
-            if(this.activityData.minUser && !this.activityData.maxUser){
+            if(this.activityData.minUser && this.activityData.maxUser === -1){
                 r2 = `最少${this.activityData.minUser}人`
-            }else if(!this.activityData.minUser && this.activityData.maxUser){
+            }else if(!this.activityData.minUser && this.activityData.maxUser !== -1){
                 r2 = `最多${this.activityData.maxUser}人`
-            }else if(this.activityData.minUser && this.activityData.maxUser){
+            }else if(this.activityData.minUser && this.activityData.maxUser !== -1){
                 r2 = `需要${this.activityData.minUser}~${this.activityData.maxUser}人`
             }
             return r2;
         }
         withoutSec = withoutSec;
-        ActivityStatusShowStrings = ActivityStatusShowStrings;
+        get statusStr(){
+            let data = this.activityData;
+            if(data.statusGlobal === ActivityGlobalStatus.Except)return "活动被取消";
+            else if(data.statusGlobal === ActivityGlobalStatus.Finish)return "活动已结束";
+            else{
+                let statusAllStrs = [
+                    ["报名尚未开始", "", "", ""],
+                    ["报名中", "签到中（仍可报名）", "报名中", "报名中"],
+                    ["报名已暂停", "签到中", "签到暂停", "签到结束"],
+                    ["报名已截止", "签到中", "签到暂停", "签到结束"],
+                    //01、02、03都是不可能出现的状态（报名开始前不会开放签到）
+                ];
+                return statusAllStrs[data.statusJoin][data.statusCheck];
+            }
+        }
         UserStatusShowStrings = UserStatusShowStrings;
         UserRole = UserRole;
         UserStatus = UserStatus;
-        ActivityStatus = ActivityStatus;
+        ActivityGlobalStatus = ActivityGlobalStatus;
+        ActivityJoinStatus = ActivityJoinStatus;
+        ActivityCheckStatus = ActivityCheckStatus;
         activityCancelable(d: ActivitySchema){
-            return (d.status === ActivityStatus.BeforeSignup || d.status === ActivityStatus.Signup || d.status === ActivityStatus.SignupPaused || d.status === ActivityStatus.SignupStopped) && d.selfRole === UserRole.Creator;
+            return d.statusGlobal === ActivityGlobalStatus.Normal && d.statusCheck === ActivityCheckStatus.Before && d.selfRole === UserRole.Creator
         }
         activityAdminable(d: ActivitySchema) {
-            return d.status !== ActivityStatus.Except && (this.activityData.selfRole === UserRole.Creator || d.selfRole === UserRole.Manager);
+            return d.statusGlobal === ActivityGlobalStatus.Normal && (d.selfRole === UserRole.Creator || d.selfRole === UserRole.Manager);
         }
         auditModalShowing: boolean = false;
         auditReason: string = "";
+        TAG_COLORS = ["red", "orange", "yellow", "olive", "green", "cyan", "blue", "purple", "mauve", "pink", "brown"];
+        get tagsList(){
+            return this.activityData.tags.map((v)=>{
+                let color = this.TAG_COLORS[Math.floor(Math.random() * this.TAG_COLORS.length)];
+                return {
+                    color,
+                    tag: v
+                }
+            })
+        }
         async onPressAttend(){
             if (this.activityData.ruleForMe === 'needAudit'){
                 this.auditModalShowing = true;
@@ -275,37 +290,37 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.updateActivityData()
         }
         async startSignin(){
-            await ((this.$refs.SureToast as any).show("您确认要开放签到吗？"));
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: ActivityStatus.Signin});
+            await ((this.$refs.SureToast as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: ActivityCheckStatus.Continue}});
             uni.showToast({
                 title: "成功",
             });
             this.updateActivityData()
         }
         async endSignin(){
-            await ((this.$refs.SureToast as any).show("您确认要暂停签到吗？"));
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: ActivityStatus.SigninPaused});
+            await ((this.$refs.SureToast as any).show("您确认要暂停签到吗？（之后仍可恢复开放签到）"));
+            let newStatusCheck = isDateTimePast(this.activityData.end)?ActivityCheckStatus.Stopped:ActivityCheckStatus.Paused;
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: newStatusCheck}});
             uni.showToast({
                 title: "成功",
             });
             this.updateActivityData()
         }
-        statusChangeShowing: boolean = false;
-        statusInChangelist: Array<ActivityStatus> = [ActivityStatus.Signup, ActivityStatus.SignupPaused, ActivityStatus.Signin, ActivityStatus.SigninPaused, ActivityStatus.Finish]
-        statusInChangelistCurIndex: number = -1;
-        get statusInChangelistStrs(){
-            return this.statusInChangelist.map((v)=>ActivityStatusShowStrings[v]);
-        }
-        async setStatusChangeShowing(b){
-            if(b)this.statusInChangelistCurIndex = -1;
-            this.statusChangeShowing = b;
-        }
-        async setStatus(){
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: this.statusInChangelist[this.statusInChangelistCurIndex]});
+        async startSignup(){
+            await ((this.$refs.SureToast as any).show("您确认要开放报名吗？"));
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: ActivityJoinStatus.Continue}});
             uni.showToast({
                 title: "成功",
             });
-            this.statusChangeShowing = false;
+            this.updateActivityData()
+        }
+        async endSignup(){
+            await ((this.$refs.SureToast as any).show("您确认要暂停报名吗？（之后仍可恢复开放报名）"));
+            let newStatusJoin = isDateTimePast(this.activityData.signupStopAt)?ActivityJoinStatus.Stopped:ActivityJoinStatus.Paused;
+            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: newStatusJoin}});
+            uni.showToast({
+                title: "成功",
+            });
             this.updateActivityData()
         }
         async openSetActivityInfoPage(){
@@ -325,5 +340,7 @@ import {ActivityStatus} from "../../../apps/typesDeclare/ActivityEnum";
 </script>
 
 <style scoped>
-
+    .cu-form-group .title{
+        min-width: calc(4em + 30upx);
+    }
 </style>

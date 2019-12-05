@@ -52,7 +52,10 @@
         "appid": "wx0f78ea2cc2151d53",
         "setting" : {
         	"urlCheck" : true
-        }
+        },
+        "navigateToMiniProgramAppIdList": [
+            "wx1ebe3b2266f4afe0"
+        ]
     },
     "mp-alipay" : {
         "usingComponents" : true

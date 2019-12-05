@@ -1,14 +1,10 @@
 import { SET_ADVANCE_RULE } from "../mutation";
 
 const state = {
-  newActivity: {
-    advanceRule: {
-      defaultRule: 0,
-      acRuleList: [],
-      adRuleList: [],
-      rjRuleList: []
-    }
-  }
+    defaultRule: 0,
+    acRuleList: [],
+    adRuleList: [],
+    rjRuleList: []
 };
 
 const mutations = {
