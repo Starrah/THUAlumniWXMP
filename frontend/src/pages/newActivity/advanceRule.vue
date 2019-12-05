@@ -113,6 +113,10 @@ export default {
 
   mounted() {
     console.log("mounted");
+    this.currentRuleIdx = this.$store.state.advancedRule.defaultRule;
+    this.acRuleList = this.$store.state.advancedRule.acRuleList;
+    this.adRuleList = this.$store.state.advancedRule.adRuleList;
+    this.rjRuleList = this.$store.state.advancedRule.rjRuleList;
     this.acAdd();
   },
 
