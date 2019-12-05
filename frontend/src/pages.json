@@ -32,27 +32,16 @@
 			}
 		},
 		{
-			"path": "pages/me/history",
-			"style": {
-				"navigationBarTitleText": "我的活动历史"
-			}
-		},
-		{
-			"path": "pages/me/myParticipate",
-			"style": {
-				"navigationBarTitleText": "我参加的活动"
-			}
-		},
-		{
 			"path": "pages/newActivity/advanceRule",
 			"style": {
 				"navigationBarTitleText": "高级报名规则设置"
 			}
 		},
 		{
-			"path": "pages/me/mySponsor",
+			"path": "pages/me/myActivityList",
 			"style": {
-				"navigationBarTitleText": "我发起的活动"
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "我的活动"
 			}
 		}
 	],

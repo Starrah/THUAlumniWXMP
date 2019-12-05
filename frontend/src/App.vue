@@ -33,9 +33,11 @@ export default Vue.extend({
   },
   mpType: "app",
     onLaunch(){
+        //#ifdef MP-WEIXIN
         uni.setEnableDebug({
             enableDebug: true
         })
+        //#endif
     }
 });
 </script>

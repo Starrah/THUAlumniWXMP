@@ -10,3 +10,5 @@ export const FETCH_ACTIVITY_DETAIL = "fetchActivityDetail";
 export const SUBMIT_ACTIVITY_STATUS_CHANGE = "submitActivityStatusChange";
 export const SET_CHANGE_ACTIVITY = "setChangeActivity";
 export const SUBMIT_ACTIVITY_CHANGE = "submitActivityChange";
+export const FETCH_MY_ACTIVITY_LIST = "fetchMyActivityList";
+export const FETCH_MORE_ACTIVITY = "fetchMoreActivity";

@@ -1,3 +1,4 @@
+import {ActivityGlobalStatus} from "../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
 <!--        <text>{{debugCode}}</text>-->
@@ -46,58 +47,49 @@
 <script lang="ts">
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
-    import promisify from "@/apps/Promisify";
-    import apiService from '@/commons/api'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
-    import {FETCH_ALL_ACTIVITY_LIST, FETCH_MORE_ACTIVITY} from "@/store/action";
+    import {FETCH_MY_ACTIVITY_LIST} from "@/store/action";
 
     @Component
     export default class mainList extends Vue{
-        name!: "mainList";
+        name!: "myActivityList";
+        pageType: string = "";
         debugCode?:string = "";
         get activities_toShow(){
-            return this.$store.state.allActivityList.activityList;
+            let actualIndex = this.finalCount < this.activities_valid.length?this.finalCount:this.activities_valid.length;
+            return this.activities_valid.slice(0, actualIndex);
         }
+        get activities_valid(){
+            if(this.pageType === "history")return this.$store.state.myActivityList.history;
+            else if (this.pageType === "myParticipate")return this.$store.state.myActivityList.myParticipate;
+            else if (this.pageType === "mySponsor")return this.$store.state.myActivityList.mySponsor;
+        }
+        DEFAULT_ONCE_SHOW_COUNT = 15;
+        finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         search(){
             uni.showToast({title: "尚未支持", icon:"none"})
         }
         isLoadingMore: boolean = false;
         async loadMore(){
-            this.isLoadingMore = true;
-            try {
-                await this.$store.dispatch(FETCH_MORE_ACTIVITY);
-            }finally {
-                this.isLoadingMore = false;
-            }
+            if(this.finalCount < this.activities_valid.length)this.finalCount += this.DEFAULT_ONCE_SHOW_COUNT
         }
         async onPullDownRefresh(){
             try{
-                await this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+                await this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
             }finally {
                 uni.stopPullDownRefresh();
             }
         }
         mounted(){
-            // uni.login({
-            //     provider: "weixin",
-            //     success: loginRes => {
-            //         console.log(loginRes["code"]);
-            //         this.debugCode = loginRes["code"];
-            //     }
-            // });
-            // this.activities_toShow = [
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"}
-            // ]
-            // this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
         }
 
-        onShow(){
-            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST)
+        onLoad(param){
+            this.pageType = param.type;
+            if(this.pageType === "history")uni.setNavigationBarTitle({title: "历史记录"});
+            else if(this.pageType === "myParticipate")uni.setNavigationBarTitle({title: "我参与的活动"});
+            else if(this.pageType === "mySponsor")uni.setNavigationBarTitle({title: "我发起的活动"});
+            this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
+            this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         }
 
         jumpToActivityDetail(event, a: ActivitySchema){
@@ -105,6 +97,7 @@
                 url: `../activityDetail/activityDetail?activityId=${a.id}`
             })
         }
+
     }
 </script>
 
