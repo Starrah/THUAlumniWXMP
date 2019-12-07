@@ -89,6 +89,7 @@
             <button v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" class="cu-btn bg-green lg align-center" @click="openAuditPage">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</button>
             <button v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" class="cu-btn bg-green lg align-center" @click="startSignup">开放报名</button>
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignup">暂停报名</button>
+            <button class="cu-btn bg-green lg align-center" @click="jumpToQRCodePage">查看签到二维码</button>
             <button v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" @click="startSignin">开放签到</button>
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignin">暂停签到</button>
         </view>
@@ -126,8 +127,8 @@
                         <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
                     </view>
                 </view>
-                <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
-                <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
+                <button class="cu-btn bg-green" @click="onPressSubmitReport">确定</button>
+                <button class="cu-btn bg-red" @click="onPressCancelReport">取消</button>
             </view>
         </view>
     </view>
@@ -273,6 +274,9 @@
                 this.reportModalShowing = false;
             }
         }
+        onPressCancelReport(){
+            this.reportModalShowing = false;
+        }
         TAG_COLORS = ["red", "orange", "yellow", "olive", "green", "cyan", "blue", "purple", "mauve", "pink", "brown"];
         get tagsList(){
             return this.activityData.tags.map((v)=>{
@@ -333,10 +337,28 @@
             this.updateActivityData()
         }
         async signinActivity(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+            let code = await new Promise((resolve, reject)=>{
+                uni.scanCode({
+                    success: (r)=>{
+                        let res = JSON.parse(r.result);
+                        console.log(res.code);
+                        resolve(res.code)
+                    }
+                });
             });
+            try {
+                await apiService.post(`checkInActivity?activityId=${this.activityId}`);
+                uni.showToast({
+                    title: "签到成功",
+                });
+            }catch (e) {
+                if(e.errid && e.errid >= 500 && e.errid <= 599){
+                    uni.showToast({
+                        title: e.errmsg,
+                        icon: "none"
+                    })
+                }
+            }
             this.updateActivityData()
         }
         async openAuditPage(){
@@ -394,12 +416,6 @@
             });
             this.updateActivityData()
         }
-        // async onPressShare(){
-        //     uni.showToast({
-        //         title: "尚未实现",
-        //         icon: "none"
-        //     });
-        // }
         async onPressReport(){
             this.reportModalShowing = true;
         }
@@ -409,6 +425,11 @@
                 path: `/pages/activityDetail/activityDetail?activityId=${this.activityId}`,
                 imageUrl: this.activityData.imageUrl
             }
+        }
+        jumpToQRCodePage(){
+            uni.navigateTo({
+                url: "pages/activityDetail/qrcodeShow/qrcodeShow"
+            })
         }
     }
 </script>
