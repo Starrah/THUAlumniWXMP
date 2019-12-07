@@ -41,7 +41,7 @@
 <script lang="ts">
 import { mapState } from "vuex";
 import {LOGIN, FETCH_PROFILE, WEIXIN_LOGIN, FETCH_MY_ACTIVITY_LIST} from "../../store/action";
-import {SET_PROFILE, UPDATE_USER_AVATAR} from "../../store/mutation";
+import {SET_PROFILE} from "../../store/mutation";
 
 export default {
   data() {
