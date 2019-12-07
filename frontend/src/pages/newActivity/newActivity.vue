@@ -64,33 +64,37 @@
         <view class="cu-form-group margin-top">
             <view class="title">报名开始</view>
             <text v-if="!switchSignupBegin">发布活动后立即可报名</text>
-            <picker v-if="switchSignupBegin" mode="date" :value="signupBeginAtDate" :start="today" :end="startDate" @change="signupBeginAtDate = $event.detail.value" name="signupBeginAtDate">
-                <view class="picker">
-                    {{signupBeginAtDate}}
-                </view>
-            </picker>
-            <picker v-if="switchSignupBegin" mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime">
-                <view class="picker">
-                    {{signupBeginAtTime}}
-                </view>
-            </picker>
-            <switch @change="switchSignupBegin = $event.detail.value" class="signupBegin" :class="switchSignupBegin?'checked':''" :checked="switchSignupBegin">
+            <view v-if="switchSignupBegin">
+                <picker mode="date" :value="signupBeginAtDate" :start="today" :end="startDate" @change="signupBeginAtDate = $event.detail.value" name="signupBeginAtDate">
+                    <view class="picker">
+                        {{Datenum(signupBeginAtDate)}}
+                    </view>
+                </picker>
+                <picker mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime">
+                    <view class="picker">
+                        {{getTime(signupBeginAtTime)}}
+                    </view>
+                </picker>
+            </view>
+            <switch @change="switchSignupBegin = $event.detail.value" class="signupBegin ansg" :class="switchSignupBegin?'checked':''" :checked="switchSignupBegin">
             </switch>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">报名截止</view>
             <text v-if="!switchSignupStop">直到活动开始时间</text>
-            <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
-                <view class="picker">
-                    {{signupStopAtDate}}
-                </view>
-            </picker>
-            <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime">
-                <view class="picker">
-                    {{signupStopAtTime}}
-                </view>
-            </picker>
-            <switch @change="switchSignupStop = $event.detail.value" class="signupEnd" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
+            <view v-if="switchSignupStop">
+                <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
+                    <view class="picker">
+                        {{Datenum(signupStopAtDate)}}
+                    </view>
+                </picker>
+                <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime">
+                    <view class="picker">
+                        {{getTime(signupStopAtTime)}}
+                    </view>
+                </picker>
+            </view>
+            <switch @change="switchSignupStop = $event.detail.value" class="signupEnd ansg" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
             </switch>
         </view>
         <view class="cu-form-group margin-top arrow">
@@ -103,6 +107,7 @@
             <text style="font-size: 30upx" class="margin-lr-lg">~</text>
             <input ref="maxUser" name="maxUser" />
         </view>
+        <br>
         <view style="display: flex;justify-content: center">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
@@ -210,6 +215,17 @@
             }
             else return "00:00"
         }
+        Datenum(str):string {
+            let r="";
+            let a=str.split('-');
+            if(a.length<3)return str;
+            r=a[0]+'年'+a[1]+'月'+a[2]+'日';
+            return r;
+        }
+        getTime(str):string {
+            if(str.length==0)return "请选择";
+            else return str;
+        }
         async submitNewActivity(e){
             console.log(e.detail.value);
             let formData = e.detail.value;
@@ -249,28 +265,28 @@
     switch.signupBegin::before{
         font-family: inherit;
         content: "立即";
-        transform: scaleX(0.5);
-        width: 100%;
+        left: 10px;
+        width: 70px;
         transform-origin: right;
     }
     switch.signupBegin::after{
         font-family: inherit;
         content: "指定";
-        transform: scaleX(0.5);
-        width: 100%;
+        width: 70px;
+        left: -10px;
         transform-origin: left;
     }
     switch.signupEnd::before{
         font-family: inherit;
         content: "默认";
-        transform: scaleX(0.5);
+        left:10px;
         width: 100%;
         transform-origin: right;
     }
-    switch.signupBegin::after{
+    switch.signupEnd::after{
         font-family: inherit;
         content: "指定";
-        transform: scaleX(0.5);
+        left: -10px;
         width: 100%;
         transform-origin: left;
     }
@@ -293,5 +309,13 @@
         font-size: 34upx;
         font-family: cuIcon;
         line-height: 30upx
+    }
+</style>
+<style>
+    switch.ansg >>> .uni-switch-input, switch.ansg >>> .wx-switch-input{
+        width: 70px;
+    }
+    switch.ansg >>> .uni-switch-input-checked::after, switch.ansg >>> .wx-switch-input-checked::after {
+        left: 44px;
     }
 </style>
