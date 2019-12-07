@@ -12,3 +12,4 @@ export const SYNC_RULE_NEW_ACTIVITY = "syncRuleNewActivity";
 export const SYNC_RULE_MODIFY_ACTIVITY = "syncRuleModifyActivity";
 export const SET_MY_ACTIVITY_LIST = "setMyActivityList";
 export const ADD_MORE_ACTIVITY = "addMoreActivity";
+export const UPDATE_USER_AVATAR = "updateUserAvatar";

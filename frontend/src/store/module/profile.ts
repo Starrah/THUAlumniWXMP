@@ -1,6 +1,6 @@
 import apiService from "../../commons/api";
 import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR } from "../action";
-import { SET_PROFILE, SET_ALUMN } from "../mutation";
+import {SET_PROFILE, SET_ALUMN, UPDATE_USER_AVATAR} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
 const state = {
@@ -67,12 +67,12 @@ const actions = {
   },
 
   async [GOTO_QHR]({ state }) {
-    console.log("goto qhr")
+    console.log("goto qhr");
     uni.navigateToMiniProgram({ ...state["alumn"] }
     );
   },
 
-  async [FETCH_PROFILE]({ dispatch, commit, rootState }) {
+  async [FETCH_PROFILE]({ dispatch, commit, rootState, state }) {
     return apiService.get("/userData").then(data => {
       commit(SET_PROFILE, {
         ...data,
@@ -81,9 +81,12 @@ const actions = {
       uni.getUserInfo({
         provider: 'weixin',
         success: function (infoRes) {
-          commit(SET_PROFILE, {
-            avatarUrl: infoRes.userInfo.avatarUrl
-          })
+          if(state.avatarUrl !== infoRes.userInfo.avatarUrl) {
+            commit(SET_PROFILE, {
+              avatarUrl: infoRes.userInfo.avatarUrl
+            });
+            dispatch(UPDATE_USER_AVATAR)
+          }
         }
       })
     }).catch(err => {
@@ -96,8 +99,13 @@ const actions = {
         rootState.errMsg = err.errmsg;
       }
     });
+  },
+
+  async [UPDATE_USER_AVATAR]({state}){
+    await apiService.post("/setAvatarUrl", {avatarUrl: state.avatarUrl})
   }
 };
+
 
 export default {
   state,
