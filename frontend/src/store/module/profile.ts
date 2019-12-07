@@ -1,6 +1,6 @@
 import apiService from "../../commons/api";
-import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR } from "../action";
-import {SET_PROFILE, SET_ALUMN, UPDATE_USER_AVATAR} from "../mutation";
+import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR, UPDATE_USER_AVATAR } from "../action";
+import {SET_PROFILE, SET_ALUMN} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
 const state = {
@@ -37,7 +37,7 @@ const actions = {
   },
 
   async [LOGIN]({ dispatch, commit }, { code }) {
-    console.log("login")
+    console.log("login");
     return apiService.get("/login", { code }).then(data => {
       console.log(data);
       apiService.session = data["session"];
@@ -101,8 +101,8 @@ const actions = {
     });
   },
 
-  async [UPDATE_USER_AVATAR]({state}){
-    await apiService.post("/setAvatarUrl", {avatarUrl: state.avatarUrl})
+  async [UPDATE_USER_AVATAR](){
+    await apiService.post("/setAvatarUrl", {})
   }
 };
 

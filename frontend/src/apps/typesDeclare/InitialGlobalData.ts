@@ -7,7 +7,7 @@ DEFAULT_ACTIVITY_URL = "static/me.png";
 //#endif
 
 //#ifndef MP-WEIXIN
-DEFAULT_AVATAR_URL = "/static/mail.png";
+DEFAULT_AVATAR_URL = "/static/male.png";
 DEFAULT_ACTIVITY_URL = "/static/me.png";
 //#endif
 

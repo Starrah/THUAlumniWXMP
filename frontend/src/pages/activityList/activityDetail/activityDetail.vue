@@ -68,7 +68,7 @@
             </view>
         </view>
         <view style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-green lg align-center" @click="onPressShare">分享给好友</button>
+            <button class="cu-btn bg-green lg align-center" open-type="share">分享给好友</button>
             <button v-if="activityData.selfRole !== UserRole.Creator" class="cu-btn bg-green lg align-center" @click="onPressReport">举报此活动</button>
         </view>
         <view v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)" style="display: flex;justify-content: space-around;">
@@ -394,14 +394,21 @@
             });
             this.updateActivityData()
         }
-        async onPressShare(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
-            });
-        }
+        // async onPressShare(){
+        //     uni.showToast({
+        //         title: "尚未实现",
+        //         icon: "none"
+        //     });
+        // }
         async onPressReport(){
             this.reportModalShowing = true;
+        }
+        onShareAppMessage(){
+            return{
+                title: this.activityData.name,
+                path: `/pages/activityDetail/activityDetail?activityId=${this.activityId}`,
+                imageUrl: this.activityData.imageUrl
+            }
         }
     }
 </script>

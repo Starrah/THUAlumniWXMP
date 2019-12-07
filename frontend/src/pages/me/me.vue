@@ -1,15 +1,16 @@
 <template>
   <div>
-    <view class="cu-card flex mecard" @click="nameClick">
+    <button class="cu-card flex mecard" open-type="getUserInfo" @getuserinfo="nameClick">
       <div class="cu-avatar round xl mecardavatar" :style="'background-image:url(' + profile.avatarUrl + ');'"></div>
       <div class="content mecardtext" style>
         <div class="name">{{profile.name}}</div>
+<!--        <button class="cu-btn bg-green" >点击登录</button>-->
         <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
           <span :class="'cu-tag line-' + colorList[idx]">{{item.enrollmentType}}</span>
         </div>
       </div>
-    </view>
+    </button>
 
     <div class="cu-card mycard2">
       <div class="cu-list grid no-border justify-around">
@@ -40,7 +41,7 @@
 <script lang="ts">
 import { mapState } from "vuex";
 import {LOGIN, FETCH_PROFILE, WEIXIN_LOGIN, FETCH_MY_ACTIVITY_LIST} from "../../store/action";
-import { SET_PROFILE } from "../../store/mutation";
+import {SET_PROFILE, UPDATE_USER_AVATAR} from "../../store/mutation";
 
 export default {
   data() {
@@ -53,11 +54,11 @@ export default {
   },
 
   methods: {
-    nameClick(param) {
+    nameClick() {
       if (!this.profile.logined) {
         this.$store.dispatch(WEIXIN_LOGIN);
       }
-    },
+    }
   },
 
   onLoad(){
@@ -73,6 +74,8 @@ export default {
   padding-top: 20px;
   padding-bottom: 20px;
   background-color: #fff;
+  text-align: inherit;
+  line-height: inherit;
 }
 
 .mycard2 {
