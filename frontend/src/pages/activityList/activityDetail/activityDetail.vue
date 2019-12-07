@@ -109,6 +109,27 @@
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
             </view>
         </view>
+        <view class="cu-modal" :class="reportModalShowing?'show':''">
+            <view class="cu-dialog">
+                <text>您将要举报这个活动。</text>
+                <view>
+                    <text>举报类型：</text>
+                    <picker @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
+                        <view class="picker">
+                            {{reportPickerValue>-1?reportPickerRange[reportPickerValue]:'请选择'}}
+                        </view>
+                    </picker>
+                </view>
+                <view>
+                    <text>详细说明（选填）：</text>
+                    <view class="cu-form-group">
+                        <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
+                    </view>
+                </view>
+                <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
+                <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
+            </view>
+        </view>
     </view>
 </template>
 
@@ -224,6 +245,34 @@
         }
         auditModalShowing: boolean = false;
         auditReason: string = "";
+        reportPickerValue: number = -1;
+        reportPickerRange: Array<string> = ["含有违法内容", "含有低俗内容", "冒用身份名义", "重复建立活动", "含有广告营销", "其他"];
+        reportModalShowing: boolean = false;
+        reportReason: string = "";
+        async onPressSubmitReport(){
+            if(this.reportPickerValue === -1){
+                uni.showToast({
+                    title: "必须选择一个举报类型！",
+                    icon: "none"
+                })
+            }else {
+                await ((this.$refs.SureModal as any).show("您确定要举报这个活动吗？"));
+                try {
+                    await apiService.post(`/reportActivity?activityId=${this.activityId}`, {reason: this.reportPickerRange[this.reportPickerValue] + ": " + this.reportReason})
+                    uni.showToast({
+                        title: "举报成功"
+                    })
+                }catch (e) {
+                    if(e.errid && e.errid >= 500 && e.errid <= 599){
+                        uni.showToast({
+                            title: e.errmsg,
+                            icon: "none"
+                        })
+                    }
+                }
+                this.reportModalShowing = false;
+            }
+        }
         TAG_COLORS = ["red", "orange", "yellow", "olive", "green", "cyan", "blue", "purple", "mauve", "pink", "brown"];
         get tagsList(){
             return this.activityData.tags.map((v)=>{
@@ -352,10 +401,7 @@
             });
         }
         async onPressReport(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
-            });
+            this.reportModalShowing = true;
         }
     }
 </script>
