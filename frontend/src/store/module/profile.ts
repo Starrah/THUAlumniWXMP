@@ -1,10 +1,12 @@
 import apiService from "../../commons/api";
-import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR } from "../action";
-import { SET_PROFILE, SET_ALUMN } from "../mutation";
+import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR, UPDATE_USER_AVATAR } from "../action";
+import {SET_PROFILE, SET_ALUMN} from "../mutation";
+import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
 const state = {
   name: "未登录",
   campusIdentity: [],
+  avatarUrl: initialGlobalData.devData.DEFAULT_AVATAR_URL,
   logined: false,
   openId: "",
   alumn: {}
@@ -35,7 +37,7 @@ const actions = {
   },
 
   async [LOGIN]({ dispatch, commit }, { code }) {
-    console.log("login")
+    console.log("login");
     return apiService.get("/login", { code }).then(data => {
       console.log(data);
       apiService.session = data["session"];
@@ -65,17 +67,28 @@ const actions = {
   },
 
   async [GOTO_QHR]({ state }) {
-    console.log("goto qhr")
+    console.log("goto qhr");
     uni.navigateToMiniProgram({ ...state["alumn"] }
     );
   },
 
-  async [FETCH_PROFILE]({ dispatch, commit, rootState }) {
+  async [FETCH_PROFILE]({ dispatch, commit, rootState, state }) {
     return apiService.get("/userData").then(data => {
       commit(SET_PROFILE, {
         ...data,
         logined: true
       });
+      uni.getUserInfo({
+        provider: 'weixin',
+        success: function (infoRes) {
+          if(state.avatarUrl !== infoRes.userInfo.avatarUrl) {
+            commit(SET_PROFILE, {
+              avatarUrl: infoRes.userInfo.avatarUrl
+            });
+            dispatch(UPDATE_USER_AVATAR)
+          }
+        }
+      })
     }).catch(err => {
       if (err.errid && err.errid === 101){
         setTimeout(()=>{
@@ -86,8 +99,13 @@ const actions = {
         rootState.errMsg = err.errmsg;
       }
     });
+  },
+
+  async [UPDATE_USER_AVATAR](){
+    await apiService.post("/setAvatarUrl", {})
   }
 };
+
 
 export default {
   state,

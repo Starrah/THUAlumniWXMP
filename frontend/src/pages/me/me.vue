@@ -1,36 +1,34 @@
 <template>
   <div>
-    <view class="cu-card flex mecard" @click="nameClick">
-      <div
-        class="cu-avatar round xl mecardavatar"
-        :style="'background-image:url(/static/male.png);'"
-      ></div>
+    <button class="cu-card flex mecard" open-type="getUserInfo" @getuserinfo="nameClick">
+      <div class="cu-avatar round xl mecardavatar" :style="'background-image:url(' + profile.avatarUrl + ');'"></div>
       <div class="content mecardtext" style>
         <div class="name">{{profile.name}}</div>
+<!--        <button class="cu-btn bg-green" >点击登录</button>-->
         <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
           <span :class="'cu-tag line-' + colorList[idx]">{{item.enrollmentType}}</span>
         </div>
       </div>
-    </view>
+    </button>
 
     <div class="cu-card mycard2">
       <div class="cu-list grid no-border justify-around">
         <div class="cu-item" key="1">
-          <navigator url="/pages/me/myParticipate">
-            <div>100</div>
+          <navigator url="/pages/me/myActivityList?type=myParticipate">
+            <div>{{myActivityList.myParticipate.length}}</div>
             <div class="margin-top-xs">我参与的</div>
           </navigator>
         </div>
         <div class="cu-item" key="2">
-          <navigator url="/pages/me/mySponsor">
-            <div>200</div>
+          <navigator url="/pages/me/myActivityList?type=mySponsor">
+            <div>{{myActivityList.mySponsor.length}}</div>
             <div class="margin-top-xs">我发起的</div>
           </navigator>
         </div>
         <div class="cu-item" key="3">
-          <navigator url="/pages/me/history">
-            <div>300</div>
+          <navigator url="/pages/me/myActivityList?type=history">
+            <div>{{myActivityList.history.length}}</div>
             <div class="margin-top-xs">历史记录</div>
           </navigator>
         </div>
@@ -42,8 +40,8 @@
 
 <script lang="ts">
 import { mapState } from "vuex";
-import { LOGIN, FETCH_PROFILE, WEIXIN_LOGIN } from "../../store/action";
-import { SET_PROFILE } from "../../store/mutation";
+import {LOGIN, FETCH_PROFILE, WEIXIN_LOGIN, FETCH_MY_ACTIVITY_LIST} from "../../store/action";
+import {SET_PROFILE} from "../../store/mutation";
 
 export default {
   data() {
@@ -51,16 +49,22 @@ export default {
   },
 
   computed: {
-    ...mapState(["profile"])
+    ...mapState(["profile"]),
+    ...mapState(["myActivityList"])
   },
 
   methods: {
-    nameClick(param) {
+    nameClick() {
       if (!this.profile.logined) {
         this.$store.dispatch(WEIXIN_LOGIN);
       }
     }
   },
+
+  onLoad(){
+    console.log("onLaunch");
+    this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
+  }
 };
 </script>
 
@@ -70,6 +74,8 @@ export default {
   padding-top: 20px;
   padding-bottom: 20px;
   background-color: #fff;
+  text-align: inherit;
+  line-height: inherit;
 }
 
 .mycard2 {

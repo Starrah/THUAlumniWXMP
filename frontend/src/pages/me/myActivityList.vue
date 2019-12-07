@@ -1,3 +1,4 @@
+import {ActivityGlobalStatus} from "../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
 <!--        <text>{{debugCode}}</text>-->
@@ -29,10 +30,10 @@
                             </view>
                         </view>
                     </view>
-                    <view style="flex-basis: 19%" class="basis-xs" :class="(activity.curUser<activity.maxUser||activity.maxUser==-1)?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
+                    <view style="flex-basis: 19%" class="basis-xs" :class="activity.curUser<activity.maxUser?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
                         <text class="text-lg text-green">{{activity.curUser}}</text>
-                        <text class="text-lg text-black" :style="activity.maxUser==-1?'display:none':''">/</text>
-                        <text class="text-lg text-red" :style="activity.maxUser==-1?'display:none':''">{{activity.maxUser}}</text>
+                        <text class="text-lg text-black">/</text>
+                        <text class="text-lg text-red">{{activity.maxUser}}</text>
                     </view>
                 </view>
                 <view class="cu-item" v-if="isLoadingMore">
@@ -46,62 +47,53 @@
 <script lang="ts">
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
-    import promisify from "@/apps/Promisify";
-    import apiService from '@/commons/api'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
-    import {FETCH_ALL_ACTIVITY_LIST, FETCH_MORE_ACTIVITY} from "@/store/action";
+    import {FETCH_MY_ACTIVITY_LIST} from "@/store/action";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
     @Component
     export default class mainList extends Vue{
-        name!: "mainList";
-        debugCode?:string = "";
+        name!: "myActivityList";
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
         }
+        pageType: string = "";
+        debugCode?:string = "";
         get activities_toShow(){
-            return this.$store.state.allActivityList.activityList;
+            let actualIndex = this.finalCount < this.activities_valid.length?this.finalCount:this.activities_valid.length;
+            return this.activities_valid.slice(0, actualIndex);
         }
+        get activities_valid(){
+            if(this.pageType === "history")return this.$store.state.myActivityList.history;
+            else if (this.pageType === "myParticipate")return this.$store.state.myActivityList.myParticipate;
+            else if (this.pageType === "mySponsor")return this.$store.state.myActivityList.mySponsor;
+        }
+        DEFAULT_ONCE_SHOW_COUNT = 15;
+        finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         search(){
             uni.showToast({title: "尚未支持", icon:"none"})
         }
         isLoadingMore: boolean = false;
         async loadMore(){
-            this.isLoadingMore = true;
-            try {
-                await this.$store.dispatch(FETCH_MORE_ACTIVITY);
-            }finally {
-                this.isLoadingMore = false;
-            }
+            if(this.finalCount < this.activities_valid.length)this.finalCount += this.DEFAULT_ONCE_SHOW_COUNT
         }
         async onPullDownRefresh(){
             try{
-                await this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+                await this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
             }finally {
                 uni.stopPullDownRefresh();
             }
         }
         mounted(){
-            // uni.login({
-            //     provider: "weixin",
-            //     success: loginRes => {
-            //         console.log(loginRes["code"]);
-            //         this.debugCode = loginRes["code"];
-            //     }
-            // });
-            // this.activities_toShow = [
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"},
-            //     {name: "aaa", place: "bbb"}
-            // ]
-            // this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
         }
 
-        onShow(){
-            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST)
+        onLoad(param){
+            this.pageType = param.type;
+            if(this.pageType === "history")uni.setNavigationBarTitle({title: "历史记录"});
+            else if(this.pageType === "myParticipate")uni.setNavigationBarTitle({title: "我参与的活动"});
+            else if(this.pageType === "mySponsor")uni.setNavigationBarTitle({title: "我发起的活动"});
+            this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
+            this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         }
 
         jumpToActivityDetail(event, a: ActivitySchema){
@@ -109,6 +101,7 @@
                 url: `../activityDetail/activityDetail?activityId=${a.id}`
             })
         }
+
     }
 </script>
 

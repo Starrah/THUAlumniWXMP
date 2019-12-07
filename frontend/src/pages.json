@@ -3,37 +3,51 @@
 		{
 			"path": "pages/activityList/mainList/mainList",
 			"style": {
-				"enablePullDownRefresh": true
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "活动列表"
 			}
 		},
 		{
 			"path": "pages/newActivity/newActivity",
 			"style": {
-				"navigationBarTitleText": "activityList"
+				"navigationBarTitleText": "发起活动"
 			}
 		},
 		{
-			"path": "pages/activityList/activityDetail/activityDetail"
+			"path": "pages/activityList/activityDetail/activityDetail",
+			"style": {
+				"navigationBarTitleText": "活动详情"
+			}
 		},
 		{
-			"path": "pages/me/me"
+			"path": "pages/activityList/modifyActivity/modifyActivity",
+			"style": {
+				"navigationBarTitleText": "修改活动"
+			}
 		},
 		{
-			"path": "pages/me/history"
+			"path": "pages/me/me",
+			"style": {
+				"navigationBarTitleText": "我的信息"
+			}
 		},
 		{
-			"path": "pages/me/myParticipate"
+			"path": "pages/newActivity/advanceRule",
+			"style": {
+				"navigationBarTitleText": "高级报名规则设置"
+			}
 		},
 		{
-			"path": "pages/newActivity/advanceRule"
-		},
-		{
-			"path": "pages/me/mySponsor"
+			"path": "pages/me/myActivityList",
+			"style": {
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "我的活动"
+			}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "清友约",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},

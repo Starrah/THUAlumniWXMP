@@ -2,12 +2,12 @@ export enum UserStatus {
     None = -1,
     WaitValidate = 0, //等待报名审核
     Joined = 1, //已经报名但是没开始
-    NotChecked = 2,	//已经报名，活动开始，但是没签到
-    Checked = 3, //已经签到
-    Finished = 4, //活动正常结束
-    Missed = 5,	//各种异常情况，比如审核未通过，活动被举报，自己报名了没签到等
-    Refused = 6, // 拒绝
-    FinishWithoutCheck = 7, //活动正常结束但是没有签到
+    Checked = 2, //已经签到
+    Finished = 3, //活动正常结束
+    Missed = 4,	//各种异常情况，比如审核未通过，活动被举报，自己报名了没签到等
+    Refused = 5, // 拒绝
+    FinishWithoutCheck = 6, //活动正常结束但是没有签到
+    NotChecked = 7,	//已经报名，活动开始，但是没签到//TODO 解决问题
 }
 
 export enum UserRole {

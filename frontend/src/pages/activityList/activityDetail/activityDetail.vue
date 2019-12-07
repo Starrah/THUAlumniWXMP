@@ -55,7 +55,7 @@
                 <view class="title">人数</view>
                 <view>
                     <view class="cu-avatar-group">
-                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ user.avatarUrl +');'"></view>
+                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ user.avatarUrl?user.avatarUrl:DEFAULT_AVATAR_URL +');'"></view>
                     </view>
                     <text>等{{activityData.curUser}}人</text>
                     <text>/</text>
@@ -66,6 +66,10 @@
                 <view class="title">我的状态</view>
                 <text>{{UserStatusShowStrings[activityData.selfStatus]}}</text>
             </view>
+        </view>
+        <view style="display: flex;justify-content: space-around;">
+            <button class="cu-btn bg-green lg align-center" open-type="share">分享给好友</button>
+            <button v-if="activityData.selfRole !== UserRole.Creator" class="cu-btn bg-green lg align-center" @click="onPressReport">举报此活动</button>
         </view>
         <view v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)" style="display: flex;justify-content: space-around;">
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
@@ -89,7 +93,7 @@
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignin">暂停签到</button>
         </view>
         <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-yellow lg align-center" @click="openSetActivityInfoPage">修改活动信息</button>
+            <button class="cu-btn bg-yellow lg align-center" @click="openModifyPage">修改活动信息</button>
         </view>
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
@@ -100,6 +104,27 @@
                 <text>您报名后需要审核，您可在下方输入申请留言：</text>
                 <view class="cu-form-group">
                     <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
+                </view>
+                <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
+                <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
+            </view>
+        </view>
+        <view class="cu-modal" :class="reportModalShowing?'show':''">
+            <view class="cu-dialog">
+                <text>您将要举报这个活动。</text>
+                <view>
+                    <text>举报类型：</text>
+                    <picker @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
+                        <view class="picker">
+                            {{reportPickerValue>-1?reportPickerRange[reportPickerValue]:'请选择'}}
+                        </view>
+                    </picker>
+                </view>
+                <view>
+                    <text>详细说明（选填）：</text>
+                    <view class="cu-form-group">
+                        <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
+                    </view>
                 </view>
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
@@ -116,9 +141,10 @@
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
-    import {SET_ACTIVITY_DETAIL_ID} from "@/store/mutation";
+    import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
     import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
+    import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
     @Component({
         components: {SureModal}
@@ -126,6 +152,12 @@
     export default class activityDetail extends Vue{
         name!: "activityDetail";
         console = console;
+        get DEFAULT_ACTIVITY_URL(){
+            return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
+        }
+        get DEFAULT_AVATAR_URL(){
+            return initialGlobalData.devData.DEFAULT_AVATAR_URL;
+        }
         get activityId(){
             return this.$store.state.activityDetail.id;
         }
@@ -159,9 +191,6 @@
         onLoad(param: any){
             this.$store.commit(SET_ACTIVITY_DETAIL_ID, param.activityId);
             this.updateActivityData();
-        }
-        back(){
-            uni.navigateBack();
         }
         get startDate(){
             return this.activityData.start.split(" ")[0];
@@ -216,6 +245,34 @@
         }
         auditModalShowing: boolean = false;
         auditReason: string = "";
+        reportPickerValue: number = -1;
+        reportPickerRange: Array<string> = ["含有违法内容", "含有低俗内容", "冒用身份名义", "重复建立活动", "含有广告营销", "其他"];
+        reportModalShowing: boolean = false;
+        reportReason: string = "";
+        async onPressSubmitReport(){
+            if(this.reportPickerValue === -1){
+                uni.showToast({
+                    title: "必须选择一个举报类型！",
+                    icon: "none"
+                })
+            }else {
+                await ((this.$refs.SureModal as any).show("您确定要举报这个活动吗？"));
+                try {
+                    await apiService.post(`/reportActivity?activityId=${this.activityId}`, {reason: this.reportPickerRange[this.reportPickerValue] + ": " + this.reportReason})
+                    uni.showToast({
+                        title: "举报成功"
+                    })
+                }catch (e) {
+                    if(e.errid && e.errid >= 500 && e.errid <= 599){
+                        uni.showToast({
+                            title: e.errmsg,
+                            icon: "none"
+                        })
+                    }
+                }
+                this.reportModalShowing = false;
+            }
+        }
         TAG_COLORS = ["red", "orange", "yellow", "olive", "green", "cyan", "blue", "purple", "mauve", "pink", "brown"];
         get tagsList(){
             return this.activityData.tags.map((v)=>{
@@ -323,18 +380,35 @@
             });
             this.updateActivityData()
         }
-        async openSetActivityInfoPage(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+        async openModifyPage(){
+            this.$store.commit(SYNC_CHANGE_ACTIVITY_DATA);
+            uni.navigateTo({
+                url: `../modifyActivity/modifyActivity?activityId=${this.activityId}`
             });
-            this.updateActivityData()
         }
         async cancelActivityAdmin(){
             await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？一旦确认，活动将被彻底取消，无法恢复！"));
             await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
-            //TODO 跳转
-            //this.updateActivityData()
+            uni.showToast({
+                title: "活动已被取消",
+            });
+            this.updateActivityData()
+        }
+        // async onPressShare(){
+        //     uni.showToast({
+        //         title: "尚未实现",
+        //         icon: "none"
+        //     });
+        // }
+        async onPressReport(){
+            this.reportModalShowing = true;
+        }
+        onShareAppMessage(){
+            return{
+                title: this.activityData.name,
+                path: `/pages/activityDetail/activityDetail?activityId=${this.activityId}`,
+                imageUrl: this.activityData.imageUrl
+            }
         }
     }
 </script>
