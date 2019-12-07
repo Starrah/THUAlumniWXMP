@@ -1,3 +1,17 @@
+var DEFAULT_AVATAR_URL;
+var DEFAULT_ACTIVITY_URL;
+
+//#ifdef MP-WEIXIN
+DEFAULT_AVATAR_URL = "static/male.png";
+DEFAULT_ACTIVITY_URL = "static/me.png";
+//#endif
+
+//#ifndef MP-WEIXIN
+DEFAULT_AVATAR_URL = "/static/mail.png";
+DEFAULT_ACTIVITY_URL = "/static/me.png";
+//#endif
+
+
 
 var initialGlobalData: GlobalData = {
     userInfo:{
@@ -17,7 +31,8 @@ var initialGlobalData: GlobalData = {
     session: "bbb",
     baseUrl: "http://thaluapitest.starrah.cn",
     devData: {
-        DEFAULT_AVATARURL: "http://starrah.cn/test.png"
+        DEFAULT_AVATAR_URL,
+        DEFAULT_ACTIVITY_URL
     }
 };
 

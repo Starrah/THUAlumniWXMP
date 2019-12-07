@@ -55,7 +55,7 @@
                 <view class="title">人数</view>
                 <view>
                     <view class="cu-avatar-group">
-                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ user.avatarUrl +');'"></view>
+                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ user.avatarUrl?user.avatarUrl:DEFAULT_AVATAR_URL +');'"></view>
                     </view>
                     <text>等{{activityData.curUser}}人</text>
                     <text>/</text>
@@ -123,6 +123,7 @@
     import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
     import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
+    import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
     @Component({
         components: {SureModal}
@@ -130,6 +131,12 @@
     export default class activityDetail extends Vue{
         name!: "activityDetail";
         console = console;
+        get DEFAULT_ACTIVITY_URL(){
+            return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
+        }
+        get DEFAULT_AVATAR_URL(){
+            return initialGlobalData.devData.DEFAULT_AVATAR_URL;
+        }
         get activityId(){
             return this.$store.state.activityDetail.id;
         }

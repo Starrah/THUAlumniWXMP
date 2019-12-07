@@ -1,10 +1,12 @@
 import apiService from "../../commons/api";
 import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR } from "../action";
 import { SET_PROFILE, SET_ALUMN } from "../mutation";
+import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
 const state = {
   name: "未登录",
   campusIdentity: [],
+  avatarUrl: initialGlobalData.devData.DEFAULT_AVATAR_URL,
   logined: false,
   openId: "",
   alumn: {}
@@ -76,6 +78,14 @@ const actions = {
         ...data,
         logined: true
       });
+      uni.getUserInfo({
+        provider: 'weixin',
+        success: function (infoRes) {
+          commit(SET_PROFILE, {
+            avatarUrl: infoRes.userInfo.avatarUrl
+          })
+        }
+      })
     }).catch(err => {
       if (err.errid && err.errid === 101){
         setTimeout(()=>{

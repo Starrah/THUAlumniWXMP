@@ -14,7 +14,7 @@
             <view class="cu-list menu">
                 <view class="cu-item arrow" style="flex-direction: row;display: flex;border-left-width: 4px;border-left-style: solid;border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238);border-top-width: 4px;border-top-style: solid;border-top-color: rgb(238,238,238)" v-for="activity in activities_toShow" :key="activity.id" @click="jumpToActivityDetail($event, activity)">
                     <view style="flex-basis: 20%">
-                        <view class="cu-avatar radius" style="background-image:url(../../../static/me.png);"></view>
+                        <view class="cu-avatar radius" :style="'background-image:url('+DEFAULT_ACTIVITY_URL+');'"></view>
                     </view>
                     <view style="flex-basis: 60%">
                         <view>
@@ -50,11 +50,15 @@
     import apiService from '@/commons/api'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import {FETCH_ALL_ACTIVITY_LIST, FETCH_MORE_ACTIVITY} from "@/store/action";
+    import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
     @Component
     export default class mainList extends Vue{
         name!: "mainList";
         debugCode?:string = "";
+        get DEFAULT_ACTIVITY_URL(){
+            return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
+        }
         get activities_toShow(){
             return this.$store.state.allActivityList.activityList;
         }

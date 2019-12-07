@@ -1,10 +1,7 @@
 <template>
   <div>
     <view class="cu-card flex mecard" @click="nameClick">
-      <div
-        class="cu-avatar round xl mecardavatar"
-        :style="'background-image:url(/static/male.png);'"
-      ></div>
+      <div class="cu-avatar round xl mecardavatar" :style="'background-image:url(' + profile.avatarUrl + ');'"></div>
       <div class="content mecardtext" style>
         <div class="name">{{profile.name}}</div>
         <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
