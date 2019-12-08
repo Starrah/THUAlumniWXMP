@@ -8,7 +8,7 @@ import {
 import {
     SET_ACTIVITY_DETAIL,
     SET_ACTIVITY_DETAIL_ID,
-    SET_ALL_ACTIVITY_LIST,
+    SET_ALL_ACTIVITY_LIST, SET_DESCRIPTION,
     SET_NEW_ACTIVITY,
     SYNC_CHANGE_ACTIVITY_DATA, SYNC_RULE_MODIFY_ACTIVITY
 } from "../mutation";
@@ -46,6 +46,9 @@ const mutations = {
     },
     [SYNC_RULE_MODIFY_ACTIVITY](state, rule: SignupRule){
         state.changeBuffer.rules = rule;
+    },
+    [SET_DESCRIPTION](state, ne){
+        state.activity.description = ne;
     }
 };
 
@@ -92,7 +95,7 @@ const actions = {
     async [FETCH_DESCRIPTION]({commit, state, rootState}){
         try {
             let res = await apiService.get(`/getActivityDescription`, {activityId: state.id});
-            commit(SET_ACTIVITY_DETAIL, {desription: res})
+            commit(SET_DESCRIPTION, res.description)
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
             throw e;

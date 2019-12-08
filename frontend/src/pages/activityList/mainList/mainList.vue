@@ -10,7 +10,7 @@
                 <button class="cu-btn bg-green shadow-blur round" @click="search">搜索</button>
             </view>
         </view>
-        <scroll-view scroll-y="true" lower-threshold="1" :enable-back-to-top="true" @scrolltolower="loadMore">
+<!--        <scroll-view scroll-y="true" :lower-threshold="100" :enable-back-to-top="true" @scrolltolower="loadMore" @scrolltoupper="loadMore">-->
             <view class="cu-list menu">
                 <view class="cu-item arrow" style="flex-direction: row;display: flex;border-left-width: 4px;border-left-style: solid;border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238);border-top-width: 4px;border-top-style: solid;border-top-color: rgb(238,238,238)" v-for="activity in activities_toShow" :key="activity.id" @click="jumpToActivityDetail($event, activity)">
                     <view style="flex-basis: 20%">
@@ -39,7 +39,7 @@
                     <text>加载中</text>
                 </view>
             </view>
-        </scroll-view>
+<!--        </scroll-view>-->
     </view>
 </template>
 
@@ -66,10 +66,18 @@
             uni.showToast({title: "尚未支持", icon:"none"})
         }
         isLoadingMore: boolean = false;
+        onReachBottom(){
+            this.loadMore();
+        }
         async loadMore(){
+            console.log("loadMore");
             this.isLoadingMore = true;
+            let allActivityes: Array<ActivitySchema> = this.activities_toShow;
+            let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;
             try {
-                await this.$store.dispatch(FETCH_MORE_ACTIVITY);
+                await this.$store.dispatch(FETCH_MORE_ACTIVITY, {
+                    lastSeenId
+                });
             }finally {
                 this.isLoadingMore = false;
             }

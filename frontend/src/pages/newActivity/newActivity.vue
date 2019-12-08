@@ -3,7 +3,7 @@
     <form @submit="submitNewActivity">
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动名称</view>
-            <input ref="name" name="name" />
+            <input name="name" :value="inputValue"  />
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动类型</view>
@@ -15,7 +15,7 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">标签</view>
-            <input ref="tag" name="tag" placeholder="多个标签之间以逗号或空格分隔"/>
+            <input name="tag" placeholder="多个标签之间以逗号或空格分隔" :value="inputValue" />
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">公开活动</view>
@@ -25,7 +25,7 @@
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">地点</view>
-            <input ref="place" name="place" />
+            <input name="place" :value="inputValue" />
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">开始时间</view>
@@ -95,9 +95,9 @@
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>
-            <input ref="minUser" name="minUser" style="text-align: right" />
+            <input name="minUser" style="text-align: right" :value="inputValue" />
             <text style="font-size: 30upx" class="margin-lr-lg">~</text>
-            <input ref="maxUser" name="maxUser" />
+            <input name="maxUser" :value="inputValue" />
         </view>
         <br>
         <view style="display: flex;justify-content: center">
@@ -127,11 +127,16 @@
     export default class newActivity extends Vue{
         name: "newActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
+        inputValue: string = "";
         initialForm(){
-            let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"];
-            for(let refname of inputRefnameList){
-                (this.$refs[refname] as any).value = "";
-            }
+            console.log(this.$refs);
+            // let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"];
+            // for(let refname of inputRefnameList){
+            //     console.log([refname, this.$refs[refname]]);
+            //     (this.$refs[refname] as any).value = "";
+            // }
+            this.inputValue = "1";
+            this.inputValue = "";
             this.startDate = this.DEFAULT_TIMEPICKER_VALUE;
             this.startTime = this.DEFAULT_TIMEPICKER_VALUE;
             this.endDate = this.DEFAULT_TIMEPICKER_VALUE;
@@ -171,6 +176,7 @@
         switchCanBeSearched: boolean = true;
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
+            console.log(temp.initialized);
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
             if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
             return temp;
@@ -182,6 +188,7 @@
             res.push(curNode.map((v)=>v.name));
             for(let i=0;i<this.typeMultiIndex.length-1;i++){
                 curNode = curNode[this.typeMultiIndex[i]].children;
+                if(!curNode || curNode.length <= 0)break;
                 res.push(curNode.map((v)=>v.name));
             }
             return res;
@@ -201,13 +208,9 @@
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
-            let r = "";
-            for(let i=0;i<this.typeMultiIndex.length-1;i++){
-                r += (this.typeMultiArray[i][this.typeMultiIndex[i]] + " - ");
-            }
-            let i = this.typeMultiIndex.length-1;
-            if(i >= 0) r += this.typeMultiArray[i][this.typeMultiIndex[i]];
-            return r;
+            return this.typeMultiArray.map((nameList, i)=>{
+                return nameList[this.typeMultiIndex[i]];
+            }).join("-");
         }
         get minStartTime(): string{
             if(this.endDate <= this.startDate){
@@ -320,11 +323,22 @@
         line-height: 30upx
     }
 </style>
+
 <style>
+    /*  #ifdef H5  */
     switch.ansg >>> .uni-switch-input, switch.ansg >>> .wx-switch-input{
         width: 70px;
     }
     switch.ansg >>> .uni-switch-input-checked::after, switch.ansg >>> .wx-switch-input-checked::after {
         left: 44px;
     }
+    /*  #endif  */
+    /*  #ifndef H5  */
+    switch.ansg .uni-switch-input, switch.ansg .wx-switch-input{
+        width: 70px;
+    }
+    switch.ansg .uni-switch-input-checked::after, switch.ansg .wx-switch-input-checked::after {
+        left: 44px;
+    }
+    /*  #endif  */
 </style>

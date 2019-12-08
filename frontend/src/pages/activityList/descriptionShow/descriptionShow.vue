@@ -14,7 +14,7 @@
     export default class DescriptionShow extends Vue{
         name: "descriptionShow";
         get desHtml(){
-            return this.$store.state.activityDetail.description;
+            return this.$store.state.activityDetail.activity.description;
         }
     }
 </script>

@@ -1,5 +1,13 @@
 import apiService from "../../commons/api";
-import { WEIXIN_LOGIN, LOGIN, FETCH_PROFILE, FETCH_ALUMN, GOTO_QHR, UPDATE_USER_AVATAR } from "../action";
+import {
+  WEIXIN_LOGIN,
+  LOGIN,
+  FETCH_PROFILE,
+  FETCH_ALUMN,
+  GOTO_QHR,
+  UPDATE_USER_AVATAR,
+  FETCH_MY_ACTIVITY_LIST
+} from "../action";
 import {SET_PROFILE, SET_ALUMN} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
@@ -88,7 +96,8 @@ const actions = {
             dispatch(UPDATE_USER_AVATAR)
           }
         }
-      })
+      });
+      dispatch(FETCH_MY_ACTIVITY_LIST);
     }).catch(err => {
       if (err.errid && err.errid === 101){
         setTimeout(()=>{
@@ -101,8 +110,8 @@ const actions = {
     });
   },
 
-  async [UPDATE_USER_AVATAR](){
-    await apiService.post("/setAvatarUrl", {})
+  async [UPDATE_USER_AVATAR]({state}){
+    await apiService.post("/setAvatarUrl", {avatarUrl: state.avatarUrl})
   }
 };
 

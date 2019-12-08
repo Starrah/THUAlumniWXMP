@@ -22,7 +22,7 @@ const mutations = {
 const actions = {
     async [FETCH_EDUCATION_LIST]({state, commit, rootState}){
         try {
-            let res = await apiService.get('//educationTypesList');
+            let res = await apiService.get('/educationTypesList');
             commit(SET_EDUCATION_LIST, res);
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;

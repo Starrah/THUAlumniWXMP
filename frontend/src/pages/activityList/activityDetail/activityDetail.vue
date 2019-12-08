@@ -1,13 +1,5 @@
 <template>
     <view>
-    <view class="cu-bar bg-white">
-        <view class="action" @click="back">
-            <text class="cuIcon-back text-gray"></text> 返回
-        </view>
-        <view class="content text-bold">
-            活动详情
-        </view>
-    </view>
         <view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">活动名称</view>
@@ -29,7 +21,7 @@
             </view>
             <view class="cu-form-group margin-top">
                 <view class="title">公开活动</view>
-                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" @click.prevent="console.log(activityData);"></checkbox>
+                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" :disabled="true"></checkbox>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">地点</view>
