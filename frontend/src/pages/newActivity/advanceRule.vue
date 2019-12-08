@@ -17,7 +17,7 @@
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm">
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 0">
       <view>
         <text>直接通过的用户</text>
         <button v-if="allowModify" @click="acAdd">+</button>
@@ -41,7 +41,7 @@
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm">
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 1">
       <view>
         <text>需要审核的用户</text>
         <button v-if="allowModify" @click="adAdd">+</button>
@@ -65,7 +65,7 @@
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm">
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 2">
       <view>
         <text>不能参加的用户</text>
         <button v-if="allowModify" @click="rjAdd">+</button>
@@ -82,7 +82,7 @@
           <view @click="rjClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
+            入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
         <button v-if="allowModify" @click="rjRemove(idx)">-</button>
