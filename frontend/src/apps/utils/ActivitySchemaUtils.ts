@@ -1,5 +1,6 @@
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
+import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 
 export function defaultBlankActivity(): ActivitySchema {
     return {
@@ -16,6 +17,31 @@ export function defaultBlankActivity(): ActivitySchema {
         canBeSearched: true,
         rules: {ruleType: RuleType.AUDIT},
         tags: []
+    }
+}
+
+function isArrayNotEmpty(a: Array<any>){
+    return a && a.length > 0;
+}
+
+export function generateRuleDescription(rule: SignupRule){
+    if(rule.ruleType === RuleType.ACCEPT) {
+        if(isArrayNotEmpty(rule.needAudit) && isArrayNotEmpty(rule.reject))return "审核或拒绝指定人，接受其余人";
+        else if(!isArrayNotEmpty(rule.needAudit) && isArrayNotEmpty(rule.reject))return "拒绝指定人，接受其余人";
+        else if(isArrayNotEmpty(rule.needAudit) && !isArrayNotEmpty(rule.reject))return "审核指定人，接受其余人";
+        else if(!isArrayNotEmpty(rule.needAudit) && !isArrayNotEmpty(rule.reject))return "所有人均直接接受";
+    }
+    if(rule.ruleType === RuleType.AUDIT) {
+        if(isArrayNotEmpty(rule.accept) && isArrayNotEmpty(rule.reject))return "接受或拒绝指定人，审核其余人";
+        else if(!isArrayNotEmpty(rule.accept) && isArrayNotEmpty(rule.reject))return "拒绝指定人，审核其余人";
+        else if(isArrayNotEmpty(rule.accept) && !isArrayNotEmpty(rule.reject))return "接受指定人，审核其余人";
+        else if(!isArrayNotEmpty(rule.accept) && !isArrayNotEmpty(rule.reject))return "所有人均需要审核";
+    }
+    if(rule.ruleType === RuleType.REJECT) {
+        if(isArrayNotEmpty(rule.needAudit) && isArrayNotEmpty(rule.accept))return "接受或审核指定人，拒绝其余人";
+        else if(!isArrayNotEmpty(rule.needAudit) && isArrayNotEmpty(rule.accept))return "接受指定人，拒绝其余人";
+        else if(isArrayNotEmpty(rule.needAudit) && !isArrayNotEmpty(rule.accept))return "审核指定人，拒绝其余人";
+        else if(!isArrayNotEmpty(rule.needAudit) && !isArrayNotEmpty(rule.accept))return "所有人均拒绝";
     }
 }
 

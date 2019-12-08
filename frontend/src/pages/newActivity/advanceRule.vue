@@ -18,7 +18,10 @@
     </view>
 
     <view class="cu-card margin-top-sm">
-      <view>直接通过的用户</view>
+      <view>
+        <text>直接通过的用户</text>
+        <button :disabled="!allowModify" @click="acAdd">+</button>
+      </view>
       <view v-for="(rule, idx) in acRuleList" :key="idx">
         <view>群体</view>
         <picker
@@ -26,20 +29,24 @@
           @change="acChange"
           :range="pickerMatrix"
           :value="ruleToList(rule)"
+          :disabled="!allowModify"
         >
           <view @click="acClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {{rule.startAt}} 到 {{rule.endAt}}
+            入学年份从 {{yearList(rule.startIdx)}} 到 {{yearList(rule.endIdx)}}
           </view>
         </picker>
         <button @click="acAdd">+</button>
-        <button v-if="acRuleList.length != 1" @click="acRemove(idx)">-</button>
+        <button @click="acRemove(idx)">-</button>
       </view>
     </view>
 
     <view class="cu-card margin-top-sm">
-      <view>需要审核的用户</view>
+      <view>
+        <text>需要审核的用户</text>
+        <button :disabled="!allowModify" @click="adAdd">+</button>
+      </view>
       <view v-for="(rule, idx) in adRuleList" :key="idx">
         <view>群体</view>
         <picker
@@ -47,20 +54,24 @@
                 @change="adChange"
                 :range="pickerMatrix"
                 :value="ruleToList(rule)"
+                :disabled="!allowModify"
         >
           <view @click="adClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {{rule.startAt}} 到 {{rule.endAt}}
+            入学年份从 {{yearList(rule.startIdx)}} 到 {{yearList(rule.endIdx)}}
           </view>
         </picker>
         <button @click="adAdd">+</button>
-        <button v-if="adRuleList.length != 1" @click="adRemove(idx)">-</button>
+        <button @click="adRemove(idx)">-</button>
       </view>
     </view>
 
     <view class="cu-card margin-top-sm">
-      <view>不能参加的用户</view>
+      <view>
+        <text>不能参加的用户</text>
+        <button :disabled="!allowModify" @click="rjAdd">+</button>
+      </view>
       <view v-for="(rule, idx) in rjRuleList" :key="idx">
         <view>群体</view>
         <picker
@@ -68,15 +79,15 @@
                 @change="rjChange"
                 :range="pickerMatrix"
                 :value="ruleToList(rule)"
+                :disabled="!allowModify"
         >
           <view @click="rjClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {{rule.startAt}} 到 {{rule.endAt}}
+            入学年份从 {{yearList(rule.startIdx)}} 到 {{yearList(rule.endIdx)}}
           </view>
         </picker>
-        <button @click="rjAdd">+</button>
-        <button v-if="rjRuleList.length != 1" @click="rjRemove(idx)">-</button>
+        <button :disabled="!allowModify" @click="rjRemove(idx)">-</button>
       </view>
     </view>
 
@@ -93,8 +104,8 @@
 class Rule {
   departIdx = 0;
   enrollIdx = 0;
-  startAt = "1900";
-  endAt = "1900";
+  startIdx = 0;
+  endIdx = 0;
 }
 
 export default {
@@ -108,12 +119,19 @@ export default {
       ];
     },
     yearList: function() {
-      return new Array(this.yearEnd - this.yearStart)
+      let r = new Array(this.yearEnd - this.yearStart)
         .fill(0)
         .map((d, i) => String(i + this.yearStart));
+      return ["不限"].concat(r)
     },
     defaultYear: function() {
       return String(new Date(Date.now()).getFullYear());
+    },
+    departmentList: function(){
+      return ["不限"].concat(this.$store.state.departmentList.departments)
+    },
+    educationList: function() {
+      return ["不限"].concat(this.$store.state.educationTypesList.types);
     }
   },
   data() {
@@ -132,8 +150,6 @@ export default {
           text: "拒绝"
         }
       ],
-      departmentList: this.$store.state.departmentList.departments,
-      educationList: this.$store.state.educationTypesList.types,
       yearStart: 1911,
       yearEnd: new Date(Date.now()).getFullYear(),
       currentRuleIdx: 0,
@@ -142,7 +158,8 @@ export default {
       rjCurrentIdx: 0,
       acRuleList: [], //ruleList
       adRuleList: [], //ruleList
-      rjRuleList: [] //ruleList
+      rjRuleList: [], //ruleList
+      allowModify: 1
     };
   },
 
@@ -152,28 +169,32 @@ export default {
     this.currentRuleIdx = this.$store.state.advancedRule.ruleType;
     this.acRuleList = this.$store.state.advancedRule.accept.map((v: OneSpecificSingupRule): Rule=>{
       return {
-        enrollIdx: this.educationList.indexOf(v.enrollmentType),
-        departIdx: this.departmentList.indexOf(v.department),
-        startAt: String(v.minEnrollmentYear),
-        endAt: String(v.maxEnrollmentYear)
+        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
+        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
+        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
+        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
       }
     });
     this.adRuleList = this.$store.state.advancedRule.needAudit.map((v: OneSpecificSingupRule): Rule=>{
       return {
-        enrollIdx: this.educationList.indexOf(v.enrollmentType),
-        departIdx: this.departmentList.indexOf(v.department),
-        startAt: String(v.minEnrollmentYear),
-        endAt: String(v.maxEnrollmentYear)
+        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
+        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
+        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
+        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
       }
     });
     this.rjRuleList = this.$store.state.advancedRule.reject.map((v: OneSpecificSingupRule): Rule=>{
       return {
-        enrollIdx: this.educationList.indexOf(v.enrollmentType),
-        departIdx: this.departmentList.indexOf(v.department),
-        startAt: String(v.minEnrollmentYear),
-        endAt: String(v.maxEnrollmentYear)
+        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
+        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
+        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
+        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
       }
     });
+  },
+
+  onLoad(param){
+    if(param && this.allowModify)this.allowModify = param.allowModify;
   },
 
   methods: {
@@ -182,38 +203,36 @@ export default {
         ruleType: this.currentRuleIdx,
         accept: this.acRuleList.map((v: Rule): OneSpecificSingupRule=>{
           return {
-            enrollmentType: this.educationList[v.enrollIdx],
-            minEnrollmentYear: Number(v.startAt),
-            maxEnrollmentYear:  Number(v.endAt),
-            department: this.departmentList[v.departIdx]
+            enrollmentType: v.enrollIdx !== 0?this.educationList[v.enrollIdx]:undefined,
+            minEnrollmentYear: v.startIdx !== 0?this.yearList[v.startIdx]:undefined,
+            maxEnrollmentYear: v.endIdx !== 0?this.yearList[v.endIdx]:undefined,
+            department: v.departIdx !== 0?this.departmentList[v.departIdx]:undefined
           }
         }),
         needAudit: this.adRuleList.map((v: Rule): OneSpecificSingupRule=>{
           return {
-            enrollmentType: this.educationList[v.enrollIdx],
-            minEnrollmentYear: Number(v.startAt),
-            maxEnrollmentYear:  Number(v.endAt),
-            department: this.departmentList[v.departIdx]
+            enrollmentType: v.enrollIdx !== 0?this.educationList[v.enrollIdx]:undefined,
+            minEnrollmentYear: v.startIdx !== 0?this.yearList[v.startIdx]:undefined,
+            maxEnrollmentYear: v.endIdx !== 0?this.yearList[v.endIdx]:undefined,
+            department: v.departIdx !== 0?this.departmentList[v.departIdx]:undefined
           }
         }),
         reject: this.rjRuleList.map((v: Rule): OneSpecificSingupRule=>{
           return {
-            enrollmentType: this.educationList[v.enrollIdx],
-            minEnrollmentYear: Number(v.startAt),
-            maxEnrollmentYear:  Number(v.endAt),
-            department: this.departmentList[v.departIdx]
+            enrollmentType: v.enrollIdx !== 0?this.educationList[v.enrollIdx]:undefined,
+            minEnrollmentYear: v.startIdx !== 0?this.yearList[v.startIdx]:undefined,
+            maxEnrollmentYear: v.endIdx !== 0?this.yearList[v.endIdx]:undefined,
+            department: v.departIdx !== 0?this.departmentList[v.departIdx]:undefined
           }
         }),
       });
     },
     ruleToList(rule: Rule) {
-      let start = parseInt(rule.startAt);
-      let end = parseInt(rule.endAt);
       return [
         rule.departIdx,
         rule.enrollIdx,
-        start - this.yearStart,
-        end - this.yearStart
+        rule.startIdx,
+        rule.endIdx
       ];
     },
     defaultRuleChanged(event) {
@@ -229,8 +248,8 @@ export default {
       console.log(detail);
       this.acRuleList[this.acCurrentIdx].departIdx = value[0];
       this.acRuleList[this.acCurrentIdx].enrollIdx = value[1];
-      this.acRuleList[this.acCurrentIdx].startAt = this.yearList[value[2]];
-      this.acRuleList[this.acCurrentIdx].endAt = this.yearList[value[3]];
+      this.acRuleList[this.acCurrentIdx].startAt = value[2];
+      this.acRuleList[this.acCurrentIdx].endAt = value[3];
     },
     acClick(idx) {
       console.log("acClick: acCurrentIdx" + this.acCurrentIdx + " idx: " + idx);
@@ -238,8 +257,6 @@ export default {
     },
     acAdd() {
       let r = new Rule();
-      r.startAt = this.defaultYear;
-      r.endAt = this.defaultYear;
       this.acRuleList.push(r);
     },
     acRemove(idx) {
@@ -256,8 +273,8 @@ export default {
       console.log(detail);
       this.adRuleList[this.adCurrentIdx].departIdx = value[0];
       this.adRuleList[this.adCurrentIdx].enrollIdx = value[1];
-      this.adRuleList[this.adCurrentIdx].startAt = this.yearList[value[2]];
-      this.adRuleList[this.adCurrentIdx].endAt = this.yearList[value[3]];
+      this.adRuleList[this.adCurrentIdx].startAt = value[2];
+      this.adRuleList[this.adCurrentIdx].endAt =value[3];
     },
     adClick(idx) {
       console.log("adClick: adCurrentIdx" + this.adCurrentIdx + " idx: " + idx);
@@ -265,8 +282,6 @@ export default {
     },
     adAdd() {
       let r = new Rule();
-      r.startAt = this.defaultYear;
-      r.endAt = this.defaultYear;
       this.adRuleList.push(r);
     },
     adRemove(idx) {
@@ -283,8 +298,8 @@ export default {
       console.log(detail);
       this.rjRuleList[this.rjCurrentIdx].departIdx = value[0];
       this.rjRuleList[this.rjCurrentIdx].enrollIdx = value[1];
-      this.rjRuleList[this.rjCurrentIdx].startAt = this.yearList[value[2]];
-      this.rjRuleList[this.rjCurrentIdx].endAt = this.yearList[value[3]];
+      this.rjRuleList[this.rjCurrentIdx].startAt = value[2];
+      this.rjRuleList[this.rjCurrentIdx].endAt = value[3];
     },
     rjClick(idx) {
       console.log("rjClick: rjCurrentIdx" + this.rjCurrentIdx + " idx: " + idx);
@@ -292,8 +307,6 @@ export default {
     },
     rjAdd() {
       let r = new Rule();
-      r.startAt = this.defaultYear;
-      r.endAt = this.defaultYear;
       this.rjRuleList.push(r);
     },
     rjRemove(idx) {
