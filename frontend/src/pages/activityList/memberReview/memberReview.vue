@@ -43,7 +43,6 @@
 import Vue from "vue";
 import { Component } from "vue-property-decorator";
 import { UserStatus } from "../../../apps/typesDeclare/UserEnum";
-import { HANDLE_AUDIR } from "@/store/action";
 import apiService from "../../../commons/api";
 
 @Component
