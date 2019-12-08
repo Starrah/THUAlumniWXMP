@@ -63,10 +63,7 @@
                 <text>点击查看</text>
             </view>
         </view>
-        <view style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-green lg align-center" open-type="share">分享给好友</button>
-            <button v-if="activityData.selfRole !== UserRole.Creator" class="cu-btn bg-green lg align-center" @click="onPressReport">举报此活动</button>
-        </view>
+        <br>
         <view v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)" style="display: flex;justify-content: space-around;">
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" @click="onPressAttend" :disabled="activityData.ruleForMe === 'reject'">{{signupButtonWords}}</button>
@@ -128,7 +125,14 @@
                 <button class="cu-btn bg-red" @click="onPressCancelReport">取消</button>
             </view>
         </view>
+        <br>
+        <view style="text-align: center">
+            <text style="padding-left: 30px;color: #0081ff" @click="onPressReport">举报</text>
+            <text style="padding: 20px; left: 20px">|</text>
+            <text style=" color: #0081ff">关于我们</text>
+        </view>
     </view>
+
 </template>
 
 <script lang="ts">
@@ -406,7 +410,7 @@
             });
         }
         async cancelActivityAdmin(){
-            await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？一旦确认，活动将被彻底取消，无法恢复！"));
+            await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？\r\n一旦确认，活动将被彻底取消，无法恢复！\r\n"));
             await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
             uni.showToast({
                 title: "活动已被取消",
