@@ -87,7 +87,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <switch @change="switchSignupStop = $event.detail.value" class="signupEnd" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
             </switch>
         </view>
-        <view class="cu-form-group margin-top arrow">
+        <view class="cu-form-group margin-top">
             <view class="title">报名状态</view>
             <picker @change="statusJoin = $event.detail.value" :value="statusJoin" :range="STATUS_JOIN_WORDS">
                 <view class="picker">
@@ -95,7 +95,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 </view>
             </picker>
         </view>
-        <view class="cu-form-group margin-top arrow">
+        <view class="cu-form-group margin-top">
             <view class="title">签到状态</view>
             <picker @change="statusCheck = $event.detail.value" :value="statusCheck" :range="STATUS_CHECK_WORDS">
                 <view class="picker">
@@ -105,7 +105,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top arrow">
             <view class="title">报名规则</view>
-            <view @click="openAdvancedRulePage">尚未实现</view>
+            <view @click="openAdvancedRulePage">{{advancedRuleDescription}}</view>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>
@@ -126,7 +126,12 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import {Component} from 'vue-property-decorator'
     import dateFormat from 'dateformat'
     import delay from 'delay';
-    import {SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "@/store/mutation";
+    import {
+        SET_ADVANCE_RULE,
+        SET_NEW_ACTIVITY,
+        SYNC_RULE_MODIFY_ACTIVITY,
+        SYNC_RULE_NEW_ACTIVITY
+    } from "@/store/mutation";
     import {
         FETCH_ACTIVITY_TYPE_LIST,
         SET_CHANGE_ACTIVITY,
@@ -137,6 +142,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import SureModal from "@/components/SureModal.vue";
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import {ActivityCheckStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
+    import {generateRuleDescription} from "@/apps/utils/ActivitySchemaUtils";
+    import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 
     @Component({
         components: {SureModal}
@@ -218,8 +225,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             else return "00:00"
         }
         async modifyNewActivity(e){
-            console.log(e.detail.value);
             let formData = e.detail.value;
+            console.log(["fd", formData])
             let data = {
                 name: formData.name,
                 place: formData.place,
@@ -227,27 +234,22 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 end: withSec(this.endDate + " " + this.endTime),
                 tags: formData.tag.split(/[, ]/),
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):this.createDateTime,
-                signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):withSec(this.startDate + " " + this.startTime),
+                signupStopAt: this.switchSignupStop?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):withSec(this.startDate + " " + this.startTime),
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):-1,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):0,
                 canBeSearched: this.switchCanBeSearched,
                 statusJoin: this.statusJoin,
-                statusCheck: this.statusCheck
+                statusCheck: this.statusCheck,
+                rules: this.rules
             };
+            console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
             this.$store.commit(SET_CHANGE_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
             uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
             uni.navigateBack();
-        }
-        openAdvancedRulePage(){
-            this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state);
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
-            })
         }
         showCurrentValue(){
             let obj = this.$store.state.activityDetail.changeBuffer as ActivitySchema;
@@ -267,11 +269,11 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             let signupBeiginAtArr = withoutSec(obj.signupBeginAt).split(" ");
             this.signupBeginAtDate = signupBeiginAtArr[0];
             this.signupBeginAtTime = signupBeiginAtArr[1];
-            this.switchSignupBegin = (obj.signupBeginAt === obj.createTime);
+            this.switchSignupBegin = (obj.signupBeginAt !== obj.createTime);
             let signupEndAtArr = withoutSec(obj.signupStopAt).split(" ");
             this.signupStopAtDate = signupEndAtArr[0];
             this.signupStopAtTime = signupEndAtArr[1];
-            this.switchSignupStop = (obj.signupStopAt === obj.start);
+            this.switchSignupStop = (obj.signupStopAt !== obj.start);
             let typeArr = obj.type.split("-");
             let tempMultiIndex = [];
             let curNode: Array<any> = this.typeMultiData.types;
@@ -292,6 +294,22 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         mounted(){
             this.showCurrentValue();
+        }
+        openAdvancedRulePage(){
+            this.$store.commit(SET_ADVANCE_RULE, this.$store.state.activityDetail.changeBuffer.rules);
+            this.advancedRuleToBeSync = true;
+            uni.navigateTo({
+                url: '../../newActivity/advanceRule'
+            })
+        }
+        advancedRuleToBeSync = false;
+        get advancedRuleDescription(){
+            console.log([2, this.$store.state.newActivity.rules.ruleType]);
+            return generateRuleDescription(this.$store.state.newActivity.rules)
+        }
+        rules: SignupRule;
+        onShow(){
+            if(this.advancedRuleToBeSync)this.rules = this.$store.state.advancedRule;
         }
     }
 </script>

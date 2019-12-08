@@ -13,7 +13,6 @@ const state: ActivitySchema = {
     start: "",
     end: "",
     type: "",
-    avatarUrl: "",
     maxUser: -1,
     minUser: -1,
     canBeSearched: true,
@@ -33,7 +32,7 @@ const mutations = {
         state.end = ne.end;
         state.type = ne.type;
         state.tags = ne.tags;
-        state.avatarUrl = ne.avatarUrl;
+        state.imageUrl = ne.imageUrl;
         state.signupBeginAt = ne.signupBeginAt;
         state.signupStopAt = ne.signupStopAt;
         state.minUser = ne.minUser;

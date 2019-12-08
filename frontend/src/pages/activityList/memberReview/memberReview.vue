@@ -61,7 +61,7 @@ export default class memberReveiw extends Vue {
     this.rejectedUsers = [];
     this.needAuditUsers = [];
     this.fetchNeedReview(this.$store.state.activityDetail.id).then(res => {
-      this.needAuditUsers = res;
+      this.needAuditUsers = res.users;
       console.log(this.needAuditUsers);
     });
     console.log(this.needAuditUsers);

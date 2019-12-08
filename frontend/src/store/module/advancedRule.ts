@@ -9,7 +9,7 @@ const state: SignupRule = {
 };
 
 const mutations = {
-  [SET_ADVANCE_RULE](state, newAdvanceRule) {
+  [SET_ADVANCE_RULE](state: SignupRule, newAdvanceRule: SignupRule) {
     Object.assign(state, newAdvanceRule);
   }
 };

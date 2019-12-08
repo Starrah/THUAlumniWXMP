@@ -10,7 +10,6 @@ interface ActivitySchema{
     end: string; //yyyy-mm-dd hh:MM:ss
     imageUrl?: string
     createTime?: string
-    avatarUrl?: string;
     minUser?: number
     maxUser?: number;
     curUser?: number;
