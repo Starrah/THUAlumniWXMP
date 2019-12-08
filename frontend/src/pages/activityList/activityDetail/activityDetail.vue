@@ -115,12 +115,12 @@
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
             </view>
         </view>
-        <view class="cu-modal" :class="reportModalShowing?'show':''">
+        <view class="cu-modal" style="z-index: 990" :class="reportModalShowing?'show':''">
             <view class="cu-dialog">
                 <text>您将要举报这个活动。</text>
                 <view>
                     <text>举报类型：</text>
-                    <picker @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
+                    <picker z-index="1200" @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
                         <view class="picker">
                             {{reportPickerValue>-1?reportPickerRange[reportPickerValue]:'请选择'}}
                         </view>

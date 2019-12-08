@@ -1,6 +1,6 @@
 <template>
     <view>
-    <form @submit="modifyNewActivity">
+    <form @submit="submitNewActivity">
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动名称</view>
             <input ref="name" name="name" />
@@ -91,7 +91,7 @@
         </view>
         <view class="cu-form-group margin-top arrow">
             <view class="title">报名规则</view>
-            <view @click="openAdvancedRulePage">尚未实现</view>
+            <view @click="openAdvancedRulePage">{{advancedRuleDescription}}</view>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>
@@ -112,13 +112,15 @@
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
     import dateFormat from 'dateformat'
-    import promisify from '../../apps/Promisify'
     import delay from 'delay';
     import {SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "@/store/mutation";
     import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
-    import activityTypeList from "@/store/module/activityTypeList";
     import {withSec} from "@/apps/utils/DateStringFormat";
     import SureModal from "@/components/SureModal.vue";
+    import {generateRuleDescription} from "@/apps/utils/ActivitySchemaUtils";
+    import {SignupRule} from "@/apps/typesDeclare/SignupRule";
+    import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
+
     @Component({
         components: {SureModal}
     })
@@ -126,7 +128,7 @@
         name: "newActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
         initialForm(){
-            let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"]
+            let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"];
             for(let refname of inputRefnameList){
                 (this.$refs[refname] as any).value = "";
             }
@@ -144,6 +146,12 @@
             for(let i = 0; i < this.typeMultiIndex.length;i++){
                 this.typeMultiIndex[i] = 0;
             }
+            let defaultRule: SignupRule = {ruleType: RuleType.ACCEPT};
+            this.$store.commit(SYNC_RULE_NEW_ACTIVITY, defaultRule);
+            console.log([1, this.$store.state.newActivity]);
+        }
+        mounted(){
+            this.initialForm();
         }
         get today(): string{
             return dateFormat(new Date(), "yyyy-mm-dd")
@@ -238,6 +246,7 @@
             this.$store.commit(SET_NEW_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
             uni.showToast({title: "成功", icon: "none"});
+            this.initialForm();
             await delay(1000);
             uni.navigateTo({
                 url: `../activityList/activityDetail/activityDetail?activityId=${activityId}`
@@ -245,10 +254,18 @@
         }
         openAdvancedRulePage(){
             this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state);
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
+            this.advancedRuleToBeSync = true;
+            uni.navigateTo({
+                url: './advanceRule'
             })
+        }
+        advancedRuleToBeSync = false;
+        get advancedRuleDescription(){
+            console.log([2, this.$store.state.newActivity.rules.ruleType]);
+            return generateRuleDescription(this.$store.state.newActivity.rules)
+        }
+        onShow(){
+            if(this.advancedRuleToBeSync)this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state.advancedRule)
         }
     }
 </script>

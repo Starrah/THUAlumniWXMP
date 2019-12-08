@@ -10,7 +10,7 @@ import {
     SET_ACTIVITY_DETAIL_ID,
     SET_ALL_ACTIVITY_LIST,
     SET_NEW_ACTIVITY,
-    SYNC_CHANGE_ACTIVITY_DATA
+    SYNC_CHANGE_ACTIVITY_DATA, SYNC_RULE_MODIFY_ACTIVITY
 } from "../mutation";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 import {
@@ -43,6 +43,9 @@ const mutations = {
     },
     [SET_CHANGE_ACTIVITY](state, ne: ActivitySchema) {
         Object.assign(state.changeBuffer, ne)
+    },
+    [SYNC_RULE_MODIFY_ACTIVITY](state, rule: SignupRule){
+        state.changeBuffer.rules = rule;
     }
 };
 

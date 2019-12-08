@@ -88,12 +88,6 @@
 				"text": "发起活动"
 			},
 			{
-				"pagePath": "pages/newActivity/advanceRule",
-				"iconPath": "static/me.png",
-				"selectedIconPath": "static/me.png",
-				"text": "高级"
-			},
-			{
 				"pagePath": "pages/me/me",
 				"iconPath": "static/me.png",
 				"selectedIconPath": "static/me.png",
