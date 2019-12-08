@@ -285,10 +285,10 @@
     .cu-form-group .title{
         min-width: calc(4em + 30upx);
     }
+
     .arrow {
         padding-right: 90upx
     }
-
     .arrow:before {
         position: absolute;
         right: 30upx;

@@ -66,6 +66,10 @@
                 <view class="title">我的状态</view>
                 <text>{{UserStatusShowStrings[activityData.selfStatus]}}</text>
             </view>
+            <view class="cu-form-group margin-top arrow" @click="showDescription">
+                <view class="title">活动详情</view>
+                <text>点击查看</text>
+            </view>
         </view>
         <view style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-green lg align-center" open-type="share">分享给好友</button>
@@ -95,6 +99,7 @@
         </view>
         <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-yellow lg align-center" @click="openModifyPage">修改活动信息</button>
+            <button class="cu-btn bg-yellow lg align-center" @click="jumpToSetDescription">设置活动详情</button>
         </view>
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
@@ -143,7 +148,7 @@
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
     import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
-    import {FETCH_ACTIVITY_DETAIL, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
+    import {FETCH_ACTIVITY_DETAIL, FETCH_DESCRIPTION, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
@@ -431,11 +436,46 @@
                 url: "pages/activityDetail/qrcodeShow/qrcodeShow"
             })
         }
+        async showDescription(){
+            await this.$store.dispatch(FETCH_DESCRIPTION);
+            if(this.activityData.description && this.activityData.description !== ""){
+                uni.navigateTo({
+                    url: "pages/activityList/descriptionShow/descriptionShow"
+                })
+            }else{
+                uni.showToast({
+                    title: "主办者没有设置活动详情！",
+                    icon: "none"
+                })
+            }
+        }
+        async jumpToSetDescription(){
+            await this.$store.dispatch(FETCH_DESCRIPTION);
+            uni.navigateTo({
+                url: "pages/activityList/descriptionModify/descriptionModify"
+            })
+        }
     }
 </script>
 
 <style scoped>
     .cu-form-group .title{
         min-width: calc(4em + 30upx);
+    }
+    .arrow {
+        padding-right: 90upx
+    }
+    .arrow:before {
+        position: absolute;
+        right: 30upx;
+        display: block;
+        width: 30upx;
+        height: 30upx;
+        color: #8799a3;
+        content: "\e6a3";
+        text-align: center;
+        font-size: 34upx;
+        font-family: cuIcon;
+        line-height: 30upx
     }
 </style>
