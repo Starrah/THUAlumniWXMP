@@ -1,7 +1,9 @@
 <template>
+    <view>
     <text class="text-lg">支持有限的html语法（但不能插入链接跳转等，只能显示）</text>
     <textarea v-model="desHtml"></textarea>
     <button class="cu-btn bg-green lg align-center" @click="submit">提交</button>
+    </view>
 </template>
 
 <script lang="ts">

@@ -1,6 +1,8 @@
 <template>
+    <view>
     <text class="text-sl">{{$store.state.activityDetail.activity.name}}</text>
     <rich-text :nodes="desHtml"></rich-text>
+    </view>
 </template>
 
 <script lang="ts">

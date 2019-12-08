@@ -1,6 +1,8 @@
 <template>
+    <view>
     <text class="text-sl">{{$store.state.activityDetail.activity.name}}</text>
     <img :src="imageSrc" alt="加载中，请稍候" />
+    </view>
 </template>
 
 <script lang="ts">

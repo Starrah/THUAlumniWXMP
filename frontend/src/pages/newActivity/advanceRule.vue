@@ -87,7 +87,7 @@
 
 <script lang="ts">
   import { SET_ADVANCE_RULE } from "@/store/mutation";
-import {OneSpecificSingupRule} from "@/apps/typesDeclare/SignupRule";
+  import {OneSpecificSingupRule} from "@/apps/typesDeclare/SignupRule";
   import {FETCH_DEPARTMENT_LIST, FETCH_EDUCATION_LIST} from "@/store/action";
 
 class Rule {
