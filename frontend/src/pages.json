@@ -14,6 +14,24 @@
 			}
 		},
 		{
+			"path": "pages/activityList/descriptionShow/descriptionShow",
+			"style": {
+				"navigationBarTitleText": "活动详情"
+			}
+		},
+		{
+			"path": "pages/activityList/descriptionModify/descriptionModify",
+			"style": {
+				"navigationBarTitleText": "修改活动详情"
+			}
+		},
+		{
+			"path": "pages/activityList/qrcodeShow/qrcodeShow",
+			"style": {
+				"navigationBarTitleText": "签到二维码查看"
+			}
+		},
+		{
 			"path": "pages/activityList/activityDetail/activityDetail",
 			"style": {
 				"navigationBarTitleText": "活动详情"

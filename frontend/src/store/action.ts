@@ -13,3 +13,7 @@ export const SUBMIT_ACTIVITY_CHANGE = "submitActivityChange";
 export const FETCH_MY_ACTIVITY_LIST = "fetchMyActivityList";
 export const FETCH_MORE_ACTIVITY = "fetchMoreActivity";
 export const UPDATE_USER_AVATAR = "updateUserAvatar";
+export const FETCH_DESCRIPTION = "fetchDescription";
+export const SUBMIT_DESCRIPTION = "submitDescription";
+export const FETCH_DEPARTMENT_LIST = "fetchDepartmentList";
+export const FETCH_EDUCATION_LIST = "fetchEducationList";

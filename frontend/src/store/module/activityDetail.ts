@@ -1,8 +1,8 @@
 import apiService from "../../commons/api";
 import {
     FETCH_ACTIVITY_DETAIL,
-    FETCH_ALL_ACTIVITY_LIST, SET_CHANGE_ACTIVITY, SUBMIT_ACTIVITY_CHANGE,
-    SUBMIT_ACTIVITY_STATUS_CHANGE,
+    FETCH_ALL_ACTIVITY_LIST, FETCH_DESCRIPTION, SET_CHANGE_ACTIVITY, SUBMIT_ACTIVITY_CHANGE,
+    SUBMIT_ACTIVITY_STATUS_CHANGE, SUBMIT_DESCRIPTION,
     SUBMIT_NEW_ACTIVITY
 } from "../action";
 import {
@@ -75,6 +75,23 @@ const actions = {
         try {
             let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
             return res.activityId;
+        }catch (e) {
+            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
+        }
+    },
+    async [FETCH_DESCRIPTION]({commit, state, rootState}){
+        try {
+            let res = await apiService.get(`/getActivityDescription`, {activityId: state.id});
+            commit(SET_ACTIVITY_DETAIL, {desription: res})
+        }catch (e) {
+            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+            throw e;
+        }
+    },
+    async [SUBMIT_DESCRIPTION]({commit, state, rootState}, description){
+        try {
+            let res = await apiService.post(`/modifyActivityDescription?activityId=${state.id}`, {description: description});
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
             throw e;

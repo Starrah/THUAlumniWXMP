@@ -1,10 +1,11 @@
 import { SET_ADVANCE_RULE } from "../mutation";
+import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 
-const state = {
-    defaultRule: 0,
-    acRuleList: [],
-    adRuleList: [],
-    rjRuleList: []
+const state: SignupRule = {
+    ruleType: 0,
+    accept: [],
+    needAudit: [],
+    reject: []
 };
 
 const mutations = {
