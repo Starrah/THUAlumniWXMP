@@ -61,6 +61,13 @@
 				"enablePullDownRefresh": true,
 				"navigationBarTitleText": "我的活动"
 			}
+		},
+		{
+			"path": "pages/activityList/participants/participants",
+			"style": {
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "参与者"
+			}
 		}
 	],
 	"globalStyle": {

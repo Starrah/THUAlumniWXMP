@@ -1,15 +1,15 @@
 <template>
   <div :style="{position: 'relative', height: '100%'}">
-    <div class="cu-list menu-avatar" v-for="(user, idx) in needAuditUsers" :key="idx">
+    <div class="cu-list menu-avatar" v-for="(user, idx) in participants" :key="idx">
       <div class="cu-item">
         <div class="cu-avatar round lg" :style="'background-image:url('+user.avatarUrl+');'" />
         <div class="content">
           <div class>{{user.name}}</div>
           <div class="text-sm flex">
-            <div class="text-cut">{{user.submitMsg}}</div>
+            <div v-if="enableAudit" class="text-cut">{{submitMsg(user.openId)}}</div>
           </div>
         </div>
-        <div>
+        <div v-if="enableAudit">
           <div v-if="isAccepted(user.openId)" class="text-grey">已同意</div>
           <div v-else-if="isRejected(user.openId)" class="text-grey">已拒绝</div>
           <div v-else>
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <div v-if="!needAuditUsers">
+    <div v-if="!participants">
       <view class="flex-sub text-center">
         <view class="solid-bottom text-df padding">
           <text class="lg text-gray cuIcon-emoji" />
@@ -47,24 +47,38 @@ import apiService from "../../../commons/api";
 
 @Component
 export default class memberReveiw extends Vue {
+  enableAudit = false;
   acceptedUsers = [];
   rejectedUsers = [];
   needAuditUsers = [];
+  get participants() {
+    return this.$store.state.activityDetail.activity.participants;
+  }
   isAccepted(userId) {
     return this.acceptedUsers.includes(userId);
   }
   isRejected(userId) {
     return this.rejectedUsers.includes(userId);
   }
+  submitMsg(userId) {
+    return this.needAuditUsers.find(u => u.openId === userId).submitMsg;
+  }
   onShow() {
     this.acceptedUsers = [];
     this.rejectedUsers = [];
     this.needAuditUsers = [];
-    this.fetchNeedReview(this.$store.state.activityDetail.id).then(res => {
-      this.needAuditUsers = res;
-      console.log(this.needAuditUsers);
-    });
+    const myId = this.$store.state.profile.openId;
     console.log(this.needAuditUsers);
+    const creatorId = this.$store.state.activityDetail.activity.creator;
+    // TODO: where are activity's managerIds ?
+    // if (manangerIds.includes(myId) || this.myId === creatorId) {
+    if (myId === creatorId) {
+      this.enableAudit = true;
+      this.fetchNeedReview(this.$store.state.activityDetail.id).then(res => {
+        this.needAuditUsers = res;
+      });
+      console.log(this.needAuditUsers);
+    }
   }
   submit(userId, pass) {
     const activityId = this.$store.state.activityDetail.id;
