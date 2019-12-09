@@ -366,10 +366,20 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     }
 </style>
 <style>
+    /*  #ifdef H5  */
     switch.ansg >>> .uni-switch-input, switch.ansg >>> .wx-switch-input{
         width: 70px;
     }
     switch.ansg >>> .uni-switch-input-checked::after, switch.ansg >>> .wx-switch-input-checked::after {
         left: 44px;
     }
+    /*  #endif  */
+    /*  #ifndef H5  */
+    switch.ansg .uni-switch-input, switch.ansg .wx-switch-input{
+        width: 70px;
+    }
+    switch.ansg .uni-switch-input-checked::after, switch.ansg .wx-switch-input-checked::after {
+        left: 44px;
+    }
+    /*  #endif  */
 </style>

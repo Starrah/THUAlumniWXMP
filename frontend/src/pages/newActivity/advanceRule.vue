@@ -1,15 +1,15 @@
 <template>
   <view>
-    <view>
-      <view>活动名称</view>
+    <view class="cu-form-group margin-top-sm" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
+      <view class="title">活动名称</view>
       <view>XXXXX活动</view>
     </view>
 
-    <view>
-      <view>默认规则</view>
+    <view class="cu-form-group margin-top-sm" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
+      <view class="title">默认规则</view>
       <view>
         <radio-group @change="defaultRuleChanged" :disabled="!allowModify">
-          <label v-for="(item, idx) in rules" :key="item.value">
+          <label v-for="(item, idx) in rules" :key="item.value" style="margin-left: 5px">
             <radio :value="item.value" :checked="idx === currentRuleIdx" />
             {{item.text}}
           </label>
@@ -17,10 +17,12 @@
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 0">
-      <view>
-        <text>直接通过的用户</text>
-        <button v-if="allowModify" @click="acAdd">+</button>
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 0" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
+      <view class="cu-form-group">
+        <text class="title">直接通过的用户</text>
+        <button v-if="allowModify" @click="acAdd" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">+</text>
+        </button>
       </view>
       <view v-for="(rule, idx) in acRuleList" :key="idx">
         <view>群体</view>
@@ -37,14 +39,21 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify" @click="acRemove(idx)">-</button>
+        <button v-if="allowModify" @click="acAdd" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">+</text>
+        </button>
+        <button v-if="allowModify" @click="acRemove(idx)" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">-</text>
+        </button>
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 1">
-      <view>
-        <text>需要审核的用户</text>
-        <button v-if="allowModify" @click="adAdd">+</button>
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 1" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
+      <view class="cu-form-group">
+        <text class="title">需要审核的用户</text>
+        <button v-if="allowModify" @click="adAdd" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">+</text>
+        </button>
       </view>
       <view v-for="(rule, idx) in adRuleList" :key="idx">
         <view>群体</view>
@@ -61,14 +70,21 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify"@click="adRemove(idx)">-</button>
+        <button v-if="allowModify" @click="adAdd" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">+</text>
+        </button>
+        <button v-if="allowModify" @click="adRemove(idx)" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">-</text>
+        </button>
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 2">
-      <view>
-        <text>不能参加的用户</text>
-        <button v-if="allowModify" @click="rjAdd">+</button>
+    <view class="cu-card margin-top-sm margin-bottom-sm" v-if="currentRuleIdx !== 2" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
+      <view class="cu-form-group">
+        <text class="title">不能参加的用户</text>
+        <button v-if="allowModify" @click="rjAdd" class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">+</text>
+        </button>
       </view>
       <view v-for="(rule, idx) in rjRuleList" :key="idx">
         <view>群体</view>
@@ -85,11 +101,14 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify" @click="rjRemove(idx)">-</button>
+        <button v-if="allowModify" @click="rjRemove(idx)"class="cu-btn line-green round cuIcon">
+          <text style="color: #555555">-</text>
+        </button>
       </view>
     </view>
-
-    <button type="primary" @click="save">保存</button>
+    <view style="display: flex;justify-content: center">
+      <button type="primary" @click="save">保存</button>
+    </view>
   </view>
 </template>
 
