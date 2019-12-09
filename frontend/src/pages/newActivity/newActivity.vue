@@ -259,7 +259,7 @@
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.newActivity.rules);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
-                url: '/pages/newActivity/advanceRule'
+                url: '/pages/newActivity/advanceRule?allowModify=1'
             })
         }
         advancedRuleToBeSync = false;

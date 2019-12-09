@@ -157,8 +157,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         activityName: string = "";
         place: string = "";
-        minUser: number = 0;
-        maxUser: number = -1;
+        minUser: number | string = "";
+        maxUser: number | string = "";
         tag: string = "";
         maxDate = "2020-12-31";
         startDate: string = this.DEFAULT_TIMEPICKER_VALUE;
@@ -191,6 +191,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             res.push(curNode.map((v)=>v.name));
             for(let i=0;i<this.typeMultiIndex.length-1;i++){
                 curNode = curNode[this.typeMultiIndex[i]].children;
+                if(!curNode || curNode.length <= 0)break;
                 res.push(curNode.map((v)=>v.name));
             }
             return res;
@@ -210,13 +211,9 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
-            let r = "";
-            for(let i=0;i<this.typeMultiIndex.length-1;i++){
-                r += (this.typeMultiArray[i][this.typeMultiIndex[i]] + " - ");
-            }
-            let i = this.typeMultiIndex.length-1;
-            if(i >= 0) r += this.typeMultiArray[i][this.typeMultiIndex[i]];
-            return r;
+            return this.typeMultiArray.map((nameList, i)=>{
+                return nameList[this.typeMultiIndex[i]];
+            }).join("-");
         }
         get minStartTime(): string{
             if(this.endDate <= this.startDate){
@@ -253,12 +250,15 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         showCurrentValue(){
             let obj = this.$store.state.activityDetail.changeBuffer as ActivitySchema;
+            console.log(obj);
             this.activityId = obj.id;
             this.activityName = obj.name;
             this.place = obj.place;
             this.tag = obj.tags.join(",");
-            this.minUser = obj.minUser;
-            this.maxUser = obj.maxUser;
+            this.minUser = obj.minUser !== 0?obj.minUser:"";
+            console.log(obj.minUser !== 0);
+            console.log(this.minUser);
+            this.maxUser = obj.maxUser !== -1?obj.maxUser:"";
             this.switchCanBeSearched = obj.canBeSearched;
             let startArr = withoutSec(obj.start).split(" ");
             this.startDate = startArr[0];
@@ -299,7 +299,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.activityDetail.changeBuffer.rules);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
-                url: '/pages/newActivity/advanceRule'
+                url: '/pages/newActivity/advanceRule?allowModify=1'
             })
         }
         advancedRuleToBeSync = false;

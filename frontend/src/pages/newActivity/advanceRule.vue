@@ -192,7 +192,7 @@ export default {
   },
 
   onLoad(param){
-    if(param && param.allowModify)this.allowModify = param.allowModify;
+    if(param && param.allowModify)this.allowModify = Number(param.allowModify);
   },
 
   methods: {
