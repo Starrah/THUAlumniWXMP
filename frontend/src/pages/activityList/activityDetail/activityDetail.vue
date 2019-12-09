@@ -72,27 +72,61 @@
             <button v-if="(activityData.statusJoin === ActivityJoinStatus.Continue || activityData.statusJoin === ActivityJoinStatus.Paused) && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-red lg align-center" @click="exitCurActivity">取消报名</button>
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Stopped && activityData.statusCheck === ActivityCheckStatus.Before" class="cu-btn lg align-center" :class="(activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)?'bg-green':'bg-red'" :disabled="true">报名已截止</button>
         </view>
+        <br v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)">
         <view v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager" style="display: flex;justify-content: space-around;">
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" @click="signinActivity">签到</button>
             <button v-if="activityData.selfStatus === UserStatus.Checked" class="cu-btn bg-green lg align-center" :disabled="true">您已签到</button>
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Paused && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已暂停</button>
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Stopped && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已停止</button>
         </view>
-        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" class="cu-btn bg-green lg align-center" @click="openAuditPage">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</button>
-            <button v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" class="cu-btn bg-green lg align-center" @click="startSignup">开放报名</button>
-            <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignup">暂停报名</button>
-            <button class="cu-btn bg-green lg align-center" @click="jumpToQRCodePage">查看签到二维码</button>
-            <button v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" @click="startSignin">开放签到</button>
-            <button v-if="activityData.statusCheck === ActivityCheckStatus.Continue" class="cu-btn bg-red lg align-center" @click="endSignin">暂停签到</button>
+        <br v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager">
+        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;" class="cu-list grid" :class="'col-' + columnOfButtons">
+            <view class="cu-item" v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
+                <text class="text-gray cuIcon-peoplefill" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</text>
+            </view>
+            <view class="cu-item" v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
+                <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">开放报名</text>
+            </view>
+            <view class="cu-item" v-if="activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
+                <text class="text-gray cuIcon-stop" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">暂停报名</text>
+            </view>
+            <view class="cu-item" @click="jumpToQRCodePage">
+                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">签到二维码</text>
+            </view>
+            <view class="cu-item" v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
+                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">开放签到</text>
+            </view>
+            <view class="cu-item" v-if="activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
+                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">暂停签到</text>
+            </view>
+            <view class="cu-item" @click="openModifyPage">
+                <text class="text-gray cuIcon-info" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">修改活动信息</text>
+            </view>
+            <view class="cu-item" @click="jumpToSetDescription">
+                <text class="text-gray cuIcon-post" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555; font-size:50%">设置活动详情</text>
+            </view>
         </view>
-        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-yellow lg align-center" @click="openModifyPage">修改活动信息</button>
-            <button class="cu-btn bg-yellow lg align-center" @click="jumpToSetDescription">设置活动详情</button>
-        </view>
+        <br v-if="activityAdminable(activityData)">
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
             <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
         </view>
+        <br v-if="activityCancelable(activityData)">
         <SureModal ref="SureModal"></SureModal>
         <view class="cu-modal" :class="auditModalShowing?'show':''">
             <view class="cu-dialog">
@@ -186,6 +220,17 @@
             if(this.activityData.ruleForMe === 'accept')return '立即报名';
             else if(this.activityData.ruleForMe === 'needAudit')return '申请报名';
             else return '您不可参加';
+        }
+        ANS=0;
+        get columnOfButtons() {
+            this.ANS=1;
+            if((this.activityData.statusCheck === ActivityCheckStatus.Before && this.activityData.statusJoin !== ActivityJoinStatus.Before) || this.activityData.statusJoin === ActivityJoinStatus.Continue || this.activityData.needAuditCount)this.ANS++;
+            if(this.activityData.statusJoin !== ActivityJoinStatus.Continue)this.ANS++;
+            if(this.activityData.statusJoin === ActivityJoinStatus.Continue)this.ANS++;
+            if(this.activityData.statusCheck !== ActivityCheckStatus.Continue && this.activityData.statusJoin !== ActivityJoinStatus.Before)this.ANS++;
+            if(this.activityData.statusCheck === ActivityCheckStatus.Continue)this.ANS++;
+            if(this.activityAdminable(this.activityData))this.ANS+=2;
+            return this.ANS;
         }
         async updateActivityData(){
             this.$store.dispatch(FETCH_ACTIVITY_DETAIL);
