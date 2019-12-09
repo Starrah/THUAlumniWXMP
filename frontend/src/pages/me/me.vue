@@ -1,7 +1,7 @@
 <template>
   <div>
     <button class="cu-card flex mecard" open-type="getUserInfo" @getuserinfo="nameClick">
-      <div class="cu-avatar round xl mecardavatar" :style="'background-image:url(' + profile.avatarUrl + ');'"></div>
+      <div class="cu-avatar round xl mecardavatar" :style="'background-image:url(' + fullUrl(profile.avatarUrl) + ');'"></div>
       <div class="content mecardtext" style>
         <div class="name">{{profile.name}}</div>
 <!--        <button class="cu-btn bg-green" >点击登录</button>-->
@@ -40,8 +40,8 @@
 
 <script lang="ts">
 import { mapState } from "vuex";
-import {LOGIN, FETCH_PROFILE, WEIXIN_LOGIN, FETCH_MY_ACTIVITY_LIST} from "../../store/action";
-import {SET_PROFILE} from "../../store/mutation";
+import {LOGIN, FETCH_PROFILE, WEIXIN_LOGIN, FETCH_MY_ACTIVITY_LIST} from "@/store/action";
+import {fullUrl} from "@/apps/utils/networkUtils";
 
 export default {
   data() {
@@ -58,6 +58,9 @@ export default {
       if (!this.profile.logined) {
         this.$store.dispatch(WEIXIN_LOGIN);
       }
+    },
+    fullUrl(s){
+      return fullUrl(s);
     }
   },
 

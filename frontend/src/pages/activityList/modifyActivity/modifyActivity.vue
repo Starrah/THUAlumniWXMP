@@ -299,7 +299,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.activityDetail.changeBuffer.rules);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
-                url: '../../newActivity/advanceRule'
+                url: '/pages/newActivity/advanceRule'
             })
         }
         advancedRuleToBeSync = false;

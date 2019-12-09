@@ -56,12 +56,6 @@
 			}
 		},
 		{
-			"path": "pages/activityList/memberReview/memberReview",
-			"style": {
-				"navigationBarTitleText": "审核加入申请"
-			}
-		},
-		{
 			"path": "pages/me/myActivityList",
 			"style": {
 				"enablePullDownRefresh": true,

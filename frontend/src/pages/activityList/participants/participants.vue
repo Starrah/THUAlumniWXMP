@@ -1,3 +1,4 @@
+import {UserRole} from "../../../apps/typesDeclare/UserEnum";
 <template>
   <div :style="{position: 'relative', height: '100%'}">
 
@@ -7,8 +8,8 @@
 
         <!-- Avatar -->
         <div class="cu-avatar round lg"
-          :style="'background-image:url('+user.avatarUrl+');'"
-        />
+          :style="'background-image:url('+fullUrl(user.avatarUrl)+');'"
+        ></div>
 
 
         <!-- Name and submit message -->
@@ -36,13 +37,13 @@
 
 
         <!-- Kick mode -->
-        <div v-if="showKickButton">
+        <div v-if="showKickButton(user)">
           <div v-if="kicked(user.openId)" class="text-grey">已踢出</div>
           <div v-else>
             <button @click="kickOut(user.openId)" class="cu-btn">踢出</button>
 
-            <div v-if="isCreator(myRole)">
-              <button v-if="!isManager(user.role)"
+            <div style="display: inline-block" v-if="isCreator(myRole)">
+              <button v-if="!isManager(user.userRole)"
                 @click="setAsManager(user.openId, true)"
                 class="cu-btn margin-left-xs"
               >
@@ -89,32 +90,30 @@
 
 
 <script lang="ts">
-import Vue from "vue";
-import { Component } from "vue-property-decorator";
-import { UserStatus, UserRole } from "../../../apps/typesDeclare/UserEnum";
-import apiService from "../../../commons/api";
-import { SET_ACTIVITY_DETAIL } from "../../../store/mutation";
+  import Vue from "vue";
+  import {Component} from "vue-property-decorator";
+  import {UserRole, UserStatus} from "@/apps/typesDeclare/UserEnum";
+  import apiService from "../../../commons/api";
+  import {SET_ACTIVITY_DETAIL} from "@/store/mutation";
+  import {fullUrl} from "@/apps/utils/networkUtils";
 
-@Component
+  @Component
 export default class memberReveiw extends Vue {
   enableAudit = false;
+  fullUrl = fullUrl;
   acceptedUsers = [];
   rejectedUsers = [];
   needAuditUsers = [];
   kickedUsers = [];
-  get participants() {
-    return this.$store.state.activityDetail.activity.participants;
-  }
+  participants: Array<{openId: string, avatarUrl: string, name: string, userRole?: UserRole, userStatus?: UserStatus, submitTime?: string, submitMsg?: string}> = [];
   get myRole() {
-    return UserRole.Creator;
-    return this.$store.state.activityDetail.selfRole;
+    return this.$store.state.activityDetail.activity.selfRole;
   }
   get showAuditButton(): boolean {
     return this.enableAudit;
   }
-  get showKickButton(): boolean {
-    return true;
-    return (!this.showAuditButton) && this.myRole !== UserRole.Common;
+  showKickButton(user): boolean {
+    return (!this.enableAudit) && ((this.myRole === UserRole.Manager && user.userRole === UserRole.Common) || (this.myRole === UserRole.Creator && user.userRole !== UserRole.Creator));
   }
   get activityId() {
     return this.$store.state.activityDetail.id;
@@ -143,13 +142,10 @@ export default class memberReveiw extends Vue {
   }
   setAsManager(userId, set) {
     this.handleSetRole(userId, set ? 1 : 0).then(() => {
-      const newParticipants = this.participants.map(user => (
-        Object.assign({}, user, {userRole: set ? UserRole.Manager : UserRole.Common})
-      ))
-      this.$store.commit(SET_ACTIVITY_DETAIL, Object.assign({},
-        this.$store.state.activityDetail.activity,
-        {participants: newParticipants}
-      ))
+      const newParticipants = this.participants;
+      let index = newParticipants.findIndex((v)=>v.openId === userId);
+      if(index !== -1)newParticipants[index].userRole = set ? UserRole.Manager : UserRole.Common;
+      this.participants = newParticipants;
     })
   }
   kickOut(userId) {
@@ -158,21 +154,23 @@ export default class memberReveiw extends Vue {
       this.kickedUsers.push(userId)
     })
   }
-  onLoad({ enableAudit }: { enableAudit: boolean }) {
+  onLoad({ enableAudit }: { enableAudit: string }) {
     this.acceptedUsers = [];
     this.rejectedUsers = [];
     this.needAuditUsers = [];
     this.kickedUsers = [];
-    this.enableAudit = enableAudit;
+    this.enableAudit = !!Number(enableAudit);
+    console.log([enableAudit, this.enableAudit]);
     // Search my role in participants
     const myId = this.$store.state.profile.openId;
     // fetch needAuditUsers if neccesary
-    if (this.isCreator(this.myRole) || this.isManager(this.myRole)) {
+    if (this.enableAudit && (this.isCreator(this.myRole) || this.isManager(this.myRole))) {
       this.fetchNeedReview().then(res => {
-        console.log("res")
-        console.log(res.users)
         this.needAuditUsers = res.users;
+        this.participants = this.enableAudit?this.needAuditUsers:this.$store.state.activityDetail.activity.participants;
       });
+    }else{
+      this.participants = this.enableAudit?this.needAuditUsers:this.$store.state.activityDetail.activity.participants;
     }
   }
   submit(userId, pass) {

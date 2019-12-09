@@ -252,14 +252,14 @@
             this.initialForm();
             await delay(1000);
             uni.navigateTo({
-                url: `../activityList/activityDetail/activityDetail?activityId=${activityId}`
+                url: `/pages/activityList/activityDetail/activityDetail?activityId=${activityId}`
             })
         }
         openAdvancedRulePage(){
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.newActivity.rules);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
-                url: './advanceRule'
+                url: '/pages/newActivity/advanceRule'
             })
         }
         advancedRuleToBeSync = false;

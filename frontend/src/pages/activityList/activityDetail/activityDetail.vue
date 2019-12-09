@@ -43,11 +43,11 @@
                 <view class="title">报名截止</view>
                 <text>{{activityData.signupStopAt?withoutSec(activityData.signupStopAt):'直到活动开始前均可报名'}}</text>
             </view>
-            <view class="cu-form-group margin-top">
+            <view class="cu-form-group margin-top arrow">
                 <view class="title">人数</view>
-                <view>
+                <view @click="openParticipantsPage">
                     <view class="cu-avatar-group">
-                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ user.avatarUrl?user.avatarUrl:DEFAULT_AVATAR_URL +');'"></view>
+                        <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ (user.avatarUrl?fullUrl(user.avatarUrl):DEFAULT_AVATAR_URL) +');'"></view>
                     </view>
                     <text>等{{activityData.curUser}}人</text>
                     <text>/</text>
@@ -143,6 +143,7 @@
     import {FETCH_ACTIVITY_DETAIL, FETCH_DESCRIPTION, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
+    import {fullUrl} from "@/apps/utils/networkUtils";
 
     @Component({
         components: {SureModal}
@@ -150,15 +151,14 @@
     export default class activityDetail extends Vue{
         name!: "activityDetail";
         console = console;
+        fullUrl = fullUrl;
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
         }
         get DEFAULT_AVATAR_URL(){
             return initialGlobalData.devData.DEFAULT_AVATAR_URL;
         }
-        get activityId(){
-            return this.$store.state.activityDetail.id;
-        }
+        activityId: string;
         get activityData(): ActivitySchema{
             console.log("activityDataChANGED");
             console.log(this.$store.state.activityDetail);
@@ -187,7 +187,10 @@
             this.$store.dispatch(FETCH_ACTIVITY_DETAIL);
         }
         onLoad(param: any){
-            this.$store.commit(SET_ACTIVITY_DETAIL_ID, param.activityId);
+            this.activityId = param.activityId;
+        }
+        onShow(){
+            this.$store.commit(SET_ACTIVITY_DETAIL_ID, this.activityId);
             this.updateActivityData();
         }
         get startDate(){
@@ -344,7 +347,7 @@
                 });
             });
             try {
-                await apiService.post(`checkInActivity?activityId=${this.activityId}`);
+                await apiService.post(`checkInActivity?code=${code}&activityId=${this.activityId}`);
                 uni.showToast({
                     title: "签到成功",
                 });
@@ -360,7 +363,7 @@
         }
         async openAuditPage(){
             uni.navigateTo({
-                url: '/pages/activityList/memberReview/memberReview'
+                url: '/pages/activityList/participants/participants?enableAudit=1'
             })
         }
         async startSignin(){
@@ -418,12 +421,12 @@
             return{
                 title: this.activityData.name,
                 path: `/pages/activityDetail/activityDetail?activityId=${this.activityId}`,
-                imageUrl: this.activityData.imageUrl
+                imageUrl: fullUrl(this.activityData.imageUrl)
             }
         }
         jumpToQRCodePage(){
             uni.navigateTo({
-                url: "/pages/activityDetail/qrcodeShow/qrcodeShow"
+                url: "/pages/activityList/qrcodeShow/qrcodeShow"
             })
         }
         async showDescription(){
@@ -443,6 +446,11 @@
             await this.$store.dispatch(FETCH_DESCRIPTION);
             uni.navigateTo({
                 url: "/pages/activityList/descriptionModify/descriptionModify"
+            })
+        }
+        openParticipantsPage(){
+            uni.navigateTo({
+                url: '/pages/activityList/participants/participants?enableAudit=0'
             })
         }
     }

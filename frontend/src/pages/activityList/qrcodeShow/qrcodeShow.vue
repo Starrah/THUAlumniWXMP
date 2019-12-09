@@ -15,8 +15,9 @@
         name: "qrcodeShow";
         imageSrc: string = "";
         async downloadQRCode(){
+            console.log(this.$store.state.activityDetail);
             uni.downloadFile({
-                url: apiService.baseUrl + "/generateCheckinCode"  + `?session=${apiService.session}&activityId=${this.$store.state.activityDetail.activity.id}`,
+                url: apiService.baseUrl + "/generateCheckinCode"  + `?session=${apiService.session}&activityId=${this.$store.state.activityDetail.id}`,
                 success: (result)=>{
                      this.imageSrc = result.tempFilePath;
                 }
