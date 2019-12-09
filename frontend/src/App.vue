@@ -3,7 +3,7 @@ import Vue from "vue";
 import initialGlobalData from "./apps/typesDeclare/InitialGlobalData";
 import store from "./store";
 import apiService from "./commons/api";
-import {FETCH_PROFILE} from "./store/action";
+import {FETCH_PROFILE, TRY_LOGIN_WITHOUT_NEW_CODE} from "./store/action";
 
 apiService.init(null, "http://thalu.starrah.cn");
 
@@ -38,6 +38,7 @@ export default Vue.extend({
             enableDebug: true
         })
         //#endif
+        this.$store.dispatch(TRY_LOGIN_WITHOUT_NEW_CODE);
     }
 });
 </script>
