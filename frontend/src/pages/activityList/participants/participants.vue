@@ -75,7 +75,7 @@ export default class memberReveiw extends Vue {
     if (myId === creatorId) {
       this.enableAudit = true;
       this.fetchNeedReview(this.$store.state.activityDetail.id).then(res => {
-        this.needAuditUsers = res;
+        this.needAuditUsers = res.users;
       });
       console.log(this.needAuditUsers);
     }

@@ -8,7 +8,7 @@
     <view>
       <view>默认规则</view>
       <view>
-        <radio-group @change="defaultRuleChanged">
+        <radio-group @change="defaultRuleChanged" :disabled="!allowModify">
           <label v-for="(item, idx) in rules" :key="item.value">
             <radio :value="item.value" :checked="idx === currentRuleIdx" />
             {{item.text}}
@@ -17,10 +17,10 @@
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm">
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 0">
       <view>
         <text>直接通过的用户</text>
-        <button :disabled="!allowModify" @click="acAdd">+</button>
+        <button v-if="allowModify" @click="acAdd">+</button>
       </view>
       <view v-for="(rule, idx) in acRuleList" :key="idx">
         <view>群体</view>
@@ -34,18 +34,17 @@
           <view @click="acClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {{yearList(rule.startIdx)}} 到 {{yearList(rule.endIdx)}}
+            入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button @click="acAdd">+</button>
-        <button @click="acRemove(idx)">-</button>
+        <button v-if="allowModify" @click="acRemove(idx)">-</button>
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm">
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 1">
       <view>
         <text>需要审核的用户</text>
-        <button :disabled="!allowModify" @click="adAdd">+</button>
+        <button v-if="allowModify" @click="adAdd">+</button>
       </view>
       <view v-for="(rule, idx) in adRuleList" :key="idx">
         <view>群体</view>
@@ -59,18 +58,17 @@
           <view @click="adClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {{yearList(rule.startIdx)}} 到 {{yearList(rule.endIdx)}}
+            入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button @click="adAdd">+</button>
-        <button @click="adRemove(idx)">-</button>
+        <button v-if="allowModify"@click="adRemove(idx)">-</button>
       </view>
     </view>
 
-    <view class="cu-card margin-top-sm">
+    <view class="cu-card margin-top-sm" v-if="currentRuleIdx !== 2">
       <view>
         <text>不能参加的用户</text>
-        <button :disabled="!allowModify" @click="rjAdd">+</button>
+        <button v-if="allowModify" @click="rjAdd">+</button>
       </view>
       <view v-for="(rule, idx) in rjRuleList" :key="idx">
         <view>群体</view>
@@ -84,10 +82,10 @@
           <view @click="rjClick(idx)">
             {{departmentList[rule.departIdx]}},
             {{educationList[rule.enrollIdx]}},
-            入学年份从 {{yearList(rule.startIdx)}} 到 {{yearList(rule.endIdx)}}
+            入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button :disabled="!allowModify" @click="rjRemove(idx)">-</button>
+        <button v-if="allowModify" @click="rjRemove(idx)">-</button>
       </view>
     </view>
 
@@ -194,7 +192,7 @@ export default {
   },
 
   onLoad(param){
-    if(param && this.allowModify)this.allowModify = param.allowModify;
+    if(param && param.allowModify)this.allowModify = param.allowModify;
   },
 
   methods: {
@@ -226,6 +224,7 @@ export default {
           }
         }),
       });
+      uni.navigateBack();
     },
     ruleToList(rule: Rule) {
       return [
@@ -248,8 +247,8 @@ export default {
       console.log(detail);
       this.acRuleList[this.acCurrentIdx].departIdx = value[0];
       this.acRuleList[this.acCurrentIdx].enrollIdx = value[1];
-      this.acRuleList[this.acCurrentIdx].startAt = value[2];
-      this.acRuleList[this.acCurrentIdx].endAt = value[3];
+      this.acRuleList[this.acCurrentIdx].startIdx = value[2];
+      this.acRuleList[this.acCurrentIdx].endIdx = value[3];
     },
     acClick(idx) {
       console.log("acClick: acCurrentIdx" + this.acCurrentIdx + " idx: " + idx);
@@ -260,12 +259,7 @@ export default {
       this.acRuleList.push(r);
     },
     acRemove(idx) {
-      if (this.acRuleList.length != 1) {
-        console.log(
-          "acRemove: acCurrentIdx" + this.acCurrentIdx + " idx: " + idx
-        );
         this.acRuleList.splice(idx, 1);
-      }
     },
     adChange({ detail }) {
       let { value } = detail;
@@ -273,8 +267,8 @@ export default {
       console.log(detail);
       this.adRuleList[this.adCurrentIdx].departIdx = value[0];
       this.adRuleList[this.adCurrentIdx].enrollIdx = value[1];
-      this.adRuleList[this.adCurrentIdx].startAt = value[2];
-      this.adRuleList[this.adCurrentIdx].endAt =value[3];
+      this.adRuleList[this.adCurrentIdx].startIdx = value[2];
+      this.adRuleList[this.adCurrentIdx].endIdx =value[3];
     },
     adClick(idx) {
       console.log("adClick: adCurrentIdx" + this.adCurrentIdx + " idx: " + idx);
@@ -285,12 +279,7 @@ export default {
       this.adRuleList.push(r);
     },
     adRemove(idx) {
-      if (this.adRuleList.length != 1) {
-        console.log(
-                "adRemove: adCurrentIdx" + this.adCurrentIdx + " idx: " + idx
-        );
         this.adRuleList.splice(idx, 1);
-      }
     },
     rjChange({ detail }) {
       let { value } = detail;
@@ -298,8 +287,8 @@ export default {
       console.log(detail);
       this.rjRuleList[this.rjCurrentIdx].departIdx = value[0];
       this.rjRuleList[this.rjCurrentIdx].enrollIdx = value[1];
-      this.rjRuleList[this.rjCurrentIdx].startAt = value[2];
-      this.rjRuleList[this.rjCurrentIdx].endAt = value[3];
+      this.rjRuleList[this.rjCurrentIdx].startIdx = value[2];
+      this.rjRuleList[this.rjCurrentIdx].endIdx = value[3];
     },
     rjClick(idx) {
       console.log("rjClick: rjCurrentIdx" + this.rjCurrentIdx + " idx: " + idx);
@@ -310,12 +299,7 @@ export default {
       this.rjRuleList.push(r);
     },
     rjRemove(idx) {
-      if (this.rjRuleList.length != 1) {
-        console.log(
-                "rjRemove: rjCurrentIdx" + this.rjCurrentIdx + " idx: " + idx
-        );
         this.rjRuleList.splice(idx, 1);
-      }
     }
   }
 };

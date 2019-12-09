@@ -10,7 +10,7 @@ import {
     SET_ACTIVITY_DETAIL_ID,
     SET_ALL_ACTIVITY_LIST,
     SET_NEW_ACTIVITY,
-    SYNC_CHANGE_ACTIVITY_DATA
+    SYNC_CHANGE_ACTIVITY_DATA, SYNC_RULE_MODIFY_ACTIVITY
 } from "../mutation";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 import {
@@ -39,10 +39,13 @@ const mutations = {
         state.id = ne;
     },
     [SYNC_CHANGE_ACTIVITY_DATA](state){
-        state.changeBuffer = state.activity;
+        state.changeBuffer = JSON.parse(JSON.stringify(state.activity));
     },
     [SET_CHANGE_ACTIVITY](state, ne: ActivitySchema) {
-        Object.assign(state.changeBuffer, ne)
+        state.changeBuffer = ne
+    },
+    [SYNC_RULE_MODIFY_ACTIVITY](state, rule: SignupRule){
+        state.changeBuffer.rules = rule;
     }
 };
 
@@ -66,12 +69,18 @@ const actions = {
         }
     },
     async [SUBMIT_ACTIVITY_CHANGE]({state, rootState}){
-        let submitObj = {};
+        let submitObj: any = {};
         for(let key in state.changeBuffer){
             if(state.changeBuffer[key] !== undefined && state.changeBuffer[key] !== state.activity[key]){
                 submitObj[key] = state.changeBuffer[key];
             }
+            console.log([key, state.changeBuffer[key], state.activity[key]])
         }
+        if(assertRuleSame(state.activity.rules, state.changeBuffer.rules))submitObj.rules = undefined;
+        else submitObj.rules = state.changeBuffer.rules;
+        if(JSON.stringify(state.activity.tags) === JSON.stringify(state.changeBuffer.tags))submitObj.tags = undefined;
+        else submitObj.tags = state.changeBuffer.tags;
+        console.log(submitObj);
         try {
             let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
             return res.activityId;
@@ -106,23 +115,26 @@ export default {
 };
 
 function assertRuleSame(r1: SignupRule, r2: SignupRule) {
+    console.log([r1,r2]);
+    if(!r1 && !r2)return true;
+    if((!r1 || !r2))return false;
     if(r1.ruleType !== r2.ruleType)return false;
     if(r1.accept){
         if(!r2.accept || r1.accept.length !== r2.accept.length)return false;
         for(let i=0;i<r1.accept.length;i++){
-            if(assertRuleItemSame(r1.accept[i], r2.accept[i]))return false;
+            if(!assertRuleItemSame(r1.accept[i], r2.accept[i]))return false;
         }
     }
     if(r1.needAudit){
         if(!r2.needAudit || r1.needAudit.length !== r2.needAudit.length)return false;
         for(let i=0;i<r1.needAudit.length;i++){
-            if(assertRuleItemSame(r1.needAudit[i], r2.needAudit[i]))return false;
+            if(!assertRuleItemSame(r1.needAudit[i], r2.needAudit[i]))return false;
         }
     }
     if(r1.reject){
         if(!r2.reject || r1.reject.length !== r2.reject.length)return false;
         for(let i=0;i<r1.reject.length;i++){
-            if(assertRuleItemSame(r1.reject[i], r2.reject[i]))return false;
+            if(!assertRuleItemSame(r1.reject[i], r2.reject[i]))return false;
         }
     }
     return true;

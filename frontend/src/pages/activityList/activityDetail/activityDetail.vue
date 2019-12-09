@@ -115,12 +115,12 @@
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
             </view>
         </view>
-        <view class="cu-modal" :class="reportModalShowing?'show':''">
+        <view class="cu-modal" style="z-index: 990" :class="reportModalShowing?'show':''">
             <view class="cu-dialog">
                 <text>您将要举报这个活动。</text>
                 <view>
                     <text>举报类型：</text>
-                    <picker @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
+                    <picker z-index="1200" @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
                         <view class="picker">
                             {{reportPickerValue>-1?reportPickerRange[reportPickerValue]:'请选择'}}
                         </view>
@@ -367,11 +367,9 @@
             this.updateActivityData()
         }
         async openAuditPage(){
-            uni.showToast({
-                title: "尚未实现",
-                icon: "none"
-            });
-            this.updateActivityData()
+            uni.navigateTo({
+                url: '/pages/activityList/memberReview/memberReview'
+            })
         }
         async startSignin(){
             await ((this.$refs.SureToast as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
@@ -410,7 +408,7 @@
         async openModifyPage(){
             this.$store.commit(SYNC_CHANGE_ACTIVITY_DATA);
             uni.navigateTo({
-                url: `../modifyActivity/modifyActivity?activityId=${this.activityId}`
+                url: `/pages/activityList/modifyActivity/modifyActivity?activityId=${this.activityId}`
             });
         }
         async cancelActivityAdmin(){
@@ -433,14 +431,14 @@
         }
         jumpToQRCodePage(){
             uni.navigateTo({
-                url: "pages/activityDetail/qrcodeShow/qrcodeShow"
+                url: "/pages/activityDetail/qrcodeShow/qrcodeShow"
             })
         }
         async showDescription(){
             await this.$store.dispatch(FETCH_DESCRIPTION);
             if(this.activityData.description && this.activityData.description !== ""){
                 uni.navigateTo({
-                    url: "pages/activityList/descriptionShow/descriptionShow"
+                    url: "/pages/activityList/descriptionShow/descriptionShow"
                 })
             }else{
                 uni.showToast({
@@ -452,7 +450,7 @@
         async jumpToSetDescription(){
             await this.$store.dispatch(FETCH_DESCRIPTION);
             uni.navigateTo({
-                url: "pages/activityList/descriptionModify/descriptionModify"
+                url: "/pages/activityList/descriptionModify/descriptionModify"
             })
         }
     }

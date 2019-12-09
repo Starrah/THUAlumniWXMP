@@ -4,7 +4,7 @@ import {SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "../mutation";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
 import {Store} from "vuex";
-import {OneSpecificSingupRule} from "@/apps/typesDeclare/SignupRule";
+import {OneSpecificSingupRule, SignupRule} from "@/apps/typesDeclare/SignupRule";
 
 const state: ActivitySchema = {
     id: undefined,
@@ -13,7 +13,6 @@ const state: ActivitySchema = {
     start: "",
     end: "",
     type: "",
-    avatarUrl: "",
     maxUser: -1,
     minUser: -1,
     canBeSearched: true,
@@ -33,7 +32,7 @@ const mutations = {
         state.end = ne.end;
         state.type = ne.type;
         state.tags = ne.tags;
-        state.avatarUrl = ne.avatarUrl;
+        state.imageUrl = ne.imageUrl;
         state.signupBeginAt = ne.signupBeginAt;
         state.signupStopAt = ne.signupStopAt;
         state.minUser = ne.minUser;
@@ -46,15 +45,8 @@ const mutations = {
         state.statusJoin = ne.signupBeginAt ? ActivityJoinStatus.Before : ActivityJoinStatus.Continue
         state.id = undefined
     },
-    [SYNC_RULE_NEW_ACTIVITY](state: ActivitySchema, rootState) {
-        let advancedObj: {
-            defaultRule: number,
-            acRuleList: Array<OneSpecificSingupRule>,
-            adRuleList: Array<OneSpecificSingupRule>,
-            rjRuleList: Array<OneSpecificSingupRule>
-        } = rootState.advancedRule;
-        console.log(advancedObj);
-        //TODO 和advancedRule的vuex对接
+    [SYNC_RULE_NEW_ACTIVITY](state: ActivitySchema, rule: SignupRule) {
+        state.rules = rule;
     }
 };
 

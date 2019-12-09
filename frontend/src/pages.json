@@ -56,6 +56,12 @@
 			}
 		},
 		{
+			"path": "pages/activityList/memberReview/memberReview",
+			"style": {
+				"navigationBarTitleText": "审核加入申请"
+			}
+		},
+		{
 			"path": "pages/me/myActivityList",
 			"style": {
 				"enablePullDownRefresh": true,
@@ -93,12 +99,6 @@
 				"iconPath": "static/newActivity.png",
 				"selectedIconPath": "static/newActivity.png",
 				"text": "发起活动"
-			},
-			{
-				"pagePath": "pages/newActivity/advanceRule",
-				"iconPath": "static/me.png",
-				"selectedIconPath": "static/me.png",
-				"text": "高级"
 			},
 			{
 				"pagePath": "pages/me/me",
