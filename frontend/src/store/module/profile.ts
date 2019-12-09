@@ -6,7 +6,7 @@ import {
   FETCH_ALUMN,
   GOTO_QHR,
   UPDATE_USER_AVATAR,
-  FETCH_MY_ACTIVITY_LIST
+  FETCH_MY_ACTIVITY_LIST, TRY_LOGIN_WITHOUT_NEW_CODE
 } from "../action";
 import {SET_PROFILE, SET_ALUMN} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
@@ -30,6 +30,22 @@ const mutations = {
 };
 
 const actions = {
+  async [TRY_LOGIN_WITHOUT_NEW_CODE]({dispatch}){
+    let session = uni.getStorageSync("session");
+    let sessionValid = await new Promise((resolve, reject)=>{
+      uni.checkSession({
+        success(){resolve(true);},
+        fail(){resolve(false);}
+      })
+    });
+    if(session && sessionValid){
+      apiService.session = session;
+      dispatch(FETCH_PROFILE);
+      console.log(["autoLogin", true]);
+    }
+    else console.log(["autoLogin", false]);
+  },
+
   async [WEIXIN_LOGIN]({ dispatch, rootState }) {
     uni.login({
       provider: "weixin",
@@ -48,7 +64,9 @@ const actions = {
     console.log("login");
     return apiService.get("/login", { code }).then(data => {
       console.log(data);
-      apiService.session = data["session"];
+      let session = data["session"];
+      uni.setStorageSync("session", session);
+      apiService.session = session;
       commit(SET_PROFILE, { openId: data["openId"] });
       console.log(apiService.session);
       if (data["result"] == "exist") {

@@ -340,9 +340,8 @@
             let code = await new Promise((resolve, reject)=>{
                 uni.scanCode({
                     success: (r)=>{
-                        let res = JSON.parse(r.result);
-                        console.log(res.code);
-                        resolve(res.code)
+                        console.log("scanResult", r.result);
+                        resolve(r.result);
                     }
                 });
             });

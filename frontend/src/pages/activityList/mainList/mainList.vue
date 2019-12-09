@@ -49,7 +49,7 @@
     import promisify from "@/apps/Promisify";
     import apiService from '@/commons/api'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
-    import {FETCH_ALL_ACTIVITY_LIST, FETCH_MORE_ACTIVITY} from "@/store/action";
+    import {FETCH_ALL_ACTIVITY_LIST, FETCH_MORE_ACTIVITY, TRY_LOGIN_WITHOUT_NEW_CODE} from "@/store/action";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl} from "@/apps/utils/networkUtils";
 
@@ -111,7 +111,8 @@
             // this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
         }
 
-        onShow(){
+        async onShow(){
+            if(!this.$store.state.profile.logined)await this.$store.dispatch(TRY_LOGIN_WITHOUT_NEW_CODE);
             this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST)
         }
 
