@@ -19,6 +19,11 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <view class="title">标签</view>
             <input ref="tag" name="tag" placeholder="多个标签之间以逗号或空格分隔" :value="tag"/>
         </view>
+        <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
+            <view class="title">活动头像</view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ');'"></view>
+            <text v-else>点击上传</text>
+        </view>
         <view class="cu-form-group margin-top">
             <view class="title">公开活动</view>
             <text>开启则可被公开检索到</text>
@@ -144,11 +149,13 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import {ActivityCheckStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import {generateRuleDescription} from "@/apps/utils/ActivitySchemaUtils";
     import {SignupRule} from "@/apps/typesDeclare/SignupRule";
+    import apiService from "../../../commons/api"
+    import {fullUrl} from "@/apps/utils/networkUtils";
 
     @Component({
         components: {SureModal}
     })
-    export default class newActivity extends Vue{
+    export default class modifyActivity extends Vue{
         name: "modifyActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
         activityId: string;
@@ -175,9 +182,49 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         switchCanBeSearched: boolean = true;
         statusJoin: ActivityJoinStatus = ActivityJoinStatus.Before;
         statusCheck: ActivityCheckStatus = ActivityCheckStatus.Before;
+        imageUrl?: string;
         STATUS_JOIN_WORDS = ["报名尚未开始", "报名中", "报名已暂停", "报名已截止"];
         STATUS_CHECK_WORDS = ["签到尚未开始", "签到中", "签到已暂停", "签到已截止"];
         createDateTime: string = "";
+        async chooseImage(){
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                let path: string = await new Promise((resolve, reject) => {
+                    uni.chooseImage({
+                        count: 1,
+                        sizeType: ["compressed"],
+                        sourceType: ["album"],
+                        success(res) {
+                            resolve(res.tempFiles[0].path);
+                        },
+                        fail(){
+                            reject();
+                        }
+                    })
+                });
+                let absUrl = await new Promise<string>((resolve, reject) => {
+                    uni.uploadFile({
+                        url: apiService.baseUrl + `/uploadImage?session=${apiService.session}`,
+                        name: "file",
+                        filePath: path,
+                        fileType: "image",
+                        success(res) {
+                            let obj: any = (typeof res.data === "string") ? JSON.parse(res.data) : res.data;
+                            if (obj.url) resolve(fullUrl(obj.url));
+                            else reject(obj);
+                        },
+                        fail(e) {
+                            reject(e);
+                        }
+                    })
+                });
+                console.log(path);
+                console.log(absUrl);
+                this.imageUrl = absUrl;
+            }finally {
+                uni.hideLoading()
+            }
+        }
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
@@ -238,7 +285,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 canBeSearched: this.switchCanBeSearched,
                 statusJoin: this.statusJoin,
                 statusCheck: this.statusCheck,
-                rules: this.rules
+                rules: this.rules,
+                imageUrl: this.imageUrl
             };
             console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));

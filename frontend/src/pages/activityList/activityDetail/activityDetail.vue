@@ -337,20 +337,25 @@
             this.updateActivityData()
         }
         async signinActivity(){
+            console.log("qwqwqwqw");
             let code = await new Promise((resolve, reject)=>{
                 uni.scanCode({
                     success: (r)=>{
                         console.log("scanResult", r.result);
                         resolve(r.result);
-                    }
+                    },
+                     complete: ()=>console.log("comp")
                 });
             });
+            console.log(code);
             try {
-                await apiService.post(`checkInActivity?code=${code}&activityId=${this.activityId}`);
+                let res = await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
+                console.log(res);
                 uni.showToast({
                     title: "签到成功",
                 });
             }catch (e) {
+                console.log(e);
                 if(e.errid && e.errid >= 500 && e.errid <= 599){
                     uni.showToast({
                         title: e.errmsg,

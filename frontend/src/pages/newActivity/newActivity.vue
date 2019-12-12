@@ -17,6 +17,11 @@
             <view class="title">标签</view>
             <input name="tag" placeholder="多个标签之间以逗号或空格分隔" :value="inputValue" />
         </view>
+        <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
+            <view class="title">活动头像</view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ')'"></view>
+            <text v-else>点击上传</text>
+        </view>
         <view class="cu-form-group margin-top">
             <view class="title">公开活动</view>
             <text>开启则可被公开检索到</text>
@@ -120,6 +125,8 @@
     import {generateRuleDescription} from "@/apps/utils/ActivitySchemaUtils";
     import {SignupRule} from "@/apps/typesDeclare/SignupRule";
     import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
+    import apiService from "../../commons/api"
+    import {fullUrl} from "@/apps/utils/networkUtils";
 
     @Component({
         components: {SureModal}
@@ -128,6 +135,8 @@
         name: "newActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
         inputValue: string = "";
+        console = console;
+        imageUrl: string = "";
         initialForm(){
             console.log(this.$refs);
             // let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"];
@@ -137,6 +146,7 @@
             // }
             this.inputValue = "1";
             this.inputValue = "";
+            this.imageUrl = "";
             this.startDate = this.DEFAULT_TIMEPICKER_VALUE;
             this.startTime = this.DEFAULT_TIMEPICKER_VALUE;
             this.endDate = this.DEFAULT_TIMEPICKER_VALUE;
@@ -154,6 +164,47 @@
             let defaultRule: SignupRule = {ruleType: RuleType.ACCEPT};
             this.$store.commit(SYNC_RULE_NEW_ACTIVITY, defaultRule);
             console.log([1, this.$store.state.newActivity]);
+        }
+        async chooseImage(){
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                let path: string = await new Promise((resolve, reject) => {
+                    uni.chooseImage({
+                        count: 1,
+                        sizeType: ["compressed"],
+                        sourceType: ["album"],
+                        success(res) {
+                            resolve(res.tempFiles[0].path);
+                        },
+                        fail(){
+                            reject();
+                        }
+                    })
+                });
+                let absUrl = await new Promise<string>((resolve, reject) => {
+                    uni.uploadFile({
+                        url: apiService.baseUrl + `/uploadImage?session=${apiService.session}`,
+                        name: "file",
+                        filePath: path,
+                        fileType: "image",
+                        success(res) {
+                            let obj: any = (typeof res.data === "string") ? JSON.parse(res.data) : res.data;
+                            console.log(obj);
+                            if (obj.url) resolve(fullUrl(obj.url));
+                            else reject(obj);
+                        },
+                        fail(e) {
+                            console.log("fail");
+                            reject(e);
+                        }
+                    })
+                });
+                console.log(path);
+                console.log(absUrl);
+                this.imageUrl = absUrl;
+            }finally {
+                uni.hideLoading()
+            }
         }
         mounted(){
             this.initialForm();
@@ -237,13 +288,14 @@
                 place: formData.place,
                 start: withSec(this.startDate + " " + this.startTime),
                 end: withSec(this.endDate + " " + this.endTime),
-                tags: formData.tag.split(/[, ]/),
+                tags: formData.tag !== ""?formData.tag.split(/[, ]/):[],
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):undefined,
                 signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):undefined,
                 type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
-                canBeSearched: this.switchCanBeSearched
+                canBeSearched: this.switchCanBeSearched,
+                imageUrl: (this.imageUrl && this.imageUrl !== "")?this.imageUrl:undefined
             };
             await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
             this.$store.commit(SET_NEW_ACTIVITY, data);

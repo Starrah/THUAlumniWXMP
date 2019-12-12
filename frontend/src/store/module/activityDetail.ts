@@ -56,6 +56,7 @@ const actions = {
     async [FETCH_ACTIVITY_DETAIL]({state, commit, rootState}){
         try {
             let res = await apiService.get('/getActivityInfo', {activityId: state.id});
+            res.id = state.id;
             commit(SET_ACTIVITY_DETAIL, res)
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
@@ -63,6 +64,7 @@ const actions = {
         }
     },
     async [SUBMIT_ACTIVITY_STATUS_CHANGE]({state, commit, rootState}, {activityId, newStatus}){
+        newStatus.id = activityId;
         try {
             let res = await apiService.post(`/modifyActivity?activityId=${activityId}`, newStatus);
             return res.activityId;
@@ -77,13 +79,12 @@ const actions = {
             if(state.changeBuffer[key] !== undefined && state.changeBuffer[key] !== state.activity[key]){
                 submitObj[key] = state.changeBuffer[key];
             }
-            console.log([key, state.changeBuffer[key], state.activity[key]])
         }
         if(assertRuleSame(state.activity.rules, state.changeBuffer.rules))submitObj.rules = undefined;
         else submitObj.rules = state.changeBuffer.rules;
         if(JSON.stringify(state.activity.tags) === JSON.stringify(state.changeBuffer.tags))submitObj.tags = undefined;
         else submitObj.tags = state.changeBuffer.tags;
-        console.log(submitObj);
+        submitObj.id = state.id;
         try {
             let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
             return res.activityId;
@@ -118,7 +119,6 @@ export default {
 };
 
 function assertRuleSame(r1: SignupRule, r2: SignupRule) {
-    console.log([r1,r2]);
     if(!r1 && !r2)return true;
     if((!r1 || !r2))return false;
     if(r1.ruleType !== r2.ruleType)return false;

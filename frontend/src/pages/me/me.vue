@@ -64,8 +64,8 @@ export default {
     }
   },
 
-  onLoad(){
-    console.log("onLaunch");
+  onShow(){
+    console.log("onShow");
     this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
   }
 };

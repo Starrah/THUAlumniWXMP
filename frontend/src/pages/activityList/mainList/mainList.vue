@@ -4,7 +4,7 @@
         <view class="cu-bar search bg-white">
             <view class="search-form round">
                 <text class="cuIcon-search"></text>
-                <input @focus="InputFocus" @blur="InputBlur" :adjust-position="false" type="text" placeholder="搜索活动" confirm-type="search"></input>
+                <input :adjust-position="false" type="text" placeholder="搜索活动" v-model="tempSearchText"/>
             </view>
             <view class="action">
                 <button class="cu-btn bg-green shadow-blur round" @click="search">搜索</button>
@@ -59,14 +59,17 @@
         name!: "mainList";
         fullUrl = fullUrl;
         debugCode?:string = "";
+        tempSearchText = "";
+        searchText = "";
+        search(){
+            this.searchText = this.tempSearchText;
+            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST, {searchWord: this.searchText});
+        }
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
         }
         get activities_toShow(){
             return this.$store.state.allActivityList.activityList;
-        }
-        search(){
-            uni.showToast({title: "尚未支持", icon:"none"})
         }
         isLoadingMore: boolean = false;
         onReachBottom(){
@@ -79,7 +82,8 @@
             let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;
             try {
                 await this.$store.dispatch(FETCH_MORE_ACTIVITY, {
-                    lastSeenId
+                    lastSeenId,
+                    searchWord: this.searchText
                 });
             }finally {
                 this.isLoadingMore = false;
@@ -87,7 +91,7 @@
         }
         async onPullDownRefresh(){
             try{
-                await this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST);
+                await this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST, {searchWord: this.searchText});
             }finally {
                 uni.stopPullDownRefresh();
             }
@@ -113,7 +117,7 @@
 
         async onShow(){
             if(!this.$store.state.profile.logined)await this.$store.dispatch(TRY_LOGIN_WITHOUT_NEW_CODE);
-            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST)
+            this.$store.dispatch(FETCH_ALL_ACTIVITY_LIST, {searchWord: this.searchText})
         }
 
         jumpToActivityDetail(event, a: ActivitySchema){

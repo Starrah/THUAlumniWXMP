@@ -37,8 +37,20 @@ const actions = {
         if(!param)param = {};
         param.most = param.most || 15;
         try {
-            let res = await apiService.get('/getAllActivity', param);
-            commit(SET_ALL_ACTIVITY_LIST, res)
+            let res;
+            if(param.searchWord && param.searchWord !== "") {
+                try {
+                    res = await apiService.get('/searchActivity', param);
+                }catch(e){
+                    if(e.errid && e.errid === 201){
+                        uni.showToast({title: e.errmsg, icon: "none"});
+                        res = {activityList: []};
+                    }else throw e;
+                }
+            }else{
+                res = await apiService.get('/getAllActivity', param);
+            }
+            commit(SET_ALL_ACTIVITY_LIST, res);
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
             throw e;
@@ -48,7 +60,19 @@ const actions = {
         if(!param)param = {};
         param.most = param.most || 15;
         try {
-            let res = await apiService.get('/getAllActivity', param);
+            let res;
+            if(param.searchWord && param.searchWord !== "") {
+                try {
+                    res = await apiService.get('/searchActivity', param);
+                }catch(e){
+                    if(e.errid && e.errid === 201){
+                        uni.showToast({title: e.errmsg, icon: "none"});
+                        res = {activityList: []};
+                    }else throw e;
+                }
+            }else{
+                res = await apiService.get('/getAllActivity', param);
+            }
             commit(ADD_MORE_ACTIVITY, res)
         }catch (e) {
             if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
