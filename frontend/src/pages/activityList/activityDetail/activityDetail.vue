@@ -163,7 +163,7 @@
         <view style="text-align: center">
             <text style="padding-left: 30px;color: #0081ff" @click="onPressReport">举报</text>
             <text style="padding: 20px; left: 20px">|</text>
-            <text style=" color: #0081ff">关于我们</text>
+            <text style="color: #0081ff">关于我们</text>
         </view>
     </view>
 
