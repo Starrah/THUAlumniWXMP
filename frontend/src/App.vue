@@ -12,6 +12,7 @@ apiService.init(null, "http://thalu.starrah.cn");
 apiService.init(null, "http://thaluapitest.starrah.cn");
 //#endif
 
+
 export default Vue.extend({
   globalData: initialGlobalData,
   store,

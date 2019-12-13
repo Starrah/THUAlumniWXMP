@@ -61,36 +61,32 @@
         <view class="cu-form-group margin-top">
             <view class="title">报名开始</view>
             <text v-if="!switchSignupBegin">发布活动后立即可报名</text>
-            <view v-if="switchSignupBegin">
-                <picker mode="date" :value="signupBeginAtDate" :start="today" :end="startDate" @change="signupBeginAtDate = $event.detail.value" name="signupBeginAtDate">
-                    <view class="picker">
-                        {{Datenum(signupBeginAtDate)}}
-                    </view>
-                </picker>
-                <picker mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime">
-                    <view class="picker">
-                        {{getTime(signupBeginAtTime)}}
-                    </view>
-                </picker>
-            </view>
+            <picker v-if="switchSignupBegin" mode="date" :value="signupBeginAtDate" :start="today" :end="startDate" @change="signupBeginAtDate = $event.detail.value" name="signupBeginAtDate">
+                <view class="picker">
+                    {{Datenum(signupBeginAtDate)}}
+                </view>
+            </picker>
+            <picker v-if="switchSignupBegin" mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime" style="left: -20px">
+                <view class="picker">
+                    {{getTime(signupBeginAtTime)}}
+                </view>
+            </picker>
             <switch @change="switchSignupBegin = $event.detail.value" class="signupBegin ansg" :class="switchSignupBegin?'checked':''" :checked="switchSignupBegin">
             </switch>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">报名截止</view>
             <text v-if="!switchSignupStop">直到活动开始时间</text>
-            <view v-if="switchSignupStop">
-                <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
-                    <view class="picker">
-                        {{Datenum(signupStopAtDate)}}
-                    </view>
-                </picker>
-                <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime">
-                    <view class="picker">
-                        {{getTime(signupStopAtTime)}}
-                    </view>
-                </picker>
-            </view>
+            <picker v-if="switchSignupStop" mode="date" :value="signupStopAtDate" :start="today" :end="startDate" @change="signupStopAtDate = $event.detail.value" name="signupStopAtDate">
+                <view class="picker">
+                    {{Datenum(signupStopAtDate)}}
+                </view>
+            </picker>
+            <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime" style="left: -20px">
+                <view class="picker">
+                    {{getTime(signupStopAtTime)}}
+                </view>
+            </picker>
             <switch @change="switchSignupStop = $event.detail.value" class="signupEnd ansg" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
             </switch>
         </view>
@@ -273,7 +269,7 @@
             let r="";
             let a=str.split('-');
             if(a.length<3)return str;
-            r=a[0]+'年'+a[1]+'月'+a[2]+'日';
+            r=a[0]+'-'+a[1]+'-'+a[2];
             return r;
         }
         getTime(str):string {

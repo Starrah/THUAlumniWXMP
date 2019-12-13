@@ -31,6 +31,7 @@ const mutations = {
 
 const actions = {
   async [TRY_LOGIN_WITHOUT_NEW_CODE]({dispatch}){
+    //#ifdef MP-WEIXIN
     let session = uni.getStorageSync("session");
     let sessionValid = await new Promise((resolve, reject)=>{
       uni.checkSession({
@@ -44,6 +45,7 @@ const actions = {
       console.log(["autoLogin", true]);
     }
     else console.log(["autoLogin", false]);
+    //#endif
   },
 
   async [WEIXIN_LOGIN]({ dispatch, rootState }) {

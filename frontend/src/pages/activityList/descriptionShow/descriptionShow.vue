@@ -1,7 +1,18 @@
 <template>
     <view>
-    <text class="text-sl">{{$store.state.activityDetail.activity.name}}</text>
-    <rich-text :nodes="desHtml"></rich-text>
+        <view class="cu-bar bg-white solid-bottom margin-top">
+            <view class="action">
+                <text class="cuIcon-title text-green "></text>
+                <text class="text-xl text-bold">{{$store.state.activityDetail.activity.name}}</text>
+            </view>
+        </view>
+        <view class="cu-card dynamic">
+            <view class="cu-item shadow">
+                <view class="cu-list menu-avatar bg-gray">
+                    <rich-text :nodes="desHtml"></rich-text>
+                 </view>
+            </view>
+        </view>
     </view>
 </template>
 

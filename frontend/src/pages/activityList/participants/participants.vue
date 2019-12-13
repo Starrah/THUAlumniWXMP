@@ -2,23 +2,19 @@ import {UserRole} from "../../../apps/typesDeclare/UserEnum";
 <template>
   <div :style="{position: 'relative', height: '100%'}">
 
-    <div class="cu-list menu-avatar" v-for="(user, idx) in participants" :key="idx">
-      <div class="cu-item">
+    <div class="cu-list menu-avatar" v-for="(user, idx) in participants" :key="idx" style="margin-top: 5px">
+      <div class="cu-item" style="margin-top: 5px">
 
 
         <!-- Avatar -->
-        <div class="cu-avatar round lg"
-          :style="'background-image:url('+fullUrl(user.avatarUrl)+');'"
-        ></div>
+        <div class="cu-avatar round lg" :style="'background-image:url('+fullUrl(user.avatarUrl)+');'"></div>
 
 
         <!-- Name and submit message -->
         <div class="content">
           <div>{{user.name}}</div>
           <div class="text-sm flex">
-            <div v-if="showAuditButton || showKickButton"
-              class="text-cut"
-            >
+            <div v-if="showAuditButton || showKickButton" class="text-cut">
               {{submitMsg(user.openId)}}
             </div>
           </div>
@@ -40,19 +36,17 @@ import {UserRole} from "../../../apps/typesDeclare/UserEnum";
         <div v-if="showKickButton(user)">
           <div v-if="kicked(user.openId)" class="text-grey">已踢出</div>
           <div v-else>
-            <button @click="kickOut(user.openId)" class="cu-btn">踢出</button>
+            <button @click="kickOut(user)" class="cu-btn">踢出</button>
 
             <div style="display: inline-block" v-if="isCreator(myRole)">
               <button v-if="!isManager(user.userRole)"
                 @click="setAsManager(user.openId, true)"
-                class="cu-btn margin-left-xs"
-              >
+                class="cu-btn margin-left-xs">
                 设为管理员
               </button>
               <button v-else
                 @click="setAsManager(user.openId, false)"
-                class="cu-btn margin-left-xs"
-              >
+                class="cu-btn margin-left-xs">
                 移除管理员
               </button>
             </div>
@@ -76,12 +70,8 @@ import {UserRole} from "../../../apps/typesDeclare/UserEnum";
       </view>
     </div>
 
+  <SureModal ref="SureModal"></SureModal>
     <!-- Button to return last page -->
-    <div>
-      <navigator open-type="navigateBack">
-        <button :style="{objectPosition: 'bottom', position: 'absolute'}">返回</button>
-      </navigator>
-    </div>
 
 
   </div>
@@ -96,8 +86,10 @@ import {UserRole} from "../../../apps/typesDeclare/UserEnum";
   import apiService from "../../../commons/api";
   import {SET_ACTIVITY_DETAIL} from "@/store/mutation";
   import {fullUrl} from "@/apps/utils/networkUtils";
-
-  @Component
+  import SureModal from "@/components/SureModal.vue";
+  @Component({
+    components: {SureModal}
+  })
 export default class memberReveiw extends Vue {
   enableAudit = false;
   fullUrl = fullUrl;
@@ -148,10 +140,11 @@ export default class memberReveiw extends Vue {
       this.participants = newParticipants;
     })
   }
-  kickOut(userId) {
-    const url = `/removeFromActivity?activityId=${this.activityId}&userId=${userId}`
+  async kickOut(user) {
+    await ((this.$refs.SureModal as any).show("确认要踢出"+user.name+"吗？"));
+    const url = `/removeFromActivity?activityId=${this.activityId}&userId=${user.openId}`
     apiService.post(url).then(() => {
-      this.kickedUsers.push(userId)
+      this.kickedUsers.push(user.openId)
     })
   }
   onLoad({ enableAudit }: { enableAudit: string }) {

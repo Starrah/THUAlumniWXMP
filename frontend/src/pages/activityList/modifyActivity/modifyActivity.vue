@@ -68,12 +68,12 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     {{signupBeginAtDate}}
                 </view>
             </picker>
-            <picker v-if="switchSignupBegin" mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime">
+            <picker v-if="switchSignupBegin" mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime" style="left: -20px">
                 <view class="picker">
                     {{signupBeginAtTime}}
                 </view>
             </picker>
-            <switch @change="switchSignupBegin = $event.detail.value" class="signupBegin" :class="switchSignupBegin?'checked':''" :checked="switchSignupBegin">
+            <switch @change="switchSignupBegin = $event.detail.value" class="signupBegin ansg" :class="switchSignupBegin?'checked':''" :checked="switchSignupBegin">
             </switch>
         </view>
         <view class="cu-form-group margin-top">
@@ -84,12 +84,12 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     {{signupStopAtDate}}
                 </view>
             </picker>
-            <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime">
+            <picker v-if="switchSignupStop" mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime" style="left: -20px">
                 <view class="picker">
                     {{signupStopAtTime}}
                 </view>
             </picker>
-            <switch @change="switchSignupStop = $event.detail.value" class="signupEnd" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
+            <switch @change="switchSignupStop = $event.detail.value" class="signupEnd ansg" :class="switchSignupStop?'checked':''" :checked="switchSignupStop">
             </switch>
         </view>
         <view class="cu-form-group margin-top">
@@ -118,6 +118,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <text style="font-size: 30upx" class="margin-lr-lg">~</text>
             <input ref="maxUser" name="maxUser" :value="maxUser"/>
         </view>
+        <br>
         <view style="display: flex;justify-content: center">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
@@ -366,28 +367,28 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     switch.signupBegin::before{
         font-family: inherit;
         content: "立即";
-        transform: scaleX(0.5);
-        width: 100%;
+        left: 10px;
+        width: 70px;
         transform-origin: right;
     }
     switch.signupBegin::after{
         font-family: inherit;
         content: "指定";
-        transform: scaleX(0.5);
-        width: 100%;
+        width: 70px;
+        left: -10px;
         transform-origin: left;
     }
     switch.signupEnd::before{
         font-family: inherit;
         content: "默认";
-        transform: scaleX(0.5);
+        left:10px;
         width: 100%;
         transform-origin: right;
     }
-    switch.signupBegin::after{
+    switch.signupEnd::after{
         font-family: inherit;
         content: "指定";
-        transform: scaleX(0.5);
+        left: -10px;
         width: 100%;
         transform-origin: left;
     }
@@ -411,4 +412,22 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         font-family: cuIcon;
         line-height: 30upx
     }
+</style>
+<style>
+    /*  #ifdef H5  */
+    switch.ansg >>> .uni-switch-input, switch.ansg >>> .wx-switch-input{
+        width: 70px;
+    }
+    switch.ansg >>> .uni-switch-input-checked::after, switch.ansg >>> .wx-switch-input-checked::after {
+        left: 44px;
+    }
+    /*  #endif  */
+    /*  #ifndef H5  */
+    switch.ansg .uni-switch-input, switch.ansg .wx-switch-input{
+        width: 70px;
+    }
+    switch.ansg .uni-switch-input-checked::after, switch.ansg .wx-switch-input-checked::after {
+        left: 44px;
+    }
+    /*  #endif  */
 </style>
