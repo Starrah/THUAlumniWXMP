@@ -371,7 +371,7 @@
             this.updateActivityData()
         }
         async exitCurActivity(){
-            await ((this.$refs.SureToast as any).show("您确认要取消报名吗？"));
+            await ((this.$refs.SureModal as any).show("您确认要取消报名吗？"));
             let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
             if(res && res.result === 'success'){
                 uni.showToast({
@@ -386,20 +386,25 @@
             this.updateActivityData()
         }
         async signinActivity(){
+            console.log("qwqwqwqw");
             let code = await new Promise((resolve, reject)=>{
                 uni.scanCode({
                     success: (r)=>{
                         console.log("scanResult", r.result);
                         resolve(r.result);
-                    }
+                    },
+                     complete: ()=>console.log("comp")
                 });
             });
+            console.log(code);
             try {
-                await apiService.post(`checkInActivity?code=${code}&activityId=${this.activityId}`);
+                let res = await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
+                console.log(res);
                 uni.showToast({
                     title: "签到成功",
                 });
             }catch (e) {
+                console.log(e);
                 if(e.errid && e.errid >= 500 && e.errid <= 599){
                     uni.showToast({
                         title: e.errmsg,
@@ -415,7 +420,7 @@
             })
         }
         async startSignin(){
-            await ((this.$refs.SureToast as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
+            await ((this.$refs.SureModal as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
             await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: ActivityCheckStatus.Continue}});
             uni.showToast({
                 title: "成功",
@@ -423,7 +428,7 @@
             this.updateActivityData()
         }
         async endSignin(){
-            await ((this.$refs.SureToast as any).show("您确认要暂停签到吗？（之后仍可恢复开放签到）"));
+            await ((this.$refs.SureModal as any).show("您确认要暂停签到吗？（之后仍可恢复开放签到）"));
             let newStatusCheck = isDateTimePast(this.activityData.end)?ActivityCheckStatus.Stopped:ActivityCheckStatus.Paused;
             await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: newStatusCheck}});
             uni.showToast({
@@ -432,7 +437,8 @@
             this.updateActivityData()
         }
         async startSignup(){
-            await ((this.$refs.SureToast as any).show("您确认要开放报名吗？"));
+            console.log(this.$refs);
+            await ((this.$refs.SureModal as any).show("您确认要开放报名吗？"));
             await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: ActivityJoinStatus.Continue}});
             uni.showToast({
                 title: "成功",
@@ -440,7 +446,7 @@
             this.updateActivityData()
         }
         async endSignup(){
-            await ((this.$refs.SureToast as any).show("您确认要暂停报名吗？（之后仍可恢复开放报名）"));
+            await ((this.$refs.SureModal as any).show("您确认要暂停报名吗？（之后仍可恢复开放报名）"));
             let newStatusJoin = isDateTimePast(this.activityData.signupStopAt)?ActivityJoinStatus.Stopped:ActivityJoinStatus.Paused;
             await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: newStatusJoin}});
             uni.showToast({

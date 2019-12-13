@@ -21,7 +21,8 @@ const state: ActivitySchema = {
     statusCheck: ActivityCheckStatus.Before,
     rules: {ruleType: 1},
     tags: [],
-    description: ""
+    description: "",
+    imageUrl: undefined
 };
 
 const mutations = {
@@ -43,7 +44,8 @@ const mutations = {
         state.statusGlobal = ActivityGlobalStatus.Normal;
         state.statusCheck = ActivityCheckStatus.Before;
         state.statusJoin = ne.signupBeginAt ? ActivityJoinStatus.Before : ActivityJoinStatus.Continue
-        state.id = undefined
+        state.id = undefined;
+        state.imageUrl = ne.imageUrl;
     },
     [SYNC_RULE_NEW_ACTIVITY](state: ActivitySchema, rule: SignupRule) {
         state.rules = rule;

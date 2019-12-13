@@ -33,14 +33,25 @@
             this.rejec();
         }
 
-        async show(content: string){
+        async show(content: string, title?: string){
+            title = title || "提示";
             content = content || "您确定要进行此操作吗？";
-            this.content = content;
-            this.isShowing = true;
             return new Promise((resolve, reject) => {
-                this.resolv = resolve;
-                this.rejec = reject;
-            })
+                uni.showModal({
+                    title: title,
+                    content: content,
+                    success(res) {
+                        if (res.confirm) resolve();
+                        else reject();
+                    }
+                })
+            });
+            // this.content = content;
+            // this.isShowing = true;
+            // return new Promise((resolve, reject) => {
+            //     this.resolv = resolve;
+            //     this.rejec = reject;
+            // })
         }
     }
 </script>

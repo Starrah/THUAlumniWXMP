@@ -19,6 +19,11 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <view class="title">标签</view>
             <input ref="tag" name="tag" placeholder="多个标签之间以逗号或空格分隔" :value="tag"/>
         </view>
+        <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
+            <view class="title">活动头像</view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ');'"></view>
+            <text v-else>点击上传</text>
+        </view>
         <view class="cu-form-group margin-top">
             <view class="title">公开活动</view>
             <text>开启则可被公开检索到</text>
@@ -145,11 +150,13 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import {ActivityCheckStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import {generateRuleDescription} from "@/apps/utils/ActivitySchemaUtils";
     import {SignupRule} from "@/apps/typesDeclare/SignupRule";
+    import apiService from "../../../commons/api"
+    import {fullUrl} from "@/apps/utils/networkUtils";
 
     @Component({
         components: {SureModal}
     })
-    export default class newActivity extends Vue{
+    export default class modifyActivity extends Vue{
         name: "modifyActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
         activityId: string;
@@ -158,8 +165,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         activityName: string = "";
         place: string = "";
-        minUser: number = 0;
-        maxUser: number = -1;
+        minUser: number | string = "";
+        maxUser: number | string = "";
         tag: string = "";
         maxDate = "2020-12-31";
         startDate: string = this.DEFAULT_TIMEPICKER_VALUE;
@@ -176,9 +183,49 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         switchCanBeSearched: boolean = true;
         statusJoin: ActivityJoinStatus = ActivityJoinStatus.Before;
         statusCheck: ActivityCheckStatus = ActivityCheckStatus.Before;
+        imageUrl?: string;
         STATUS_JOIN_WORDS = ["报名尚未开始", "报名中", "报名已暂停", "报名已截止"];
         STATUS_CHECK_WORDS = ["签到尚未开始", "签到中", "签到已暂停", "签到已截止"];
         createDateTime: string = "";
+        async chooseImage(){
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                let path: string = await new Promise((resolve, reject) => {
+                    uni.chooseImage({
+                        count: 1,
+                        sizeType: ["compressed"],
+                        sourceType: ["album"],
+                        success(res) {
+                            resolve(res.tempFiles[0].path);
+                        },
+                        fail(){
+                            reject();
+                        }
+                    })
+                });
+                let absUrl = await new Promise<string>((resolve, reject) => {
+                    uni.uploadFile({
+                        url: apiService.baseUrl + `/uploadImage?session=${apiService.session}`,
+                        name: "file",
+                        filePath: path,
+                        fileType: "image",
+                        success(res) {
+                            let obj: any = (typeof res.data === "string") ? JSON.parse(res.data) : res.data;
+                            if (obj.url) resolve(fullUrl(obj.url));
+                            else reject(obj);
+                        },
+                        fail(e) {
+                            reject(e);
+                        }
+                    })
+                });
+                console.log(path);
+                console.log(absUrl);
+                this.imageUrl = absUrl;
+            }finally {
+                uni.hideLoading()
+            }
+        }
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
@@ -192,6 +239,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             res.push(curNode.map((v)=>v.name));
             for(let i=0;i<this.typeMultiIndex.length-1;i++){
                 curNode = curNode[this.typeMultiIndex[i]].children;
+                if(!curNode || curNode.length <= 0)break;
                 res.push(curNode.map((v)=>v.name));
             }
             return res;
@@ -211,13 +259,9 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
-            let r = "";
-            for(let i=0;i<this.typeMultiIndex.length-1;i++){
-                r += (this.typeMultiArray[i][this.typeMultiIndex[i]] + " - ");
-            }
-            let i = this.typeMultiIndex.length-1;
-            if(i >= 0) r += this.typeMultiArray[i][this.typeMultiIndex[i]];
-            return r;
+            return this.typeMultiArray.map((nameList, i)=>{
+                return nameList[this.typeMultiIndex[i]];
+            }).join("-");
         }
         get minStartTime(): string{
             if(this.endDate <= this.startDate){
@@ -242,7 +286,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 canBeSearched: this.switchCanBeSearched,
                 statusJoin: this.statusJoin,
                 statusCheck: this.statusCheck,
-                rules: this.rules
+                rules: this.rules,
+                imageUrl: this.imageUrl
             };
             console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
@@ -254,12 +299,15 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         showCurrentValue(){
             let obj = this.$store.state.activityDetail.changeBuffer as ActivitySchema;
+            console.log(obj);
             this.activityId = obj.id;
             this.activityName = obj.name;
             this.place = obj.place;
             this.tag = obj.tags.join(",");
-            this.minUser = obj.minUser;
-            this.maxUser = obj.maxUser;
+            this.minUser = obj.minUser !== 0?obj.minUser:"";
+            console.log(obj.minUser !== 0);
+            console.log(this.minUser);
+            this.maxUser = obj.maxUser !== -1?obj.maxUser:"";
             this.switchCanBeSearched = obj.canBeSearched;
             let startArr = withoutSec(obj.start).split(" ");
             this.startDate = startArr[0];
@@ -300,7 +348,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.activityDetail.changeBuffer.rules);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
-                url: '/pages/newActivity/advanceRule'
+                url: '/pages/newActivity/advanceRule?allowModify=1'
             })
         }
         advancedRuleToBeSync = false;
