@@ -26,12 +26,6 @@
 			}
 		},
 		{
-			"path": "pages/activityList/qrcodeShow/qrcodeShow",
-			"style": {
-				"navigationBarTitleText": "签到二维码查看"
-			}
-		},
-		{
 			"path": "pages/activityList/activityDetail/activityDetail",
 			"style": {
 				"navigationBarTitleText": "活动详情"

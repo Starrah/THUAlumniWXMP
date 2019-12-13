@@ -479,9 +479,11 @@
             }
         }
         jumpToQRCodePage(){
-            uni.navigateTo({
-                url: "/pages/activityList/qrcodeShow/qrcodeShow"
-            })
+            let url = apiService.baseUrl + "/generateCheckinCode"  + `?session=${apiService.session}&activityId=${this.$store.state.activityDetail.id}`;
+            uni.previewImage({
+               urls: [url],
+               current: url
+            });
         }
         async showDescription(){
             await this.$store.dispatch(FETCH_DESCRIPTION);
