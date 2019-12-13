@@ -41,7 +41,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     {{startDate}}
                 </view>
             </picker>
-            <picker mode="time" :value="startTime" start="00:00" end="23:59" @change="startTime = $event.detail.value" name="startTime">
+            <picker mode="time" :value="startTime" :start="minStartTime" end="23:59" @change="startTime = $event.detail.value" name="startTime">
                 <view class="picker">
                     {{startTime}}
                 </view>
@@ -54,7 +54,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     {{endDate}}
                 </view>
             </picker>
-            <picker mode="time" :value="endTime" :start="minStartTime" end="23:59" @change="endTime = $event.detail.value" name="endTime">
+            <picker mode="time" :value="endTime" :start="minEndTime" end="23:59" @change="endTime = $event.detail.value" name="endTime">
                 <view class="picker">
                     {{endTime}}
                 </view>
@@ -264,6 +264,12 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             }).join("-");
         }
         get minStartTime(): string{
+            if(this.startDate <= this.today){
+                return dateFormat(new Date(), "HH:MM")
+            }
+            else return "00:00"
+        }
+        get minEndTime(): string{
             if(this.endDate <= this.startDate){
                 return this.startTime
             }

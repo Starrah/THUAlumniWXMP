@@ -12,7 +12,7 @@
             <view class="cu-form-group margin-top-sm">
                 <view class="title">标签</view>
                 <view>
-                    <view v-for="tagObj in tagsList" :key="tagObj.tag" class="cu-tag" :class="'bg-' + tagObj.color">{{tagObj.tag}}</view>
+                    <view v-for="tagObj in tagsList" v-if="tagObj.tag && tagObj.tag !== ''" :key="tagObj.tag" class="cu-tag" :class="'bg-' + tagObj.color">{{tagObj.tag}}</view>
                 </view>
             </view>
             <view class="cu-form-group margin-top-sm">
