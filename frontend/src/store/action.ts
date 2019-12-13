@@ -18,3 +18,4 @@ export const SUBMIT_DESCRIPTION = "submitDescription";
 export const FETCH_DEPARTMENT_LIST = "fetchDepartmentList";
 export const FETCH_EDUCATION_LIST = "fetchEducationList";
 export const TRY_LOGIN_WITHOUT_NEW_CODE = "tryLoginWithoutNewCode";
+export const FETCH_PROFILE_OTHER = "fetchProfileOther";

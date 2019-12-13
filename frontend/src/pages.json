@@ -50,6 +50,12 @@
 			}
 		},
 		{
+			"path": "pages/me/other",
+			"style": {
+				"navigationBarTitleText": "用户信息"
+			}
+		},
+		{
 			"path": "pages/newActivity/advanceRule",
 			"style": {
 				"navigationBarTitleText": "高级报名规则设置"
