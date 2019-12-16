@@ -356,6 +356,9 @@
                 if (this.activityData.ruleForMe === 'accept') {
                     await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {})
+                    wx.requestSubscribeMessage({
+                        tmplIds: []
+                    })
                 } else if (this.activityData.ruleForMe === 'needAudit') {
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason})
                 }
