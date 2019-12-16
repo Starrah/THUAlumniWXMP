@@ -12,7 +12,7 @@
             <view class="cu-form-group margin-top-sm">
                 <view class="title">标签</view>
                 <view>
-                    <view v-for="tagObj in tagsList" :key="tagObj.tag" class="cu-tag" :class="'bg-' + tagObj.color">{{tagObj.tag}}</view>
+                    <view v-for="tagObj in tagsList" v-if="tagObj.tag && tagObj.tag !== ''" :key="tagObj.tag" class="cu-tag" :class="'bg-' + tagObj.color">{{tagObj.tag}}</view>
                 </view>
             </view>
             <view class="cu-form-group margin-top-sm">
@@ -482,9 +482,11 @@
             }
         }
         jumpToQRCodePage(){
-            uni.navigateTo({
-                url: "/pages/activityList/qrcodeShow/qrcodeShow"
-            })
+            let url = apiService.baseUrl + "/generateCheckinCode"  + `?session=${apiService.session}&activityId=${this.$store.state.activityDetail.id}`;
+            uni.previewImage({
+               urls: [url],
+               current: url
+            });
         }
         async showDescription(){
             await this.$store.dispatch(FETCH_DESCRIPTION);

@@ -15,3 +15,5 @@ export const ADD_MORE_ACTIVITY = "addMoreActivity";
 export const SET_DEPARTMENT_LIST = "setDepartmentList";
 export const SET_EDUCATION_LIST = "setEducationList";
 export const SET_DESCRIPTION = "setDescription";
+export const SET_PROFILE_OTHER = "setProfileOther";
+export const SET_OTHER_ID = "setOtherId";

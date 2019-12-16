@@ -10,6 +10,7 @@ import advancedRule from "./module/advancedRule";
 import myActivityList from "@/store/module/myActivityList";
 import departmentList from "@/store/module/departmentList";
 import educationTypesList from "@/store/module/educationTypesList";
+import otherProfile from "@/store/module/otherProfile";
 
 Vue.use(Vuex);
 
@@ -26,6 +27,7 @@ export default new Vuex.Store({
     allActivityList,
     activityDetail,
     advancedRule,
-    myActivityList
+    myActivityList,
+    otherProfile
   }
 })

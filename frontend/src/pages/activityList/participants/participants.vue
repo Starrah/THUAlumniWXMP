@@ -1,9 +1,8 @@
-import {UserRole} from "../../../apps/typesDeclare/UserEnum";
 <template>
   <div :style="{position: 'relative', height: '100%'}">
 
     <div class="cu-list menu-avatar" v-for="(user, idx) in participants" :key="idx" style="margin-top: 5px">
-      <div class="cu-item" style="margin-top: 5px">
+      <div class="cu-item" style="margin-top: 5px" @click="openOtherPage(user)">
 
 
         <!-- Avatar -->
@@ -84,7 +83,7 @@ import {UserRole} from "../../../apps/typesDeclare/UserEnum";
   import {Component} from "vue-property-decorator";
   import {UserRole, UserStatus} from "@/apps/typesDeclare/UserEnum";
   import apiService from "../../../commons/api";
-  import {SET_ACTIVITY_DETAIL} from "@/store/mutation";
+  import {SET_ACTIVITY_DETAIL, SET_OTHER_ID} from "@/store/mutation";
   import {fullUrl} from "@/apps/utils/networkUtils";
   import SureModal from "@/components/SureModal.vue";
   @Component({
@@ -182,6 +181,11 @@ export default class memberReveiw extends Vue {
   async handleSetRole(userId, newRole) {
     const url = `/changeUserRole?activityId=${this.activityId}&userId=${userId}&newRole=${newRole}`;
     return apiService.post(url)
+  }
+  openOtherPage(user){
+    uni.navigateTo({
+      url: `/pages/me/other?openId=${user.openId}`
+    })
   }
 }
 </script>
