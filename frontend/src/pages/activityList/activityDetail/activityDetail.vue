@@ -80,7 +80,7 @@
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Stopped && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已停止</button>
         </view>
         <br v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager">
-        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;" class="cu-list grid" :class="'col-' + columnOfButtons">
+        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;" class="cu-list grid col-3">
             <view class="cu-item" v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
                 <text class="text-gray cuIcon-peoplefill" style="text-align: center"></text>
                 <br>
@@ -121,6 +121,10 @@
                 <br>
                 <text style="color: #555555; font-size:50%">设置活动详情</text>
             </view>
+            <view class="cu-item" v-if="columnOfButtons==2">
+            </view>
+            <view class="cu-item" v-if="columnOfButtons==1">
+            </view>
         </view>
         <br v-if="activityAdminable(activityData)">
         <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
@@ -140,20 +144,20 @@
         </view>
         <view class="cu-modal" style="z-index: 990" :class="reportModalShowing?'show':''">
             <view class="cu-dialog">
-                <text>您将要举报这个活动。</text>
-                <view>
-                    <text>举报类型：</text>
+                <view class="cu-bar bg-white justify-center">
+                    <text class="text-xl text-bold">您将要举报这个活动</text>
+                </view>
+                <view class="cu-form-group margin-top">
+                    <view class="title">举报类型</view>
                     <picker z-index="1200" @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
                         <view class="picker">
                             {{reportPickerValue>-1?reportPickerRange[reportPickerValue]:'请选择'}}
                         </view>
                     </picker>
                 </view>
-                <view>
-                    <text>详细说明（选填）：</text>
-                    <view class="cu-form-group">
-                        <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
-                    </view>
+                <view class="cu-form-group align-start">
+                    <view class="title">详细说明</view>
+                    <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
                 </view>
                 <button class="cu-btn bg-green" @click="onPressSubmitReport">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelReport">取消</button>
@@ -182,7 +186,6 @@
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl} from "@/apps/utils/networkUtils";
-
     @Component({
         components: {SureModal}
     })
@@ -230,7 +233,7 @@
             if(this.activityData.statusCheck !== ActivityCheckStatus.Continue && this.activityData.statusJoin !== ActivityJoinStatus.Before)this.ANS++;
             if(this.activityData.statusCheck === ActivityCheckStatus.Continue)this.ANS++;
             if(this.activityAdminable(this.activityData))this.ANS+=2;
-            return this.ANS;
+            return this.ANS%3;
         }
         async updateActivityData(){
             this.$store.dispatch(FETCH_ACTIVITY_DETAIL);
@@ -393,7 +396,7 @@
                         console.log("scanResult", r.result);
                         resolve(r.result);
                     },
-                     complete: ()=>console.log("comp")
+                    complete: ()=>console.log("comp")
                 });
             });
             console.log(code);

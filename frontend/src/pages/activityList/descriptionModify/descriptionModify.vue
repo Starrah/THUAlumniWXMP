@@ -1,8 +1,12 @@
 <template>
     <view>
-    <text class="text-lg">支持有限的html语法（但不能插入链接跳转等，只能显示）</text>
-    <textarea v-model="desHtml"></textarea>
-    <button class="cu-btn bg-green lg align-center" @click="submit">提交</button>
+        <view class="cu-form-group margin-top">
+            <textarea maxlength="-1" v-model="desHtml" placeholder="支持有限的html语法(不能插入链接跳转等，只能显示)"></textarea>
+        </view>
+        <br>
+        <view style="display: flex;justify-content: space-around;">
+            <button class="cu-btn bg-green lg align-center" @click="submit">提交</button>
+        </view>
     </view>
 </template>
 
