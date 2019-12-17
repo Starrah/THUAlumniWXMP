@@ -30,6 +30,10 @@ var initialGlobalData: GlobalData = {
     },
     session: "bbb",
     baseUrl: "http://thaluapitest.starrah.cn",
+    subscribeMessagesIds:{
+        normal: ["u-UA76noUE9_9g2ZVX53W9DQKz3x-Tn1914KHphfRXM", "LEoLo9UsF2by_4UGypKf2v7YLXeYRRGGjskOa0iJzZY", "u-UA76noUE9_9g2ZVX53Wz3QZ-IgE4ECwLVxWLIJlZ8"],
+        audit: ["u-UA76noUE9_9g2ZVX53W9DQKz3x-Tn1914KHphfRXM", "LEoLo9UsF2by_4UGypKf2v7YLXeYRRGGjskOa0iJzZY", "j9EPrZx9MAQ5SjbN1aCYHImxymn6ZEziJLgQEcbuXSk"]
+    },
     devData: {
         DEFAULT_AVATAR_URL,
         DEFAULT_ACTIVITY_URL

@@ -84,42 +84,42 @@
             <view class="cu-item" v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
                 <text class="text-gray cuIcon-peoplefill" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</text>
+                <text style="color: #555555;">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</text>
             </view>
             <view class="cu-item" v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
                 <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">开放报名</text>
+                <text style="color: #555555;">开放报名</text>
             </view>
             <view class="cu-item" v-if="activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
                 <text class="text-gray cuIcon-stop" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">暂停报名</text>
+                <text style="color: #555555;">暂停报名</text>
             </view>
             <view class="cu-item" @click="jumpToQRCodePage">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">签到二维码</text>
+                <text style="color: #555555;">签到二维码</text>
             </view>
             <view class="cu-item" v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">开放签到</text>
+                <text style="color: #555555;">开放签到</text>
             </view>
             <view class="cu-item" v-if="activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">暂停签到</text>
+                <text style="color: #555555;">暂停签到</text>
             </view>
             <view class="cu-item" @click="openModifyPage">
                 <text class="text-gray cuIcon-info" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">修改活动信息</text>
+                <text style="color: #555555;">修改活动信息</text>
             </view>
             <view class="cu-item" @click="jumpToSetDescription">
                 <text class="text-gray cuIcon-post" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555; font-size:50%">设置活动详情</text>
+                <text style="color: #555555;">设置活动详情</text>
             </view>
             <view class="cu-item" v-if="columnOfButtons==2">
             </view>
@@ -149,7 +149,7 @@
                 </view>
                 <view class="cu-form-group margin-top">
                     <view class="title">举报类型</view>
-                    <picker z-index="1200" @change="reportPickerValue = $event.detail.value" :value="reportPickerValue" :range="reportPickerRange">
+                    <picker z-index="1200" @change="reportPickerValue = Number($event.detail.value)" :value="reportPickerValue" :range="reportPickerRange">
                         <view class="picker">
                             {{reportPickerValue>-1?reportPickerRange[reportPickerValue]:'请选择'}}
                         </view>
@@ -164,10 +164,12 @@
             </view>
         </view>
         <br>
-        <view style="text-align: center">
+        <view style="text-align: center" class="margin-top">
             <text style="padding-left: 30px;color: #0081ff" @click="onPressReport">举报</text>
             <text style="padding: 20px; left: 20px">|</text>
-            <text style="color: #0081ff">关于我们</text>
+            <text style="color: #0081ff" @click="jumpToRecommend">推荐更多活动</text>
+            <text style="padding: 20px; left: 20px">|</text>
+            <text style="color: #0081ff" @click="jumpToAbout">关于我们</text>
         </view>
     </view>
 
@@ -349,19 +351,43 @@
         async onPressCancelAudit(){
             this.auditModalShowing = false;
         }
+        jumpToRecommend(){
+            uni.navigateTo({
+                url: `/pages/activityList/recommend/recommend?activityId=${this.activityId}`
+            })
+        }
+        jumpToAbout(){
+            uni.navigateTo({
+                url: "/pages/me/About"
+            })
+        }
         async attendCurActivity(){
             this.auditModalShowing = false;
             let res = null;
             try {
                 if (this.activityData.ruleForMe === 'accept') {
                     await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
-                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {})
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {});
                 } else if (this.activityData.ruleForMe === 'needAudit') {
-                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason})
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason});
                 }
             }finally {}
             console.log(res);
             if(res && res.result === 'success'){
+                console.log("reqSubMesBegin");
+                await new Promise((resolve,reject)=> {
+                    wx.requestSubscribeMessage({
+                        tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
+                        success(res: any): void {
+                            console.log(["success", res]);
+                            resolve(res);
+                        },
+                        fail(res: any): void {
+                            console.log(["fail", res]);
+                            reject(res)
+                        }
+                    })
+                });
                 uni.showToast({
                     title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
                 });

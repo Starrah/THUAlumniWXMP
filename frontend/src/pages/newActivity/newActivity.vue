@@ -19,7 +19,7 @@
         </view>
         <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
             <view class="title">活动头像</view>
-            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ')'"></view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + fullUrl(imageUrl) + ')'"></view>
             <text v-else>点击上传</text>
         </view>
         <view class="cu-form-group margin-top">
@@ -123,6 +123,7 @@
     import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
     import apiService from "../../commons/api"
     import {fullUrl} from "@/apps/utils/networkUtils";
+    import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
     @Component({
         components: {SureModal}
@@ -130,6 +131,7 @@
     export default class newActivity extends Vue{
         name: "newActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
+        fullUrl = fullUrl;
         inputValue: string = "";
         console = console;
         imageUrl: string = "";
@@ -225,7 +227,11 @@
             let temp = this.$store.state.activityTypeList;
             console.log(temp.initialized);
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
-            if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
+            if(this.typeMultiIndex.length < temp.level){
+                console.log("chdt1", this.typeMultiIndex);
+                this.typeMultiIndex = this.typeMultiIndex.concat([0, 0, 0, 0, 0]).slice(0, temp.level);
+                console.log("chdt2", this.typeMultiIndex);
+            }
             return temp;
         }
         get typeMultiArray(){
@@ -241,9 +247,12 @@
             return res;
         }
         typeMultiChange(e){
+            console.log(["chan", e.detail.value]);
             this.typeMultiIndex = e.detail.value;
+            console.log(["after", this.typeMultiIndex]);
         }
         typeMultiColumnChange(e){
+            console.log(["colu", e.detail]);
             let column = e.detail.column;
             if(this.typeMultiIndex[column] === e.detail.value)return;
             let newIndex = [];
@@ -255,7 +264,9 @@
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
+            console.log(["textbb", this.typeMultiIndex]);
             return this.typeMultiArray.map((nameList, i)=>{
+                console.log(["text", nameList, i, this.typeMultiIndex[i]]);
                 return nameList[this.typeMultiIndex[i]];
             }).join("-");
         }
@@ -293,7 +304,7 @@
                 tags: formData.tag !== ""?formData.tag.split(/[, ]/):[],
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):undefined,
                 signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):undefined,
-                type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
+                type: this.typeMultiShowText,
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
                 canBeSearched: this.switchCanBeSearched,
@@ -302,6 +313,20 @@
             await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
             this.$store.commit(SET_NEW_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
+            console.log("reqSubMesBegin");
+            await new Promise((resolve,reject)=> {
+                wx.requestSubscribeMessage({
+                    tmplIds: initialGlobalData.subscribeMessagesIds.normal,
+                    success(res: any): void {
+                        console.log(["success", res]);
+                        resolve(res);
+                    },
+                    fail(res: any): void {
+                        console.log(["fail", res]);
+                        reject(res)
+                    }
+                })
+            });
             uni.showToast({title: "成功", icon: "none"});
             this.initialForm();
             await delay(1000);

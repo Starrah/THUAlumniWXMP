@@ -9,6 +9,9 @@
             <view class="action">
                 <button class="cu-btn bg-green shadow-blur round" @click="search">搜索</button>
             </view>
+            <view class="action">
+                <button class="cu-btn bg-blue shadow-blur round" @click="jumpToAdvancedSearch">高级</button>
+            </view>
         </view>
 <!--        <scroll-view scroll-y="true" :lower-threshold="100" :enable-back-to-top="true" @scrolltolower="loadMore" @scrolltoupper="loadMore">-->
             <view class="cu-list menu">
@@ -29,10 +32,10 @@
                             </view>
                         </view>
                     </view>
-                    <view style="flex-basis: 19%" class="basis-xs" :class="(activity.curUser<activity.maxUser||activity.maxUser==-1)?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
+                    <view style="flex-basis: 19%" class="basis-xs" :class="(activity.curUser<activity.maxUser||activity.maxUser===-1)?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
                         <text class="text-lg text-green">{{activity.curUser}}</text>
-                        <text class="text-lg text-black" :style="activity.maxUser==-1?'display:none':''">/</text>
-                        <text class="text-lg text-red" :style="activity.maxUser==-1?'display:none':''">{{activity.maxUser}}</text>
+                        <text class="text-lg text-black" :style="activity.maxUser===-1?'display:none':''">/</text>
+                        <text class="text-lg text-red" :style="activity.maxUser===-1?'display:none':''">{{activity.maxUser}}</text>
                     </view>
                 </view>
                 <view class="cu-item" v-if="isLoadingMore">
@@ -70,6 +73,11 @@
         }
         get activities_toShow(){
             return this.$store.state.allActivityList.activityList;
+        }
+        jumpToAdvancedSearch(){
+            uni.navigateTo({
+                url: "/pages/activityList/advancedSearch/advancedSearch"
+            })
         }
         isLoadingMore: boolean = false;
         onReachBottom(){

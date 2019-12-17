@@ -3,7 +3,7 @@
         <view class="cu-bar bg-white solid-bottom margin-top">
             <view class="action">
                 <text class="cuIcon-title text-green "></text>
-                <text class="text-xl text-bold">{{$store.state.activityDetail.activity.name}}</text>
+                <text class="text-xl text-bold">{{activityName}}</text>
             </view>
         </view>
         <view class="cu-card dynamic">
@@ -24,6 +24,9 @@
     @Component
     export default class DescriptionShow extends Vue{
         name: "descriptionShow";
+        get activityName(){
+            return this.$store.state.activityDetail.activity.name;
+        }
         get desHtml(){
             return this.$store.state.activityDetail.activity.description;
         }

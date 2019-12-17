@@ -63,7 +63,7 @@ const actions = {
   },
 
   async [LOGIN]({ dispatch, commit }, { code }) {
-    console.log("login");
+    console.log("loginhhh");
     return apiService.get("/login", { code }).then(data => {
       console.log(data);
       let session = data["session"];
@@ -118,6 +118,7 @@ const actions = {
         }
       });
       dispatch(FETCH_MY_ACTIVITY_LIST);
+      console.log(["openId", state.openId])
     }).catch(err => {
       if (err.errid && err.errid === 101){
         setTimeout(()=>{

@@ -21,7 +21,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
             <view class="title">活动头像</view>
-            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ');'"></view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + fullUrl(imageUrl) + ');'"></view>
             <text v-else>点击上传</text>
         </view>
         <view class="cu-form-group margin-top">
@@ -94,7 +94,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">报名状态</view>
-            <picker @change="statusJoin = $event.detail.value" :value="statusJoin" :range="STATUS_JOIN_WORDS">
+            <picker @change="statusJoin = Number($event.detail.value)" :value="statusJoin" :range="STATUS_JOIN_WORDS">
                 <view class="picker">
                     {{STATUS_JOIN_WORDS[statusJoin]}}
                 </view>
@@ -102,7 +102,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">签到状态</view>
-            <picker @change="statusCheck = $event.detail.value" :value="statusCheck" :range="STATUS_CHECK_WORDS">
+            <picker @change="statusCheck = Number($event.detail.value)" :value="statusCheck" :range="STATUS_CHECK_WORDS">
                 <view class="picker">
                     {{STATUS_CHECK_WORDS[statusCheck]}}
                 </view>
@@ -160,6 +160,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         name: "modifyActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
         activityId: string;
+        fullUrl = fullUrl;
         get today(): string{
             return dateFormat(new Date(), "yyyy-mm-dd")
         }
@@ -183,7 +184,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         switchCanBeSearched: boolean = true;
         statusJoin: ActivityJoinStatus = ActivityJoinStatus.Before;
         statusCheck: ActivityCheckStatus = ActivityCheckStatus.Before;
-        imageUrl?: string;
+        imageUrl: string = "";
         STATUS_JOIN_WORDS = ["报名尚未开始", "报名中", "报名已暂停", "报名已截止"];
         STATUS_CHECK_WORDS = ["签到尚未开始", "签到中", "签到已暂停", "签到已截止"];
         createDateTime: string = "";
@@ -229,7 +230,9 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
-            if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
+            if(this.typeMultiIndex.length < temp.level){
+                this.typeMultiIndex = this.typeMultiIndex.concat([0, 0, 0, 0, 0]).slice(0, temp.level);
+            }
             return temp;
         }
         get typeMultiArray(){
@@ -286,7 +289,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 tags: formData.tag.split(/[, ]/),
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):this.createDateTime,
                 signupStopAt: this.switchSignupStop?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):withSec(this.startDate + " " + this.startTime),
-                type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
+                type: this.typeMultiShowText,
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):-1,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):0,
                 canBeSearched: this.switchCanBeSearched,
@@ -298,7 +301,18 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
             this.$store.commit(SET_CHANGE_ACTIVITY, data);
-            let activityId = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
+            let res = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
+            if(res){
+                let isPush;
+                try {
+                    await ((this.$refs.SureModal as any).show("您可以选择向当前所有活动参加者推送一条消息，以通知他们活动的更改。但根据微信相关规则，该类消息整个活动期间活动只能推送一次。您要使用这个机会吗？"));
+                    isPush = true;
+                }catch(e){
+                    isPush = false;
+                }
+                if(isPush)await res.push();
+                else await res.notPush();
+            }
             uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
             uni.navigateBack();
@@ -311,8 +325,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.place = obj.place;
             this.tag = obj.tags.join(",");
             this.minUser = obj.minUser !== 0?obj.minUser:"";
-            console.log(obj.minUser !== 0);
-            console.log(this.minUser);
             this.maxUser = obj.maxUser !== -1?obj.maxUser:"";
             this.switchCanBeSearched = obj.canBeSearched;
             let startArr = withoutSec(obj.start).split(" ");
@@ -346,6 +358,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.statusJoin = obj.statusJoin;
             this.statusCheck = obj.statusCheck;
             this.createDateTime = obj.createTime;
+            this.imageUrl = obj.imageUrl;
         }
         mounted(){
             this.showCurrentValue();

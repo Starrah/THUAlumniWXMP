@@ -19,9 +19,11 @@
     @Component
     export default class DescriptionModify extends Vue{
         name: "descriptionModify";
-        desHtml: string = this.$store.state.activityDetail.description;
+        desHtml: string = this.$store.state.activityDetail.activity.description;
         async submit(){
-            this.$store.dispatch(SUBMIT_DESCRIPTION, this.desHtml);
+            await this.$store.dispatch(SUBMIT_DESCRIPTION, this.desHtml);
+            uni.showToast({title: "成功"});
+            uni.navigateBack();
         }
     }
 </script>
