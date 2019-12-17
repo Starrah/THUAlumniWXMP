@@ -2,7 +2,7 @@ import {ActivityCheckStatus} from "../../../apps/typesDeclare/ActivityEnum";
 import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
-    <form @submit="submitAdvancedSearch">
+    <form @submit="modifyNewActivity">
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动名称</view>
             <input ref="name" name="name" :value="activityName"/>
@@ -21,7 +21,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
             <view class="title">活动头像</view>
-            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ');'"></view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + fullUrl(imageUrl) + ');'"></view>
             <text v-else>点击上传</text>
         </view>
         <view class="cu-form-group margin-top">
@@ -94,7 +94,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">报名状态</view>
-            <picker @change="statusJoin = $event.detail.value" :value="statusJoin" :range="STATUS_JOIN_WORDS">
+            <picker @change="statusJoin = Number($event.detail.value)" :value="statusJoin" :range="STATUS_JOIN_WORDS">
                 <view class="picker">
                     {{STATUS_JOIN_WORDS[statusJoin]}}
                 </view>
@@ -102,7 +102,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">签到状态</view>
-            <picker @change="statusCheck = $event.detail.value" :value="statusCheck" :range="STATUS_CHECK_WORDS">
+            <picker @change="statusCheck = Number($event.detail.value)" :value="statusCheck" :range="STATUS_CHECK_WORDS">
                 <view class="picker">
                     {{STATUS_CHECK_WORDS[statusCheck]}}
                 </view>
@@ -160,6 +160,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         name: "modifyActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
         activityId: string;
+        fullUrl = fullUrl;
         get today(): string{
             return dateFormat(new Date(), "yyyy-mm-dd")
         }

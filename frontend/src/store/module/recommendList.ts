@@ -59,7 +59,10 @@ const actions = {
             let res;
             if(state.advanced){
                 try {
-                    res = await apiService.get('/searchActivityAdvanced', param);
+                    let url = `/searchActivityAdvanced?most=${param.most}`;
+                    if(param.lastSeenId)url += `&lastSeenId=${param.lastSeenId}`;
+                    console.log([url, state.advanData]);
+                    res = await apiService.post(url, state.advanData);
                 }catch(e){
                     if(e.errid && e.errid === 201){
                         uni.showToast({title: e.errmsg, icon: "none"});

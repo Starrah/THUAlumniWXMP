@@ -19,7 +19,7 @@
         </view>
         <view class="cu-form-group margin-top-sm arrow" @click="chooseImage">
             <view class="title">活动头像</view>
-            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + imageUrl + ')'"></view>
+            <view v-if="imageUrl && imageUrl !== ''" class="cu-avatar radius" :style="'background-image: url(' + fullUrl(imageUrl) + ')'"></view>
             <text v-else>点击上传</text>
         </view>
         <view class="cu-form-group margin-top">
@@ -131,6 +131,7 @@
     export default class newActivity extends Vue{
         name: "newActivity";
         DEFAULT_TIMEPICKER_VALUE = "请选择";
+        fullUrl = fullUrl;
         inputValue: string = "";
         console = console;
         imageUrl: string = "";

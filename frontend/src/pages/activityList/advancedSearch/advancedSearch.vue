@@ -129,7 +129,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">活动状态</view>
-            <picker @change="statusGlobal = $event.detail.value" :value="statusGlobal" :range="STATUS_GLOBAL_WORDS">
+            <picker @change="statusGlobal = Number($event.detail.value)" :value="statusGlobal" :range="STATUS_GLOBAL_WORDS">
                 <view class="picker">
                     {{STATUS_GLOBAL_WORDS[statusGlobal]}}
                 </view>
@@ -137,7 +137,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">报名状态</view>
-            <picker @change="statusJoin = $event.detail.value" :value="statusJoin" :range="STATUS_JOIN_WORDS">
+            <picker @change="statusJoin = Number($event.detail.value)" :value="statusJoin" :range="STATUS_JOIN_WORDS">
                 <view class="picker">
                     {{STATUS_JOIN_WORDS[statusJoin]}}
                 </view>
@@ -145,15 +145,15 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">签到状态</view>
-            <picker @change="statusCheck = $event.detail.value" :value="statusCheck" :range="STATUS_CHECK_WORDS">
+            <picker @change="statusCheck = Number($event.detail.value)" :value="statusCheck" :range="STATUS_CHECK_WORDS">
                 <view class="picker">
                     {{STATUS_CHECK_WORDS[statusCheck]}}
                 </view>
             </picker>
         </view>
-        <view class="cu-form-group margin-top arrow">
+        <view class="cu-form-group margin-top">
             <view class="title">报名规则</view>
-            <picker @change="ruleForMe = $event.detail.value" :value="ruleForMe" :range="STATUS_RULEFORME_WORDS">
+            <picker @change="ruleForMe = Number($event.detail.value)" :value="ruleForMe" :range="STATUS_RULEFORME_WORDS">
                 <view class="picker">
                     {{STATUS_RULEFORME_WORDS[ruleForMe]}}
                 </view>
@@ -372,10 +372,10 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 signupBeginAtMax: this.dateTimeConvert(this.signupBeginAtDate2, this.signupBeginAtTime2),
                 signupStopAtMax: this.dateTimeConvert(this.signupStopAtDate2, this.signupStopAtTime2),
                 type: this.typeMultiSubmitText,
-                statusJoin: this.statusJoin !== 5?this.statusJoin:undefined,
-                statusCheck: this.statusCheck !== 5?this.statusCheck:undefined,
-                statusGlobal: this.statusGlobal !== 4?this.statusGlobal:undefined,
-                ruleForMe: this.ruleForMe !== 4?this.ruleForMe:undefined
+                statusJoin: this.statusJoin !== 4?this.statusJoin:undefined,
+                statusCheck: this.statusCheck !== 4?this.statusCheck:undefined,
+                statusGlobal: this.statusGlobal !== 3?this.statusGlobal:undefined,
+                ruleForMe: this.ruleForMe !== 3?this.ruleForMe:undefined
             };
             this.$store.commit(SET_ADVAN_SEARCH_DATA, data);
             uni.navigateTo({
