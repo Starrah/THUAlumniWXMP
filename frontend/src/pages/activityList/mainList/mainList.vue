@@ -9,6 +9,9 @@
             <view class="action">
                 <button class="cu-btn bg-green shadow-blur round" @click="search">搜索</button>
             </view>
+            <view class="action">
+                <button class="cu-btn bg-blue shadow-blur round" @click="jumpToAdvancedSearch">高级</button>
+            </view>
         </view>
 <!--        <scroll-view scroll-y="true" :lower-threshold="100" :enable-back-to-top="true" @scrolltolower="loadMore" @scrolltoupper="loadMore">-->
             <view class="cu-list menu">
@@ -70,6 +73,11 @@
         }
         get activities_toShow(){
             return this.$store.state.allActivityList.activityList;
+        }
+        jumpToAdvancedSearch(){
+            uni.navigateTo({
+                url: "/pages/activityList/advancedSearch/advancedSearch"
+            })
         }
         isLoadingMore: boolean = false;
         onReachBottom(){

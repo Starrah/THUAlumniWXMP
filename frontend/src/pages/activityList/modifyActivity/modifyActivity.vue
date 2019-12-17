@@ -2,7 +2,7 @@ import {ActivityCheckStatus} from "../../../apps/typesDeclare/ActivityEnum";
 import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
-    <form @submit="modifyNewActivity">
+    <form @submit="submitAdvancedSearch">
         <view class="cu-form-group margin-top-sm">
             <view class="title">活动名称</view>
             <input ref="name" name="name" :value="activityName"/>
@@ -229,7 +229,9 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
-            if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
+            if(this.typeMultiIndex.length < temp.level){
+                this.typeMultiIndex = this.typeMultiIndex.concat([0, 0, 0, 0, 0]).slice(0, temp.level);
+            }
             return temp;
         }
         get typeMultiArray(){
@@ -286,7 +288,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 tags: formData.tag.split(/[, ]/),
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):this.createDateTime,
                 signupStopAt: this.switchSignupStop?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):withSec(this.startDate + " " + this.startTime),
-                type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
+                type: this.typeMultiShowText,
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):-1,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):0,
                 canBeSearched: this.switchCanBeSearched,

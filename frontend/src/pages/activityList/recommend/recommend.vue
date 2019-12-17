@@ -35,6 +35,9 @@
                     <text class="text-lg text-red" :style="activity.maxUser===-1?'display:none':''">{{activity.maxUser}}</text>
                 </view>
             </view>
+            <view class="cu-item" v-if="isLoadingMore">
+                <text>加载中</text>
+            </view>
         </view>
         <!--        </scroll-view>-->
     </view>
@@ -55,6 +58,23 @@
         fullUrl = fullUrl;
         tempSearchText = "";
         searchText = "";
+        isLoadingMore: boolean = false;
+        onReachBottom(){
+            this.loadMore();
+        }
+        async loadMore(){
+            console.log("loadMore");
+            this.isLoadingMore = true;
+            let allActivityes: Array<ActivitySchema> = this.activities_toShow;
+            let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;
+            try {
+                await this.$store.dispatch(FETCH_RECOMMEND, {
+                    lastSeenId
+                });
+            }finally {
+                this.isLoadingMore = false;
+            }
+        }
         search(){
             this.searchText = this.tempSearchText;
         }
@@ -89,8 +109,9 @@
         onLoad(param){
             console.log("onLoad");
             this.activityId = param.activityId;
-            this.$store.commit(SET_RECOMMEND_PAGE_ID, this.activityId);
+            this.$store.commit(SET_RECOMMEND_PAGE_ID, param);
             this.$store.dispatch(FETCH_RECOMMEND);
+            console.log(this.$store.state.recommendList);
         }
 
         jumpToActivityDetail(event, a: ActivitySchema){

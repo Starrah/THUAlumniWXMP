@@ -226,7 +226,11 @@
             let temp = this.$store.state.activityTypeList;
             console.log(temp.initialized);
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
-            if(this.typeMultiIndex.length !== temp.level)this.typeMultiIndex = [0, 0, 0, 0, 0, 0].slice(0, temp.level);
+            if(this.typeMultiIndex.length < temp.level){
+                console.log("chdt1", this.typeMultiIndex);
+                this.typeMultiIndex = this.typeMultiIndex.concat([0, 0, 0, 0, 0]).slice(0, temp.level);
+                console.log("chdt2", this.typeMultiIndex);
+            }
             return temp;
         }
         get typeMultiArray(){
@@ -242,9 +246,12 @@
             return res;
         }
         typeMultiChange(e){
+            console.log(["chan", e.detail.value]);
             this.typeMultiIndex = e.detail.value;
+            console.log(["after", this.typeMultiIndex]);
         }
         typeMultiColumnChange(e){
+            console.log(["colu", e.detail]);
             let column = e.detail.column;
             if(this.typeMultiIndex[column] === e.detail.value)return;
             let newIndex = [];
@@ -256,7 +263,9 @@
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
+            console.log(["textbb", this.typeMultiIndex]);
             return this.typeMultiArray.map((nameList, i)=>{
+                console.log(["text", nameList, i, this.typeMultiIndex[i]]);
                 return nameList[this.typeMultiIndex[i]];
             }).join("-");
         }
@@ -294,7 +303,7 @@
                 tags: formData.tag !== ""?formData.tag.split(/[, ]/):[],
                 signupBeginAt: this.switchSignupBegin?withSec(this.signupBeginAtDate + " " + this.signupBeginAtTime):undefined,
                 signupStopAt: this.switchSignupBegin?withSec(this.signupStopAtDate + " " + this.signupStopAtTime):undefined,
-                type: this.typeMultiArray[0][this.typeMultiIndex[0]] + "-" + this.typeMultiArray[1][this.typeMultiIndex[1]],
+                type: this.typeMultiShowText,
                 maxUser: formData.maxUser?Number.parseInt(formData.maxUser):undefined,
                 minUser: formData.minUser?Number.parseInt(formData.minUser):undefined,
                 canBeSearched: this.switchCanBeSearched,

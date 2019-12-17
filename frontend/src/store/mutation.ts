@@ -19,3 +19,5 @@ export const SET_PROFILE_OTHER = "setProfileOther";
 export const SET_OTHER_ID = "setOtherId";
 export const SET_RECOMMEND_PAGE_ID = "setRecommendPageId";
 export const SET_RECOMMEND = "setRecommend";
+export const ADD_RECOMMEND = "addRecommend";
+export const SET_ADVAN_SEARCH_DATA = "setAdvanSearchData";

@@ -37,13 +37,13 @@
     <view class="cu-bar bg-white solid-bottom margin-top arrow" @click="jumpToRecommend">
       <view class="action">
         <text class="cuIcon-title text-green"></text>
-        <text class="text-xl text-bold">为我推荐的活动</text>
+        <text class="text-xl">为我推荐的活动</text>
       </view>
     </view>
     <view class="cu-bar bg-white solid-bottom arrow" @click="jumpToAbout">
       <view class="action">
         <text class="cuIcon-title text-green"></text>
-        <text class="text-xl text-bold">关于</text>
+        <text class="text-xl">关于</text>
       </view>
     </view>
 
