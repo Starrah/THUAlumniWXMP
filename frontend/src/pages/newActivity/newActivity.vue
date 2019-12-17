@@ -123,6 +123,7 @@
     import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
     import apiService from "../../commons/api"
     import {fullUrl} from "@/apps/utils/networkUtils";
+    import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 
     @Component({
         components: {SureModal}
@@ -302,6 +303,20 @@
             await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
             this.$store.commit(SET_NEW_ACTIVITY, data);
             let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
+            console.log("reqSubMesBegin");
+            await new Promise((resolve,reject)=> {
+                wx.requestSubscribeMessage({
+                    tmplIds: initialGlobalData.subscribeMessagesIds.normal,
+                    success(res: any): void {
+                        console.log(["success", res]);
+                        resolve(res);
+                    },
+                    fail(res: any): void {
+                        console.log(["fail", res]);
+                        reject(res)
+                    }
+                })
+            });
             uni.showToast({title: "成功", icon: "none"});
             this.initialForm();
             await delay(1000);

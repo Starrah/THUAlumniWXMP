@@ -355,16 +355,27 @@
             try {
                 if (this.activityData.ruleForMe === 'accept') {
                     await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
-                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {})
-                    wx.requestSubscribeMessage({
-                        tmplIds: []
-                    })
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {});
                 } else if (this.activityData.ruleForMe === 'needAudit') {
-                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason})
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason});
                 }
             }finally {}
             console.log(res);
             if(res && res.result === 'success'){
+                console.log("reqSubMesBegin");
+                await new Promise((resolve,reject)=> {
+                    wx.requestSubscribeMessage({
+                        tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
+                        success(res: any): void {
+                            console.log(["success", res]);
+                            resolve(res);
+                        },
+                        fail(res: any): void {
+                            console.log(["fail", res]);
+                            reject(res)
+                        }
+                    })
+                });
                 uni.showToast({
                     title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
                 });

@@ -183,7 +183,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         switchCanBeSearched: boolean = true;
         statusJoin: ActivityJoinStatus = ActivityJoinStatus.Before;
         statusCheck: ActivityCheckStatus = ActivityCheckStatus.Before;
-        imageUrl?: string;
+        imageUrl: string = "";
         STATUS_JOIN_WORDS = ["报名尚未开始", "报名中", "报名已暂停", "报名已截止"];
         STATUS_CHECK_WORDS = ["签到尚未开始", "签到中", "签到已暂停", "签到已截止"];
         createDateTime: string = "";
@@ -298,7 +298,18 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
             this.$store.commit(SET_CHANGE_ACTIVITY, data);
-            let activityId = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
+            let res = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
+            if(res){
+                let isPush;
+                try {
+                    await ((this.$refs.SureModal as any).show("您可以选择向当前所有活动参加者推送一条消息，以通知他们活动的更改。但根据微信相关规则，该类消息整个活动期间活动只能推送一次。您要使用这个机会吗？"));
+                    isPush = true;
+                }catch(e){
+                    isPush = false;
+                }
+                if(isPush)await res.push();
+                else await res.notPush();
+            }
             uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
             uni.navigateBack();
@@ -311,8 +322,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.place = obj.place;
             this.tag = obj.tags.join(",");
             this.minUser = obj.minUser !== 0?obj.minUser:"";
-            console.log(obj.minUser !== 0);
-            console.log(this.minUser);
             this.maxUser = obj.maxUser !== -1?obj.maxUser:"";
             this.switchCanBeSearched = obj.canBeSearched;
             let startArr = withoutSec(obj.start).split(" ");
@@ -346,6 +355,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.statusJoin = obj.statusJoin;
             this.statusCheck = obj.statusCheck;
             this.createDateTime = obj.createTime;
+            this.imageUrl = obj.imageUrl;
         }
         mounted(){
             this.showCurrentValue();

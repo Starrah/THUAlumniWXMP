@@ -85,12 +85,33 @@ const actions = {
         if(JSON.stringify(state.activity.tags) === JSON.stringify(state.changeBuffer.tags))submitObj.tags = undefined;
         else submitObj.tags = state.changeBuffer.tags;
         submitObj.id = state.id;
-        try {
-            let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
-            return res.activityId;
-        }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+        if(submitObj.name !== undefined || submitObj.place !== undefined || submitObj.start !== undefined || submitObj.end !== undefined){
+            return {
+                push: async ()=>{
+                    try {
+                        let res = await apiService.post(`/modifyActivity?activityId=${state.id}&needPush=1`, submitObj);
+                    }catch (e) {
+                        if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+                        throw e;
+                    }
+                },
+                notPush: async ()=>{
+                    try {
+                        let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
+                    }catch (e) {
+                        if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+                        throw e;
+                    }
+                }
+            }
+        }
+        else {
+            try {
+                let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
+            } catch (e) {
+                if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
+                throw e;
+            }
         }
     },
     async [FETCH_DESCRIPTION]({commit, state, rootState}){
