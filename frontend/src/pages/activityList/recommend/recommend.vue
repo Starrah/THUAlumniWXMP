@@ -35,9 +35,6 @@
                     <text class="text-lg text-red" :style="activity.maxUser==-1?'display:none':''">{{activity.maxUser}}</text>
                 </view>
             </view>
-            <view class="cu-item" v-if="isLoadingMore">
-                <text>加载中</text>
-            </view>
         </view>
         <!--        </scroll-view>-->
     </view>
@@ -47,19 +44,22 @@
     import Vue from 'vue'
     import {Component} from 'vue-property-decorator'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
-    import {FETCH_MY_ACTIVITY_LIST} from "@/store/action";
+    import {FETCH_RECOMMEND} from "@/store/action";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl} from "@/apps/utils/networkUtils";
+    import {SET_RECOMMEND_PAGE_ID} from "@/store/mutation";
 
     @Component
-    export default class myActivityList extends Vue{
-        name!: "myActivityList";
+    export default class recommendList extends Vue{
+        name!: "recommendList";
         fullUrl = fullUrl;
         tempSearchText = "";
         searchText = "";
         search(){
             this.searchText = this.tempSearchText;
-            this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
+        }
+        onShow(){
+            console.log("onsHOW");
         }
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
@@ -67,46 +67,30 @@
         pageType: string = "";
         debugCode?:string = "";
         get activities_toShow(){
-            let actualIndex = this.finalCount < this.activities_valid.length?this.finalCount:this.activities_valid.length;
             let actualArray = this.activities_valid;
             if(this.searchText && this.searchText !== ""){
                 actualArray = this.activities_valid.filter((v: ActivitySchema)=>{
                     return v.name.indexOf(this.searchText) !== -1 && v.tags.indexOf(this.searchText) !== -1;
                 })
             }
-            return actualArray.slice(0, actualIndex);
+            return actualArray
         }
         get activities_valid(){
-            if(this.pageType === "history")return this.$store.state.myActivityList.history;
-            else if (this.pageType === "myParticipate")return this.$store.state.myActivityList.myParticipate;
-            else if (this.pageType === "mySponsor")return this.$store.state.myActivityList.mySponsor;
-        }
-        DEFAULT_ONCE_SHOW_COUNT = 15;
-        finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
-        isLoadingMore: boolean = false;
-        onReachBottom(){
-            this.loadMore();
-        }
-        async loadMore(){
-            if(this.finalCount < this.activities_valid.length)this.finalCount += this.DEFAULT_ONCE_SHOW_COUNT
+            return this.$store.state.recommendList.activityList;
         }
         async onPullDownRefresh(){
             try{
-                await this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
+                await this.$store.dispatch(FETCH_RECOMMEND);
             }finally {
                 uni.stopPullDownRefresh();
             }
         }
-        mounted(){
-        }
-
+        activityId: string = "";
         onLoad(param){
-            this.pageType = param.type;
-            if(this.pageType === "history")uni.setNavigationBarTitle({title: "历史记录"});
-            else if(this.pageType === "myParticipate")uni.setNavigationBarTitle({title: "我参与的活动"});
-            else if(this.pageType === "mySponsor")uni.setNavigationBarTitle({title: "我发起的活动"});
-            this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
-            this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
+            console.log("onLoad");
+            this.activityId = param.activityId;
+            this.$store.commit(SET_RECOMMEND_PAGE_ID, this.activityId);
+            this.$store.dispatch(FETCH_RECOMMEND);
         }
 
         jumpToActivityDetail(event, a: ActivitySchema){

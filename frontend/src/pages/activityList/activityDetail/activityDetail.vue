@@ -167,7 +167,9 @@
         <view style="text-align: center">
             <text style="padding-left: 30px;color: #0081ff" @click="onPressReport">举报</text>
             <text style="padding: 20px; left: 20px">|</text>
-            <text style="color: #0081ff">关于我们</text>
+            <text style="color: #0081ff" @click="jumpToRecommend">推荐更多活动</text>
+            <text style="padding: 20px; left: 20px">|</text>
+            <text style="color: #0081ff" @click="jumpToAbout">关于我们</text>
         </view>
     </view>
 
@@ -348,6 +350,16 @@
         }
         async onPressCancelAudit(){
             this.auditModalShowing = false;
+        }
+        jumpToRecommend(){
+            uni.navigateTo({
+                url: `/pages/activityList/recommend/recommend?activityId=${this.activityId}`
+            })
+        }
+        jumpToAbout(){
+            uni.navigateTo({
+                url: "/pages/me/About"
+            })
         }
         async attendCurActivity(){
             this.auditModalShowing = false;

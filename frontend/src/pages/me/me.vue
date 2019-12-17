@@ -34,6 +34,19 @@
         </div>
       </div>
     </div>
+    <view class="cu-bar bg-white solid-bottom margin-top arrow" @click="jumpToRecommend">
+      <view class="action">
+        <text class="cuIcon-title text-green"></text>
+        <text class="text-xl text-bold">为我推荐的活动</text>
+      </view>
+    </view>
+    <view class="cu-bar bg-white solid-bottom arrow" @click="jumpToAbout">
+      <view class="action">
+        <text class="cuIcon-title text-green"></text>
+        <text class="text-xl text-bold">关于</text>
+      </view>
+    </view>
+
   </div>
 </template>
 
@@ -61,13 +74,23 @@ export default {
     },
     fullUrl(s){
       return fullUrl(s);
+    },
+    jumpToRecommend(){
+      uni.navigateTo({
+        url: "/pages/activityList/recommend/recommend"
+      })
+    },
+    jumpToAbout(){
+      uni.navigateTo({
+        url: "/pages/me/About"
+      })
     }
   },
 
   onShow(){
     console.log("onShow");
     this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
-  }
+  },
 };
 </script>
 
@@ -119,5 +142,22 @@ export default {
 .me-verified {
   background-color: #5e068c !important;
   color: #fff;
+}
+.arrow {
+  padding-right: 90upx
+}
+
+.arrow:before {
+  position: absolute;
+  right: 30upx;
+  display: block;
+  width: 30upx;
+  height: 30upx;
+  color: #8799a3;
+  content: "\e6a3";
+  text-align: center;
+  font-size: 34upx;
+  font-family: cuIcon;
+  line-height: 30upx
 }
 </style>

@@ -37,6 +37,7 @@ const mutations = {
     },
     [SET_ACTIVITY_DETAIL_ID](state, ne){
         state.id = ne;
+        state.activity = defaultBlankActivity()
     },
     [SYNC_CHANGE_ACTIVITY_DATA](state){
         state.changeBuffer = JSON.parse(JSON.stringify(state.activity));

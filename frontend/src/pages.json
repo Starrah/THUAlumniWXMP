@@ -44,6 +44,18 @@
 			}
 		},
 		{
+			"path": "pages/activityList/recommend/recommend",
+			"style": {
+				"navigationBarTitleText": "推荐活动"
+			}
+		},
+		{
+			"path": "pages/me/About",
+			"style": {
+				"navigationBarTitleText": "关于清友约"
+			}
+		},
+		{
 			"path": "pages/me/other",
 			"style": {
 				"navigationBarTitleText": "用户信息"
