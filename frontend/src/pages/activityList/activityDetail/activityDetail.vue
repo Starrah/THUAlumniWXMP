@@ -132,12 +132,15 @@
         </view>
         <br v-if="activityCancelable(activityData)">
         <SureModal ref="SureModal"></SureModal>
-        <view class="cu-modal" :class="auditModalShowing?'show':''">
+        <view class="cu-modal" :class="auditModalShowing?'show':''" style="z-index: 990">
             <view class="cu-dialog">
-                <text>您报名后需要审核，您可在下方输入申请留言：</text>
-                <view class="cu-form-group">
+                <view class="cu-bar bg-white justify-center">
+                    <text class="text-lg text-bold">您报名后需要审核，您可在下方输入申请留言：</text>
+                </view>
+                <view class="cu-form-group align-start">
                     <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
                 </view>
+                <br>
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
             </view>
