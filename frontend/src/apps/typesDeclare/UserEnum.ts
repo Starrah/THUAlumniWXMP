@@ -20,10 +20,10 @@ export enum UserRole {
 export var UserStatusShowStrings = [
     "等待管理员审核报名申请",
     "报名成功",
-    "未签到",
     "已签到",
     "参加成功",
     "异常情况",
     "审核被拒绝",
     "活动现场没有签到",
+    "未签到"
 ];

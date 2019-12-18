@@ -108,9 +108,9 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 </view>
             </picker>
         </view>
-        <view class="cu-form-group margin-top arrow">
+        <view class="cu-form-group margin-top arrow" @click="openAdvancedRulePage">
             <view class="title">报名规则</view>
-            <view @click="openAdvancedRulePage">{{advancedRuleDescription}}</view>
+            <view>{{advancedRuleDescription}}</view>
         </view>
         <view class="cu-form-group margin-top">
             <view class="title">人数</view>

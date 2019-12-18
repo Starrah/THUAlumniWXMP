@@ -3,7 +3,7 @@
         <view class="cu-bar bg-white solid-bottom margin-top">
             <view class="action">
                 <text class="cuIcon-title text-green "></text>
-                <text class="text-xl text-bold">{{activityName}}</text>
+                <text class="text-xl">{{activityName}}</text>
             </view>
         </view>
         <view class="cu-card dynamic">

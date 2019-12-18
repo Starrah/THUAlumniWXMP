@@ -44,6 +44,12 @@
 			}
 		},
 		{
+			"path": "pages/activityList/generateCSV/generateCSV",
+			"style": {
+				"navigationBarTitleText": "下载成员列表"
+			}
+		},
+		{
 			"path": "pages/activityList/advancedSearch/advancedSearch",
 			"style": {
 				"navigationBarTitleText": "高级检索"
