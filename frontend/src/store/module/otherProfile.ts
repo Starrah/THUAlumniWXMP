@@ -22,7 +22,7 @@ const mutations = {
 const actions = {
   async [FETCH_PROFILE_OTHER]({ dispatch, commit, rootState, state }) {
     console.log("prother")
-    return apiService.get("/userData").then(data => {
+    return apiService.get("/userData", {openId: state.openId}).then(data => {
       commit(SET_PROFILE_OTHER, {
         ...data,
       });

@@ -1,6 +1,7 @@
 import apiService from '../../commons/api'
 
 export function fullUrl(s: string): string{
+    if(!s)return s;
     if(s.indexOf("://") !== -1)return s;
     else {
         let firstSlash = s.indexOf("/");

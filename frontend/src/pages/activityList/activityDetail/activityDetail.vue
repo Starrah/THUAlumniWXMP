@@ -43,9 +43,9 @@
                 <view class="title">报名截止</view>
                 <text>{{activityData.signupStopAt?withoutSec(activityData.signupStopAt):'直到活动开始前均可报名'}}</text>
             </view>
-            <view class="cu-form-group margin-top arrow">
+            <view class="cu-form-group margin-top arrow" @click="openParticipantsPage">
                 <view class="title">人数</view>
-                <view @click="openParticipantsPage">
+                <view>
                     <view class="cu-avatar-group">
                         <view v-for="user in avatarShowList" :key="user.openId" class="cu-avatar round sm" :style="'background-image:url('+ (user.avatarUrl?fullUrl(user.avatarUrl):DEFAULT_AVATAR_URL) +');'"></view>
                     </view>
@@ -63,7 +63,7 @@
                 <text>点击查看</text>
             </view>
         </view>
-        <br>
+        <view class="margin-top"></view>
         <view v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && (activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.None)" style="display: flex;justify-content: space-around;">
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Before" class="cu-btn bg-green lg align-center" :disabled="true">报名尚未开始</button>
             <button v-if="activityData.statusJoin === ActivityJoinStatus.Continue && (activityData.selfStatus === UserStatus.None || activityData.selfStatus === UserStatus.Refused)" class="cu-btn bg-green lg align-center" @click="onPressAttend" :disabled="activityData.ruleForMe === 'reject'">{{signupButtonWords}}</button>
@@ -369,7 +369,7 @@
                     await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {});
                 } else if (this.activityData.ruleForMe === 'needAudit') {
-                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: this.auditReason});
+                    res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: (this.auditReason && this.auditReason !== "")?this.auditReason:" "});
                 }
             }finally {}
             console.log(res);
