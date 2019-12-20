@@ -1,7 +1,7 @@
 <template>
   <div :style="{position: 'relative', height: '100%'}">
     <view style="display: flex;justify-content: space-around;">
-      <button v-if="myRole !== UserRole.Common"  class="cu-btn bg-white align-center" @click="jumpToGenerateCSV">下载成员列表</button>
+      <button v-if="myRole !== 0 && !enableAudit"  class="cu-btn bg-white align-center" @click="jumpToGenerateCSV">下载成员列表</button>
     </view>
     <div class="cu-list menu-avatar" v-for="(user, idx) in participants" :key="idx" style="margin-top: 5px">
       <div class="cu-item" style="margin-top: 5px" @click="openOtherPage(user)">
@@ -100,6 +100,7 @@ export default class memberReveiw extends Vue {
   kickedUsers = [];
   participants: Array<{openId: string, avatarUrl: string, name: string, userRole?: UserRole, userStatus?: UserStatus, submitTime?: string, submitMsg?: string}> = [];
   get myRole() {
+    console.log(this.$store.state.activityDetail.activity.selfRole);
     return this.$store.state.activityDetail.activity.selfRole;
   }
   get showAuditButton(): boolean {

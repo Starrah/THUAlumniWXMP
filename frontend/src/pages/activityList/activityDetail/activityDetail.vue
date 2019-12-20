@@ -206,8 +206,6 @@
         }
         activityId: string;
         get activityData(): ActivitySchema{
-            console.log("activityDataChANGED");
-            console.log(this.$store.state.activityDetail);
             return this.$store.state.activityDetail.activity;
         }
         AVATAR_GROUP_MAX = 4;
@@ -223,8 +221,6 @@
             else return [];
         }
         get signupButtonWords(){
-            console.log(this.activityData);
-            console.log(this.activityData.ruleForMe);
             if(this.activityData.ruleForMe === 'accept')return '立即报名';
             else if(this.activityData.ruleForMe === 'needAudit')return '申请报名';
             else return '您不可参加';
@@ -375,18 +371,14 @@
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: (this.auditReason && this.auditReason !== "")?this.auditReason:" "});
                 }
             }finally {}
-            console.log(res);
             if(res && res.result === 'success'){
-                console.log("reqSubMesBegin");
                 await new Promise((resolve,reject)=> {
                     wx.requestSubscribeMessage({
                         tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
                         success(res: any): void {
-                            console.log(["success", res]);
                             resolve(res);
                         },
                         fail(res: any): void {
-                            console.log(["fail", res]);
                             reject(res)
                         }
                     })

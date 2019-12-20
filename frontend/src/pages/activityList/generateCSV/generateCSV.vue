@@ -6,14 +6,16 @@
                 <text class="text-xl">{{activity.name}}</text>
             </view>
         </view>
-        <view class="cu-bar bg-white solid-bottom margin-top">
-            <view v-if="result" class="action">
+        <view v-if="result" class="cu-bar bg-white solid-bottom margin-top">
+            <view class="action">
                 <text class="cuIcon-title text-green "></text>
                 <text class="text-xl">由于微信小程序下载的文件不方便您找到存储位置，我们建议您使用手机或电脑浏览器直接下载。请您访问以下链接：</text>
             </view>
+        </view>
+        <view class="cu-bar bg-white solid-bottom margin-top">
             <view v-if="result" class="action">
                 <text class="cuIcon-title text-green "></text>
-                <text class="text-xl">{{fullUrl(result)}}</text>
+                <text :selectable="true" class="text-xl">{{fullUrl(result)}}</text>
             </view>
             <view v-else class="action">
                 <text class="cuIcon-title text-green "></text>

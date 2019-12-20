@@ -58,7 +58,12 @@
         },
         "navigateToMiniProgramAppIdList": [
             "wx1ebe3b2266f4afe0"
-        ]
+        ],
+        "permission": {
+            "scope.userLocation": {
+                "desc": "位置信息仅用于签到功能的定位使用。我们承诺我们的服务器不会把您的位置信息存储下来。"
+            }
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true
