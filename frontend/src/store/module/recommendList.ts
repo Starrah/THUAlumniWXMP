@@ -7,6 +7,7 @@ import {
     SET_RECOMMEND_PAGE_ID
 } from "../mutation";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
+import {handleNetExcept} from "@/apps/utils/networkUtils";
 
 const state: {
     activityList: Array<ActivitySchema>,
@@ -32,7 +33,6 @@ const mutations = {
         state.advanData = data;
     },
     [ADD_RECOMMEND](state, ne){
-        console.log(ne);
         if(ne.activityList && ne.activityList.length !== 0) {
             if (state.activityList.length !== 0) {
                 let lastId = state.activityList[state.activityList.length - 1].id;
@@ -52,7 +52,6 @@ const mutations = {
 
 const actions = {
     async [FETCH_RECOMMEND]({state, commit, rootState}, param){
-        console.log("fetchRecommend");
         if(!param)param = {};
         param.most = param.most || 15;
         try {
@@ -93,8 +92,7 @@ const actions = {
             if(state.advanced && param.lastSeenId)commit(ADD_RECOMMEND, res);
             else commit(SET_RECOMMEND, res);
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     },
     async [FETCH_MORE_ACTIVITY]({state, commit, rootState}, param){
@@ -116,8 +114,7 @@ const actions = {
             }
             commit(ADD_MORE_ACTIVITY, res)
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     }
 

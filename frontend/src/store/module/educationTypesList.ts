@@ -1,6 +1,7 @@
 import apiService from "../../commons/api";
 import {FETCH_ACTIVITY_TYPE_LIST, FETCH_DEPARTMENT_LIST, FETCH_EDUCATION_LIST, SUBMIT_NEW_ACTIVITY} from "../action";
 import {SET_ACTIVITY_TYPE_LIST, SET_DEPARTMENT_LIST, SET_EDUCATION_LIST, SET_NEW_ACTIVITY} from "../mutation";
+import {handleNetExcept} from "@/apps/utils/networkUtils";
 
 interface EducationTypesListSchema {
     types: Array<string>
@@ -25,8 +26,7 @@ const actions = {
             let res = await apiService.get('/educationTypesList');
             commit(SET_EDUCATION_LIST, res);
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     }
 };

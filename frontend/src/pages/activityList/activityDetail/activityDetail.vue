@@ -1,3 +1,4 @@
+import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
         <view>
@@ -81,32 +82,32 @@
         </view>
         <br v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager">
         <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;" class="cu-list grid col-3">
-            <view class="cu-item" v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
+            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && (activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
                 <text class="text-gray cuIcon-peoplefill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
+            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
                 <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">开放报名</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
+            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
                 <text class="text-gray cuIcon-stop" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">暂停报名</text>
             </view>
-            <view class="cu-item" @click="jumpToQRCodePage">
+            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal" @click="jumpToQRCodePage">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">签到二维码</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
+            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">开放签到</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
+            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">暂停签到</text>
@@ -121,15 +122,20 @@
                 <br>
                 <text style="color: #555555;">设置活动详情</text>
             </view>
-            <view class="cu-item" v-if="columnOfButtons==2">
+            <view class="cu-item" v-if="activityCancelable(activityData)" @click="">
+                <text class="text-gray cuIcon-post" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555;">取消活动</text>
             </view>
-            <view class="cu-item" v-if="columnOfButtons==1">
-            </view>
+<!--            <view class="cu-item" v-if="columnOfButtons==2">-->
+<!--            </view>-->
+<!--            <view class="cu-item" v-if="columnOfButtons==1">-->
+<!--            </view>-->
         </view>
-        <br v-if="activityAdminable(activityData)">
-        <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
-        </view>
+<!--        <br v-if="activityAdminable(activityData)">-->
+<!--        <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">-->
+<!--            <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>-->
+<!--        </view>-->
         <br v-if="activityCancelable(activityData)">
         <SureModal ref="SureModal"></SureModal>
         <view class="cu-modal" :class="auditModalShowing?'show':''" style="z-index: 990">
@@ -190,7 +196,8 @@
     import {FETCH_ACTIVITY_DETAIL, FETCH_DESCRIPTION, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
-    import {fullUrl} from "@/apps/utils/networkUtils";
+    import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
+
     @Component({
         components: {SureModal}
     })
@@ -227,14 +234,15 @@
         }
         ANS=0;
         get columnOfButtons() {
-            this.ANS=1;
-            if((this.activityData.statusCheck === ActivityCheckStatus.Before && this.activityData.statusJoin !== ActivityJoinStatus.Before) || this.activityData.statusJoin === ActivityJoinStatus.Continue || this.activityData.needAuditCount)this.ANS++;
-            if(this.activityData.statusJoin !== ActivityJoinStatus.Continue)this.ANS++;
-            if(this.activityData.statusJoin === ActivityJoinStatus.Continue)this.ANS++;
-            if(this.activityData.statusCheck !== ActivityCheckStatus.Continue && this.activityData.statusJoin !== ActivityJoinStatus.Before)this.ANS++;
-            if(this.activityData.statusCheck === ActivityCheckStatus.Continue)this.ANS++;
-            if(this.activityAdminable(this.activityData))this.ANS+=2;
-            return this.ANS%3;
+            // this.ANS=1;
+            // if((this.activityData.statusCheck === ActivityCheckStatus.Before && this.activityData.statusJoin !== ActivityJoinStatus.Before) || this.activityData.statusJoin === ActivityJoinStatus.Continue || this.activityData.needAuditCount)this.ANS++;
+            // if(this.activityData.statusJoin !== ActivityJoinStatus.Continue)this.ANS++;
+            // if(this.activityData.statusJoin === ActivityJoinStatus.Continue)this.ANS++;
+            // if(this.activityData.statusCheck !== ActivityCheckStatus.Continue && this.activityData.statusJoin !== ActivityJoinStatus.Before)this.ANS++;
+            // if(this.activityData.statusCheck === ActivityCheckStatus.Continue)this.ANS++;
+            // if(this.activityAdminable(this.activityData))this.ANS+=2;
+            // return this.ANS%3;
+            return 3;
         }
         async updateActivityData(){
             this.$store.dispatch(FETCH_ACTIVITY_DETAIL);
@@ -292,10 +300,10 @@
         ActivityJoinStatus = ActivityJoinStatus;
         ActivityCheckStatus = ActivityCheckStatus;
         activityCancelable(d: ActivitySchema){
-            return d.statusGlobal === ActivityGlobalStatus.Normal && d.statusCheck === ActivityCheckStatus.Before && d.selfRole === UserRole.Creator
+            return (d.statusGlobal === ActivityGlobalStatus.Normal || d.statusGlobal === ActivityGlobalStatus.Audit) && d.statusCheck === ActivityCheckStatus.Before && d.selfRole === UserRole.Creator
         }
         activityAdminable(d: ActivitySchema) {
-            return d.statusGlobal === ActivityGlobalStatus.Normal && (d.selfRole === UserRole.Creator || d.selfRole === UserRole.Manager);
+            return (d.statusGlobal === ActivityGlobalStatus.Normal || d.statusGlobal === ActivityGlobalStatus.Audit) && (d.selfRole === UserRole.Creator || d.selfRole === UserRole.Manager);
         }
         auditModalShowing: boolean = false;
         auditReason: string = "";
@@ -315,16 +323,11 @@
                     await apiService.post(`/reportActivity?activityId=${this.activityId}`, {reason: this.reportPickerRange[this.reportPickerValue] + ": " + this.reportReason})
                     uni.showToast({
                         title: "举报成功"
-                    })
+                    });
+                    this.reportModalShowing = false;
                 }catch (e) {
-                    if(e.errid && e.errid >= 500 && e.errid <= 599){
-                        uni.showToast({
-                            title: e.errmsg,
-                            icon: "none"
-                        })
-                    }
+                    handleNetExcept(e)
                 }
-                this.reportModalShowing = false;
             }
         }
         onPressCancelReport(){
@@ -370,71 +373,56 @@
                 } else if (this.activityData.ruleForMe === 'needAudit') {
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: (this.auditReason && this.auditReason !== "")?this.auditReason:" "});
                 }
-            }finally {}
-            if(res && res.result === 'success'){
-                await new Promise((resolve,reject)=> {
-                    wx.requestSubscribeMessage({
-                        tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
-                        success(res: any): void {
-                            resolve(res);
-                        },
-                        fail(res: any): void {
-                            reject(res)
-                        }
-                    })
-                });
-                uni.showToast({
-                    title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
-                });
-            }else{
-                uni.showToast({
-                    title: (res && res.errmsg) || '参加失败',
-                    icon: "none"
-                })
+                if(res && res.result === 'success'){
+                    await new Promise((resolve,reject)=> {
+                        wx.requestSubscribeMessage({
+                            tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
+                            success(res: any): void {
+                                resolve(res);
+                            },
+                            fail(res: any): void {
+                                reject(res)
+                            }
+                        })
+                    });
+                    uni.showToast({
+                        title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
+                    });
+                }
+            }catch (e) {
+                handleNetExcept(e)
             }
             this.updateActivityData()
         }
         async exitCurActivity(){
             await ((this.$refs.SureModal as any).show("您确认要取消报名吗？"));
-            let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
-            if(res && res.result === 'success'){
-                uni.showToast({
-                    title: this.activityData.selfStatus === UserStatus.WaitValidate?"取消加入申请成功":"取消报名成功",
-                });
-            }else{
-                uni.showToast({
-                    title: (res && res.errmsg) || '取消报名失败',
-                    icon: "none"
-                })
+            try {
+                let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
+                if (res && res.result === 'success') {
+                    uni.showToast({
+                        title: this.activityData.selfStatus === UserStatus.WaitValidate ? "取消加入申请成功" : "取消报名成功",
+                    });
+                }
+            }catch (e) {
+                handleNetExcept(e);
             }
             this.updateActivityData()
         }
         async signinActivity(){
-            console.log("qwqwqwqw");
             let code = await new Promise((resolve, reject)=>{
                 uni.scanCode({
                     success: (r)=>{
-                        console.log("scanResult", r.result);
                         resolve(r.result);
                     },
-                    complete: ()=>console.log("comp")
                 });
             });
-            console.log(code);
             try {
                 let res = await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
-                console.log(res);
                 uni.showToast({
                     title: "签到成功",
                 });
             }catch (e) {
-                console.log(e);
-                if(e.errid && e.errid >= 500 && e.errid <= 599){
-                    uni.showToast({
-                        title: e.errmsg,
-                        icon: "none"
-                    })
-                }
+                handleNetExcept(e)
             }
             this.updateActivityData()
         }
@@ -445,10 +433,17 @@
         }
         async startSignin(){
             await ((this.$refs.SureModal as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: ActivityCheckStatus.Continue}});
-            uni.showToast({
-                title: "成功",
-            });
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusCheck: ActivityCheckStatus.Continue}
+                });
+                uni.showToast({
+                    title: "成功"
+                });
+            }catch (e) {
+                handleNetExcept(e);
+            }
             this.updateActivityData()
         }
         async endSignin(){
@@ -461,21 +456,34 @@
             this.updateActivityData()
         }
         async startSignup(){
-            console.log(this.$refs);
             await ((this.$refs.SureModal as any).show("您确认要开放报名吗？"));
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: ActivityJoinStatus.Continue}});
-            uni.showToast({
-                title: "成功",
-            });
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusJoin: ActivityJoinStatus.Continue}
+                });
+                uni.showToast({
+                    title: "成功",
+                });
+            }catch (e) {
+                handleNetExcept(e);
+            }
             this.updateActivityData()
         }
         async endSignup(){
             await ((this.$refs.SureModal as any).show("您确认要暂停报名吗？（之后仍可恢复开放报名）"));
             let newStatusJoin = isDateTimePast(this.activityData.signupStopAt)?ActivityJoinStatus.Stopped:ActivityJoinStatus.Paused;
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: newStatusJoin}});
-            uni.showToast({
-                title: "成功",
-            });
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusJoin: newStatusJoin}
+                });
+                uni.showToast({
+                    title: "成功",
+                });
+            }catch (e) {
+                handleNetExcept(e);
+            }
             this.updateActivityData()
         }
         async openModifyPage(){
@@ -486,10 +494,14 @@
         }
         async cancelActivityAdmin(){
             await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？\r\n一旦确认，活动将被彻底取消，无法恢复！\r\n"));
-            await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
-            uni.showToast({
-                title: "活动已被取消",
-            });
+            try {
+                await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
+                uni.showToast({
+                    title: "活动已被取消",
+                });
+            }catch (e) {
+                handleNetExcept(e);
+            }
             this.updateActivityData()
         }
         async onPressReport(){

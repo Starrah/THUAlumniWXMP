@@ -5,6 +5,7 @@ import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
 import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
 import {Store} from "vuex";
 import {OneSpecificSingupRule, SignupRule} from "@/apps/typesDeclare/SignupRule";
+import {handleNetExcept} from "@/apps/utils/networkUtils";
 
 const state: ActivitySchema = {
     id: undefined,
@@ -58,8 +59,7 @@ const actions = {
             let res = await apiService.post('/createActivity', state);
             return res.activityId;
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     }
 };

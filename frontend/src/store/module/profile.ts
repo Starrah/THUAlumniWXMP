@@ -10,6 +10,8 @@ import {
 } from "../action";
 import {SET_PROFILE, SET_ALUMN} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
+import delay from "delay";
+import {handleNetExcept} from "@/apps/utils/networkUtils";
 
 const state = {
   name: "未登录",
@@ -17,7 +19,8 @@ const state = {
   avatarUrl: initialGlobalData.devData.DEFAULT_AVATAR_URL,
   logined: false,
   openId: "",
-  alumn: {}
+  alumn: {},
+  inLoginStatus: false
 };
 
 const mutations = {
@@ -41,14 +44,19 @@ const actions = {
     });
     if(session && sessionValid){
       apiService.session = session;
-      dispatch(FETCH_PROFILE);
-      console.log(["autoLogin", true]);
+      try {
+        await dispatch(FETCH_PROFILE);
+        console.log(["autoLogin", true]);
+      }catch (e) {
+        console.log(["autoLogin", false])
+      }
     }
     else console.log(["autoLogin", false]);
     //#endif
   },
 
-  async [WEIXIN_LOGIN]({ dispatch, rootState }) {
+  async [WEIXIN_LOGIN]({ dispatch, rootState, state }) {
+    state.inLoginStatus = true;
     uni.login({
       provider: "weixin",
       success: loginRes => {
@@ -63,14 +71,12 @@ const actions = {
   },
 
   async [LOGIN]({ dispatch, commit }, { code }) {
-    console.log("loginhhh");
+    console.log("login");
     return apiService.get("/login", { code }).then(data => {
-      console.log(data);
       let session = data["session"];
       uni.setStorageSync("session", session);
       apiService.session = session;
       commit(SET_PROFILE, { openId: data["openId"] });
-      console.log(apiService.session);
       if (data["result"] == "exist") {
         dispatch(FETCH_PROFILE);
       } else {
@@ -86,53 +92,60 @@ const actions = {
   },
 
   async [FETCH_ALUMN]({ commit, dispatch }) {
-    console.log("fetch alumn")
     return apiService.get("/alumniCheck").then(data => {
-      console.log(data["params"])
       commit(SET_ALUMN, data["params"]);
       dispatch(GOTO_QHR);
     })
   },
 
   async [GOTO_QHR]({ state }) {
-    console.log("goto qhr");
-    uni.navigateToMiniProgram({ ...state["alumn"] }
-    );
+    uni.navigateToMiniProgram({ ...state["alumn"] });
   },
 
   async [FETCH_PROFILE]({ dispatch, commit, rootState, state }) {
-    return apiService.get("/userData").then(data => {
-      commit(SET_PROFILE, {
-        ...data,
-        logined: true
-      });
-      uni.getUserInfo({
-        provider: 'weixin',
-        success: function (infoRes) {
-          if(state.avatarUrl !== infoRes.userInfo.avatarUrl) {
-            commit(SET_PROFILE, {
-              avatarUrl: infoRes.userInfo.avatarUrl
-            });
-            dispatch(UPDATE_USER_AVATAR)
+    for(let i=0;i<6;i++) {//由于清华人后台异步通知我们的服务器，立即请求可能会拿不到；
+      //因此隔500ms自动重试，上限重试5次
+      try{
+        let data = await apiService.get("/userData");
+        commit(SET_PROFILE, {
+          ...data,
+          logined: true
+        });
+        uni.getUserInfo({
+          provider: 'weixin',
+          success: function (infoRes) {
+            if (state.avatarUrl !== infoRes.userInfo.avatarUrl) {
+              commit(SET_PROFILE, {
+                avatarUrl: infoRes.userInfo.avatarUrl
+              });
+              dispatch(UPDATE_USER_AVATAR)
+            }
           }
+        });
+        await dispatch(FETCH_MY_ACTIVITY_LIST);
+        state.inLoginStatus = false;
+        return; //有某一次成功，函数则正常返回；
+      }catch(err){
+        if (err.errid && err.errid === 101){
+          await delay(500);
+        }else{
+          handleNetExcept(err, true);
         }
-      });
-      dispatch(FETCH_MY_ACTIVITY_LIST);
-      console.log(["openId", state.openId])
-    }).catch(err => {
-      if (err.errid && err.errid === 101){
-        setTimeout(()=>{
-          dispatch(FETCH_PROFILE)
-        }, 500)
+      }finally {
+        state.inLoginStatus = false;
       }
-      if(err.errid && err.errid >= 500 && err.errid <= 599) {
-        rootState.errMsg = err.errmsg;
-      }
-    });
+    }
+    state.inLoginStatus = false;
+    rootState.errMsg = "可能由于您拒绝了清华人的授权申请，我们无法获得您的校友信息。请您重试。";
+    throw {errid: 101, errmsg: "可能由于您拒绝了清华人的授权申请，我们无法获得您的校友信息。请您重试。"};
   },
 
   async [UPDATE_USER_AVATAR]({state}){
-    await apiService.post("/setAvatarUrl", {avatarUrl: state.avatarUrl})
+    try {
+      await apiService.post("/setAvatarUrl", {avatarUrl: state.avatarUrl})
+    }catch (e) {
+      handleNetExcept(e, true);
+    }
   }
 };
 
