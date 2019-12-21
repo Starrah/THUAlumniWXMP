@@ -1,42 +1,30 @@
 <template>
     <view>
-        <!--        <text>{{debugCode}}</text>-->
-        <view class="cu-bar search bg-white">
-            <view class="search-form round">
-                <text class="cuIcon-search"></text>
-                <input :adjust-position="false" type="text" placeholder="搜索活动" v-model="tempSearchText"/>
-            </view>
-            <view class="action">
-                <button class="cu-btn bg-green shadow-blur round" @click="search">搜索</button>
-            </view>
-        </view>
-        <!--        <scroll-view scroll-y="true" :lower-threshold="100" :enable-back-to-top="true" @scrolltolower="loadMore" @scrolltoupper="loadMore">-->
+        <SearchBar v-model="searchText"></SearchBar>
         <ActivityListShow :list="activities_toShow"></ActivityListShow>
         <view class="cu-item" v-if="isLoadingMore">
             <text>加载中</text>
         </view>
-        <!--        </scroll-view>-->
     </view>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {Component} from 'vue-property-decorator'
+    import {Component, Watch} from 'vue-property-decorator'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import {FETCH_MY_ACTIVITY_LIST} from "@/store/action";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl} from "@/apps/utils/networkUtils";
     import ActivityListShow from "@/components/ActivityListShow.vue";
+    import SearchBar from "@/components/SearchBar.vue";
     @Component({
-        components: {ActivityListShow}
+        components: {SearchBar, ActivityListShow}
     })
     export default class myActivityList extends Vue{
         name!: "myActivityList";
         fullUrl = fullUrl;
-        tempSearchText = "";
         searchText = "";
-        search(){
-            this.searchText = this.tempSearchText;
+        @Watch("searchText")onSearchTextChange(newVal){
             this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         }
         get DEFAULT_ACTIVITY_URL(){

@@ -13,6 +13,7 @@ export function fullUrl(s: string): string{
 }
 
 export function handleNetExcept(e: any, rethrow?: boolean){
+    console.log(e);
     if(e.errMsg && e.errMsg.indexOf("request:fail") !== -1){
         uni.showToast({
             title: "网络连接失败，请检查您的网络",
@@ -20,7 +21,7 @@ export function handleNetExcept(e: any, rethrow?: boolean){
         })
     }else if(e.errid && e.errid >= 500 && e.errid <= 599){
         uni.showToast({
-            title: "网络连接失败，请检查您的网络",
+            title: e.errmsg,
             icon: "none"
         })
     }
