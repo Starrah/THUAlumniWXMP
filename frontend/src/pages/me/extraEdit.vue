@@ -66,6 +66,7 @@
     import {SUBMIT_EXTRA_DATA} from "@/store/action";
     import SureModal from "@/components/SureModal.vue";
     import delay from "delay";
+    import {fillExtraDataObj} from "@/apps/utils/ActivitySchemaUtils";
 
     @Component({
         components: {SureModal}
@@ -85,13 +86,14 @@
             try {
                 data = JSON.parse(this.$store.state.profile.extraData);
             }finally {}
-            this.phone = data.phone?data.phone:"";
-            this.wechat = data.wechat?data.wechat:"";
-            this.trade = data.trade?data.trade:"";
-            this.company = data.company?data.company:"";
-            this.email = data.email?data.email:"";
-            this.weibo = data.weibo?data.weibo:"";
-            let genderIndex = this.GENDER_LIST.indexOf(data.gender?data.gender:"");
+            data = fillExtraDataObj(data);
+            this.phone = data.phone;
+            this.wechat = data.wechat;
+            this.trade = data.trade;
+            this.company = data.company;
+            this.email = data.email;
+            this.weibo = data.weibo;
+            let genderIndex = this.GENDER_LIST.indexOf(data.gender);
             this.genderIndex = genderIndex !== -1?genderIndex:0;
         }
         async submitExtraData(e){

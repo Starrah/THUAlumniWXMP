@@ -48,3 +48,12 @@ export function generateRuleDescription(rule: SignupRule){
 export function isOfficial(activity: ActivitySchema){
     return activity.type && activity.type.substr(0, 4) === "官方活动" && (activity.statusGlobal === ActivityGlobalStatus.Normal || activity.statusGlobal === ActivityGlobalStatus.Finish);
 }
+
+export function fillExtraDataObj(obj){
+    let keysList = ["phone", "wechat", "trade", "company", "gender", "email", "weibo"];
+    let newObj = {};
+    for(let key of keysList){
+        newObj[key] = obj[key] || "";
+    }
+    return newObj;
+}
