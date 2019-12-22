@@ -37,7 +37,6 @@ const mutations = {
             if (state.activityList.length !== 0) {
                 let lastId = state.activityList[state.activityList.length - 1].id;
                 let lastIndex = ne.activityList.findIndex((v)=>v.id === lastId);
-                console.log(lastIndex);
                 if(lastIndex === -1)state.activityList = state.activityList.concat(ne.activityList);
                 else{
                     for(let i=lastIndex+1;i<ne.activityList.length;i++){
@@ -46,7 +45,6 @@ const mutations = {
                 }
             } else state.activityList.concat(ne.activityList)
         }
-        console.log(state.activityList);
     }
 };
 
@@ -60,7 +58,6 @@ const actions = {
                 try {
                     let url = `/searchActivityAdvanced?most=${param.most}`;
                     if(param.lastSeenId)url += `&lastSeenId=${param.lastSeenId}`;
-                    console.log([url, state.advanData]);
                     res = await apiService.post(url, state.advanData);
                 }catch(e){
                     if(e.errid && e.errid === 201){

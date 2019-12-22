@@ -65,7 +65,7 @@
     <div v-if="!participants">
       <view class="flex-sub text-center">
         <view class="solid-bottom text-df padding">
-          <text class="lg text-gray cuIcon-emoji" />
+          <text class="lg text-gray cuIcon-emoji"></text>
           <text class="text-black">空空如也</text>
         </view>
       </view>
@@ -86,12 +86,12 @@
   import {UserRole, UserStatus} from "@/apps/typesDeclare/UserEnum";
   import apiService from "../../../commons/api";
   import {SET_ACTIVITY_DETAIL, SET_OTHER_ID} from "@/store/mutation";
-  import {fullUrl} from "@/apps/utils/networkUtils";
+  import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
   import SureModal from "@/components/SureModal.vue";
   @Component({
     components: {SureModal}
   })
-export default class memberReveiw extends Vue {
+export default class partici extends Vue {
   enableAudit = false;
   fullUrl = fullUrl;
   acceptedUsers = [];
@@ -100,7 +100,6 @@ export default class memberReveiw extends Vue {
   kickedUsers = [];
   participants: Array<{openId: string, avatarUrl: string, name: string, userRole?: UserRole, userStatus?: UserStatus, submitTime?: string, submitMsg?: string}> = [];
   get myRole() {
-    console.log(this.$store.state.activityDetail.activity.selfRole);
     return this.$store.state.activityDetail.activity.selfRole;
   }
   get showAuditButton(): boolean {
@@ -140,14 +139,14 @@ export default class memberReveiw extends Vue {
       let index = newParticipants.findIndex((v)=>v.openId === userId);
       if(index !== -1)newParticipants[index].userRole = set ? UserRole.Manager : UserRole.Common;
       this.participants = newParticipants;
-    })
+    }).catch(e=>handleNetExcept(e));
   }
   async kickOut(user) {
     await ((this.$refs.SureModal as any).show("确认要踢出"+user.name+"吗？"));
-    const url = `/removeFromActivity?activityId=${this.activityId}&userId=${user.openId}`
-    apiService.post(url).then(() => {
-      this.kickedUsers.push(user.openId)
-    })
+    const url = `/removeFromActivity?activityId=${this.activityId}&userId=${user.openId}`;
+      apiService.post(url).then(() => {
+        this.kickedUsers.push(user.openId)
+      }).catch(e=>handleNetExcept(e));
   }
   onLoad({ enableAudit }: { enableAudit: string }) {
     this.acceptedUsers = [];
@@ -155,15 +154,16 @@ export default class memberReveiw extends Vue {
     this.needAuditUsers = [];
     this.kickedUsers = [];
     this.enableAudit = !!Number(enableAudit);
-    console.log([enableAudit, this.enableAudit]);
     // Search my role in participants
     const myId = this.$store.state.profile.openId;
     // fetch needAuditUsers if neccesary
     if (this.enableAudit && (this.isCreator(this.myRole) || this.isManager(this.myRole))) {
+      uni.showLoading({title: "加载中", mask: true});
       this.fetchNeedReview().then(res => {
         this.needAuditUsers = res.users;
         this.participants = this.enableAudit?this.needAuditUsers:this.$store.state.activityDetail.activity.participants;
-      });
+        uni.hideLoading();
+      }).catch(e=>{handleNetExcept(e);uni.hideLoading();});
     }else{
       this.participants = this.enableAudit?this.needAuditUsers:this.$store.state.activityDetail.activity.participants;
     }
@@ -172,16 +172,16 @@ export default class memberReveiw extends Vue {
     this.handleAudit(userId, pass).then(() => {
       if (pass) this.acceptedUsers.push(userId);
       else this.rejectedUsers.push(userId);
-    });
+    }).catch(e=>handleNetExcept(e));
   }
-  async fetchNeedReview() {
-    return apiService.get(`/needReview?activityId=${this.activityId}`);
+  fetchNeedReview() {
+      return apiService.get(`/needReview?activityId=${this.activityId}`);
   }
-  async handleAudit(userId, pass) {
+  handleAudit(userId, pass) {
     const url = `/handleAudit?activityId=${this.activityId}&userId=${userId}&pass=${pass}`;
     return apiService.post(url);
   }
-  async handleSetRole(userId, newRole) {
+  handleSetRole(userId, newRole) {
     const url = `/changeUserRole?activityId=${this.activityId}&userId=${userId}&newRole=${newRole}`;
     return apiService.post(url)
   }

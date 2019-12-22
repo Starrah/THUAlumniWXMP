@@ -67,6 +67,7 @@
 import { mapState } from "vuex";
 import {LOGIN, FETCH_PROFILE, WEIXIN_LOGIN, FETCH_MY_ACTIVITY_LIST} from "@/store/action";
 import {fullUrl} from "@/apps/utils/networkUtils";
+import delay from 'delay';
 
 export default {
   data() {
@@ -79,9 +80,16 @@ export default {
   },
 
   methods: {
-    nameClick() {
+    async nameClick() {
       if (!this.profile.logined) {
+        uni.showLoading({title: "加载中", mask: true});
         this.$store.dispatch(WEIXIN_LOGIN);
+        while(this.$store.state.profile.inLoginStatus){
+            await delay(100);
+        }
+        uni.hideLoading();
+      }else{
+        this.jumpToExtraEdit();
       }
     },
     fullUrl(s){
@@ -105,7 +113,6 @@ export default {
   },
 
   onShow(){
-    console.log("onShow");
     this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
   },
 };

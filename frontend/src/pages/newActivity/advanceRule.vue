@@ -100,7 +100,7 @@
         </button>
       </view>
     </view>
-    <view style="display: flex;justify-content: center">
+    <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
       <button type="primary" @click="save">保存</button>
     </view>
   </view>
@@ -256,15 +256,12 @@ export default {
     },
     acChange({ detail }) {
       let { value } = detail;
-      console.log("acChange");
-      console.log(detail);
       this.acRuleList[this.acCurrentIdx].departIdx = value[0];
       this.acRuleList[this.acCurrentIdx].enrollIdx = value[1];
       this.acRuleList[this.acCurrentIdx].startIdx = value[2];
       this.acRuleList[this.acCurrentIdx].endIdx = value[3];
     },
     acClick(idx) {
-      console.log("acClick: acCurrentIdx" + this.acCurrentIdx + " idx: " + idx);
       this.acCurrentIdx = idx;
     },
     acAdd() {
@@ -276,15 +273,12 @@ export default {
     },
     adChange({ detail }) {
       let { value } = detail;
-      console.log("adChange");
-      console.log(detail);
       this.adRuleList[this.adCurrentIdx].departIdx = value[0];
       this.adRuleList[this.adCurrentIdx].enrollIdx = value[1];
       this.adRuleList[this.adCurrentIdx].startIdx = value[2];
       this.adRuleList[this.adCurrentIdx].endIdx =value[3];
     },
     adClick(idx) {
-      console.log("adClick: adCurrentIdx" + this.adCurrentIdx + " idx: " + idx);
       this.adCurrentIdx = idx;
     },
     adAdd() {
@@ -296,15 +290,12 @@ export default {
     },
     rjChange({ detail }) {
       let { value } = detail;
-      console.log("rjChange");
-      console.log(detail);
       this.rjRuleList[this.rjCurrentIdx].departIdx = value[0];
       this.rjRuleList[this.rjCurrentIdx].enrollIdx = value[1];
       this.rjRuleList[this.rjCurrentIdx].startIdx = value[2];
       this.rjRuleList[this.rjCurrentIdx].endIdx = value[3];
     },
     rjClick(idx) {
-      console.log("rjClick: rjCurrentIdx" + this.rjCurrentIdx + " idx: " + idx);
       this.rjCurrentIdx = idx;
     },
     rjAdd() {

@@ -22,7 +22,12 @@
         name: "descriptionModify";
         desHtml: string = this.$store.state.activityDetail.activity.description;
         async submit(){
-            await this.$store.dispatch(SUBMIT_DESCRIPTION, this.desHtml);
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await this.$store.dispatch(SUBMIT_DESCRIPTION, this.desHtml);
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({title: "成功"});
             await delay(1000);
             uni.navigateBack();

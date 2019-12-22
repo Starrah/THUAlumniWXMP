@@ -100,20 +100,10 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 <br>
                 <text style="color: #555555;">暂停报名</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal" @click="jumpToQRCodePage">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal" @click="signinAdminModalShowing = true">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555;">签到二维码</text>
-            </view>
-            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
-                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
-                <br>
-                <text style="color: #555555;">开放签到</text>
-            </view>
-            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
-                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
-                <br>
-                <text style="color: #555555;">暂停签到</text>
+                <text style="color: #555555;">签到管理</text>
             </view>
             <view class="cu-item" @click="openModifyPage">
                 <text class="text-gray cuIcon-info" style="text-align: center"></text>
@@ -126,7 +116,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 <text style="color: #555555;">设置活动详情</text>
             </view>
             <view class="cu-item" v-if="activityCancelable(activityData)" @click="">
-                <text class="text-gray cuIcon-post" style="text-align: center"></text>
+                <text class="text-gray cuIcon-deletefill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">取消活动</text>
             </view>
@@ -179,6 +169,48 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 </view>
             </view>
         </view>
+        <view class="cu-modal" style="z-index: 990" :class="signinAdminModalShowing?'show':''">
+            <view class="cu-dialog">
+                <view class="cu-bar bg-white justify-end">
+                    <text class="content text-xl text-bold">签到管理</text>
+                    <view class="action" @click="signinAdminModalShowing = false">
+                        <text class="cuIcon-close"></text>
+                    </view>
+                </view>
+                <view v-if="activityAdminable(activityData)" class="flex cu-list grid col-3">
+                    <view class="cu-item" @click="openSigninAdminHelp">
+                        <text class="text-gray cuIcon-question" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">帮助</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
+                        <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">开放签到</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
+                        <text class="text-gray cuIcon-stop" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">暂停签到</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal" @click="jumpToQRCodePage">
+                        <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">查看二维码</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.selfRole === UserRole.Creator" @click="openPositionChoose">
+                        <text class="text-gray cuIcon-locationfill" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">{{activityData.position && activityData.position !== ''?'修改位置':'设置位置'}}</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.selfRole === UserRole.Creator && activityData.position && activityData.position !== ''" @click="deletePosition">
+                        <text class="text-gray cuIcon-deletefill" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">删除位置</text>
+                    </view>
+                </view>
+            </view>
+        </view>
         <br>
         <view style="text-align: center" class="margin-top">
             <text style="padding-left: 30px;color: #0081ff" @click="onPressReport">举报</text>
@@ -200,11 +232,21 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
     import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
-    import {FETCH_ACTIVITY_DETAIL, FETCH_DESCRIPTION, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
+    import {
+        FETCH_ACTIVITY_DETAIL,
+        FETCH_DESCRIPTION,
+        SUBMIT_ACTIVITY_POSITION_CHANGE,
+        SUBMIT_ACTIVITY_STATUS_CHANGE
+    } from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
     import {isOfficial} from "@/apps/utils/ActivitySchemaUtils";
+    interface EarthDistanceLibPosi{
+        lat: number,
+        lon: number
+    }
+    var haversine: ((a: EarthDistanceLibPosi, b: EarthDistanceLibPosi)=>number) = require("earth-distance-js").haversine;
 
     @Component({
         components: {SureModal}
@@ -230,6 +272,45 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         activityId: string;
         get activityData(): ActivitySchema{
             return this.$store.state.activityDetail.activity;
+        }
+        signinAdminModalShowing: boolean = false;
+        async openPositionChoose(){
+            let choosePosi: ChooseLocationSuccess;
+            try {
+                choosePosi = await new Promise<ChooseLocationSuccess>((resolve, reject) => {
+                    uni.chooseLocation({
+                        success(res){
+                            resolve(res)
+                        },
+                        fail(){
+                            reject()
+                        }
+                    })
+                });
+            }catch (e) {
+                uni.showToast({title: "获取位置失败，可能是您没有给予授权，或者关闭了窗口界面。", icon: "none"});
+                throw e;
+            }
+            this.$store.dispatch(SUBMIT_ACTIVITY_POSITION_CHANGE, {activityId: this.activityId, posiStr: `${choosePosi.latitude} ${choosePosi.longitude}`});
+            uni.showToast({title: "设置位置成功"});
+            this.updateActivityData();
+        }
+        deletePosition(){
+            this.$store.dispatch(SUBMIT_ACTIVITY_POSITION_CHANGE, {activityId: this.activityId, posiStr: ""});
+            uni.showToast({title: "删除位置成功"});
+            this.updateActivityData();
+        }
+        openSigninAdminHelp(){
+            this.signinActivity();
+            // uni.showModal({
+            //     title: "签到功能帮助",
+            //     showCancel: false,
+            //     content: "支持二维码签到和位置签到两种模式。" +
+            //         "位置签到需要您设置基准位置，则其他参加者点击签到按钮时可自动定位无需您额外操作；" +
+            //         "二维码签到则需要扫描签到二维码图片，您可稍后查看二维码界面中长按将其保存下来，提前打印粘贴在会场等。" +
+            //         "如果您设置了位置，则会优先位置签到，若位置签到失败则会允许二维码签到；" +
+            //         "如果您没有设置位置或删除了设置的位置，则会直接进行二维码签到。"
+            // })
         }
         AVATAR_GROUP_MAX = 4;
         get avatarShowList(){
@@ -397,54 +478,128 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                             }
                         })
                     });
-                    uni.showToast({
-                        title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
-                    });
                 }
             }catch (e) {
-                handleNetExcept(e)
+                handleNetExcept(e, true)
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({
+                title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
+            });
             this.updateActivityData()
         }
         async exitCurActivity(){
             await ((this.$refs.SureModal as any).show("您确认要取消报名吗？"));
             uni.showLoading({title: "加载中", mask: true});
+            let res;
             try {
-                let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
-                if (res && res.result === 'success') {
-                    uni.showToast({
-                        title: this.activityData.selfStatus === UserStatus.WaitValidate ? "取消加入申请成功" : "取消报名成功",
-                    });
-                }
+                res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
             }catch (e) {
-                handleNetExcept(e);
+                handleNetExcept(e, true);
             }finally {
                 uni.hideLoading();
+            }
+            if (res && res.result === 'success') {
+                uni.showToast({
+                    title: this.activityData.selfStatus === UserStatus.WaitValidate ? "取消加入申请成功" : "取消报名成功",
+                });
             }
             this.updateActivityData()
         }
-        async signinActivity(){
-            let code = await new Promise((resolve, reject)=>{
-                uni.scanCode({
-                    success: (r)=>{
-                        resolve(r.result);
-                    },
-                });
-            });
-            uni.showLoading({title: "加载中", mask: true});
-            try {
-                let res = await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
-                uni.showToast({
-                    title: "签到成功",
+        async signinActivity() {
+            let MAX_POSITION_REPEAT = 3;
+            let posiAvailable = this.activityData.position && this.activityData.position !== "";
+            let qrConfirm = false;
+            if(posiAvailable) {
+                let isPosiSuccess = false;
+                let exampleException;
+                uni.showLoading({title: "加载中", mask: true});
+                let basicObj = {
+                    lat: Number(this.activityData.position.split(" ")[0]),
+                    lon: Number(this.activityData.position.split(" ")[1])
+                };
+                for(let i=0;i<MAX_POSITION_REPEAT;i++) {
+                    try {
+                        await this.signinByPosition(basicObj);
+                        isPosiSuccess = true;
+                        break;
+                    }catch (e) {
+                        exampleException = e;
+                    }
+                }
+                uni.hideLoading();
+                if(isPosiSuccess){
+                    uni.showToast({title: "签到成功"});
+                    this.updateActivityData();
+                }
+                else{
+                    try {
+                        await new Promise((resolve, reject) => {
+                            uni.showModal({
+                                title: "提示",
+                                content: exampleException.errmsg + "。是否要进行二维码签到？",
+                                success(res) {
+                                    if (res.confirm) resolve();
+                                    else reject();
+                                },
+                                fail() {
+                                    reject();
+                                }
+                            })
+                        });
+                        qrConfirm = true;
+                    }catch (e) {
+                        throw exampleException;
+                    }
+                }
+            }
+            if(!posiAvailable || qrConfirm){
+                uni.showLoading({title: "加载中", mask: true});
+                try{
+                    await this.signinByQR();
+                }catch (e) {
+                    handleNetExcept(e, true);
+                }finally {
+                    uni.hideLoading();
+                }
+                uni.showToast({title: "签到成功"});
+            }
+        }
+        async signinByPosition(basicPosi: EarthDistanceLibPosi){
+            let myPosi: GetLocationSuccess;
+            try{
+                myPosi = await new Promise<GetLocationSuccess>((resolve, reject) => {
+                    uni.getLocation({
+                        type: "gcj02",
+                        success(res) {
+                            resolve(res);
+                        },
+                        fail() {
+                            reject();
+                        }
+                    })
                 });
             }catch (e) {
-                handleNetExcept(e)
-            }finally {
-                uni.hideLoading();
+                throw {errid: 590, errmsg: "获取位置失败，可能是您没有给予授权，或者当前定位信号环境太差。"};
             }
-            this.updateActivityData()
+            let myPosiEarth: EarthDistanceLibPosi = {lat: myPosi.latitude, lon: myPosi.longitude};
+            let distanceInKm = haversine(myPosiEarth, basicPosi);
+            let disanceInM = Math.round(distanceInKm * 1000);
+            await apiService.post(`/checkInActivity?distance=${disanceInM}&activityId=${this.activityId}`);
+        }
+        async signinByQR(){
+            let code = await new Promise((resolve, reject)=>{
+                uni.scanCode({
+                    success(r){
+                        resolve(r.result);
+                    },
+                    fail(){
+                        reject();
+                    }
+                });
+            });
+            await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
         }
         async openAuditPage(){
             uni.navigateTo({
@@ -459,14 +614,12 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     activityId: this.activityId,
                     newStatus: {statusCheck: ActivityCheckStatus.Continue}
                 });
-                uni.showToast({
-                    title: "成功"
-                });
-            }catch (e) {
-                handleNetExcept(e);
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({
+                title: "成功"
+            });
             this.updateActivityData()
         }
         async endSignin(){
@@ -478,14 +631,12 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     activityId: this.activityId,
                     newStatus: {statusCheck: newStatusCheck}
                 });
-                uni.showToast({
-                    title: "成功",
-                });
-            }catch (e) {
-                handleNetExcept(e)
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({
+                title: "成功",
+            });
             this.updateActivityData()
         }
         async startSignup(){
@@ -496,14 +647,12 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     activityId: this.activityId,
                     newStatus: {statusJoin: ActivityJoinStatus.Continue}
                 });
-                uni.showToast({
-                    title: "成功",
-                });
-            }catch (e) {
-                handleNetExcept(e);
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({
+                title: "成功",
+            });
             this.updateActivityData()
         }
         async endSignup(){
@@ -515,14 +664,12 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     activityId: this.activityId,
                     newStatus: {statusJoin: newStatusJoin}
                 });
-                uni.showToast({
-                    title: "成功",
-                });
-            }catch (e) {
-                handleNetExcept(e);
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({
+                title: "成功",
+            });
             this.updateActivityData()
         }
         async openModifyPage(){
@@ -536,14 +683,14 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             uni.showLoading({title: "加载中", mask: true});
             try {
                 await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
-                uni.showToast({
-                    title: "活动已被取消",
-                });
             }catch (e) {
-                handleNetExcept(e);
+                handleNetExcept(e, true);
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({
+                title: "活动已被取消",
+            });
             this.updateActivityData()
         }
         async onPressReport(){
@@ -552,7 +699,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         onShareAppMessage(){
             return{
                 title: this.activityData.name,
-                path: `/pages/activityDetail/activityDetail?activityId=${this.activityId}`,
+                path: `/pages/activityList/activityDetail/activityDetail?activityId=${this.activityId}`,
                 imageUrl: fullUrl(this.activityData.imageUrl)
             }
         }

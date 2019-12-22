@@ -77,7 +77,6 @@
                     try {
                         info = await apiService.get("/userData", {openId: p.openId});
                     }catch(e){}
-                    console.log("info", info);
                     let firstIdentity: {enrollmentYear?: string, enrollmentType?: string, department?: string} =
                         info && info.campusIdentity && info.campusIdentity.length > 0 ? info.campusIdentity[0]:{};
                     let extraObj: any = {};
@@ -98,7 +97,6 @@
                     line += extraStr;
                     line += moreIdentityStr;
                     result[p.userRole].push(line);
-                    console.log("line", line);
                 }catch (e) {
                     try {
                         let line =`${p.name},,,,,,`
@@ -108,7 +106,6 @@
             let toOutput = "";
             toOutput += (title + "\r\n");
             for(let li of result[UserRole.Creator]){
-                console.log(li);
                 toOutput += (li + "\r\n");
             }
             for(let li of result[UserRole.Manager]){

@@ -119,7 +119,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <input ref="maxUser" name="maxUser" :value="maxUser"/>
         </view>
         <br>
-        <view style="display: flex;justify-content: center">
+        <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
     </form>
@@ -311,10 +311,10 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     if(isPush)await res.push();
                     else await res.notPush();
                 }
-                uni.showToast({title: "成功", icon: "none"});
             }finally {
                 uni.hideLoading();
             }
+            uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
             uni.navigateBack();
         }

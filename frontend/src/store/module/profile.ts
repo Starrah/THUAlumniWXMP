@@ -12,6 +12,7 @@ import {SET_PROFILE, SET_ALUMN} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
 import delay from "delay";
 import {handleNetExcept} from "@/apps/utils/networkUtils";
+import {reject} from "q";
 
 const state = {
   name: "未登录",
@@ -20,7 +21,6 @@ const state = {
   logined: false,
   openId: "",
   alumn: {},
-  inLoginStatus: false,
   status: 1,
   point: 0,
   extraData: "{}"
@@ -67,46 +67,53 @@ const actions = {
   },
 
   async [WEIXIN_LOGIN]({ dispatch, rootState, state }) {
-    state.inLoginStatus = true;
-    uni.login({
-      provider: "weixin",
-      success: loginRes => {
-        dispatch(LOGIN, {
-          code: loginRes["code"]
-        });
-      },
-      fail: () => {
-        rootState.errMsg = "微信接口调用失败，请重试";
-      }
+    let loginRes = await new Promise((resolve, reject) => {
+      uni.login({
+        provider: "weixin",
+        success: loginRes => {
+          resolve(loginRes);
+        },
+        fail: () => {
+          rootState.errMsg = "微信接口调用失败，请重试";
+          reject();
+        }
+      });
+    });
+    await dispatch(LOGIN, {
+      code: loginRes["code"]
     });
   },
 
   async [LOGIN]({ dispatch, commit }, { code }) {
     console.log("login");
-    return apiService.get("/login", { code }).then(data => {
-      let session = data["session"];
-      uni.setStorageSync("session", session);
-      apiService.session = session;
-      commit(SET_PROFILE, { openId: data["openId"] });
-      if (data["result"] == "exist") {
-        dispatch(FETCH_PROFILE);
-      } else {
+    let data = await apiService.get("/login", { code });
+    let session = data["session"];
+    uni.setStorageSync("session", session);
+    apiService.session = session;
+    commit(SET_PROFILE, { openId: data["openId"] });
+    if (data["result"] == "exist") {
+      await dispatch(FETCH_PROFILE);
+    } else {
         uni.showModal({
           title: '无有效信息',
           content: '请前往清华人小程序填写您的教育信息后返回重试',
           success(res) {
-            if (res.confirm)  dispatch(FETCH_ALUMN);
-          }
+            if (res.confirm)dispatch(FETCH_ALUMN);
+            else reject();
+          },
         });
-      }
-    })
+    }
   },
 
   async [FETCH_ALUMN]({ commit, dispatch }) {
-    return apiService.get("/alumniCheck").then(data => {
+    uni.showLoading({title: "加载中", mask: true});
+    try {
+      let data = await apiService.get("/alumniCheck");
       commit(SET_ALUMN, data["params"]);
       dispatch(GOTO_QHR);
-    })
+    }finally {
+      uni.showLoading();
+    }
   },
 
   async [GOTO_QHR]({ state }) {
@@ -134,19 +141,15 @@ const actions = {
           }
         });
         await dispatch(FETCH_MY_ACTIVITY_LIST);
-        state.inLoginStatus = false;
         return; //有某一次成功，函数则正常返回；
-      }catch(err){
-        if (err.errid && err.errid === 101){
+      }catch(err) {
+        if (err.errid && err.errid === 101) {
           await delay(500);
-        }else{
+        } else {
           handleNetExcept(err, true);
         }
-      }finally {
-        state.inLoginStatus = false;
       }
     }
-    state.inLoginStatus = false;
     rootState.errMsg = "可能由于您拒绝了清华人的授权申请，我们无法获得您的校友信息。请您重试。";
     throw {errid: 101, errmsg: "可能由于您拒绝了清华人的授权申请，我们无法获得您的校友信息。请您重试。"};
   },

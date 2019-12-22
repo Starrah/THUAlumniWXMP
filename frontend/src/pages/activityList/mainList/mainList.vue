@@ -6,7 +6,7 @@
             </view>
         </SearchBar>
         <ActivityListShow :list="activities_toShow"></ActivityListShow>
-        <view class="cu-item" v-if="isLoadingMore">
+        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore">
             <text>加载中</text>
         </view>
     </view>
@@ -17,10 +17,11 @@
     import {Component, Watch} from 'vue-property-decorator'
     import {FETCH_ALL_ACTIVITY_LIST, FETCH_MORE_ACTIVITY, TRY_LOGIN_WITHOUT_NEW_CODE} from "@/store/action";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
-    import {fullUrl} from "@/apps/utils/networkUtils";
+    import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
     import ActivityListShow from "@/components/ActivityListShow.vue";
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import SearchBar from "@/components/SearchBar.vue";
+    import delay from 'delay';
 
 
     @Component({
@@ -45,12 +46,12 @@
                 url: "/pages/activityList/advancedSearch/advancedSearch"
             })
         }
-        isLoadingMore: boolean = false;
+        isLoadingMore: string = null;
         onReachBottom(){
             this.loadMore();
         }
         async loadMore(){
-            this.isLoadingMore = true;
+            this.isLoadingMore = "loading";
             let allActivityes: Array<ActivitySchema> = this.activities_toShow;
             let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;
             try {
@@ -58,8 +59,12 @@
                     lastSeenId,
                     searchWord: this.searchText
                 });
+                this.isLoadingMore = "over";
+            }catch (e) {
+                this.isLoadingMore = "erro";
             }finally {
-                this.isLoadingMore = false;
+                await delay(1000);
+                this.isLoadingMore = null;
             }
         }
         async onPullDownRefresh(){

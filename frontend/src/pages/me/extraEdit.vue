@@ -53,7 +53,7 @@
             </view>
             <input name="weibo" :value="weibo" maxlength="25" />
         </view>
-        <view style="display: flex;justify-content: center">
+        <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
         <SureModal ref="SureModal"></SureModal>
@@ -111,7 +111,11 @@
                 if(!(data[key] && data[key] !== ""))data[key]=undefined;
             }
             await ((this.$refs.SureModal as any).show("您确定要提交对您个人补充信息的修改吗？上述个人补充信息将对您参加的所有活动的管理员可见。"))
-            this.$store.dispatch(SUBMIT_EXTRA_DATA, data);
+            try {
+                this.$store.dispatch(SUBMIT_EXTRA_DATA, data);
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({title: "操作成功"});
             await delay(1000);
             uni.navigateBack();

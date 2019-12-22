@@ -2,7 +2,7 @@
     <view>
         <SearchBar v-model="searchText"></SearchBar>
         <ActivityListShow :list="activities_toShow"></ActivityListShow>
-        <view class="cu-item" v-if="isLoadingMore">
+        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore">
             <text>加载中</text>
         </view>
     </view>
@@ -50,7 +50,7 @@
         }
         DEFAULT_ONCE_SHOW_COUNT = 15;
         finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
-        isLoadingMore: boolean = false;
+        isLoadingMore: string = null;
         onReachBottom(){
             this.loadMore();
         }
@@ -64,15 +64,12 @@
                 uni.stopPullDownRefresh();
             }
         }
-        mounted(){
-        }
 
         onLoad(param){
             this.pageType = param.type;
             if(this.pageType === "history")uni.setNavigationBarTitle({title: "历史记录"});
             else if(this.pageType === "myParticipate")uni.setNavigationBarTitle({title: "我参与的活动"});
             else if(this.pageType === "mySponsor")uni.setNavigationBarTitle({title: "我发起的活动"});
-            //this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
             this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         }
     }

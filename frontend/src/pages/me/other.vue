@@ -104,7 +104,6 @@ export default {
   },
 
   onLoad(param){
-    console.log(this.$store.state.activityDetail.activity.id);
     this.$store.commit(SET_OTHER_ID, param.openId);
     this.$store.dispatch(FETCH_PROFILE_OTHER, this.$store.state.activityDetail.activity.id);
   }

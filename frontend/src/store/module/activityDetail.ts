@@ -1,8 +1,13 @@
 import apiService from "../../commons/api";
 import {
     FETCH_ACTIVITY_DETAIL,
-    FETCH_ALL_ACTIVITY_LIST, FETCH_DESCRIPTION, SET_CHANGE_ACTIVITY, SUBMIT_ACTIVITY_CHANGE,
-    SUBMIT_ACTIVITY_STATUS_CHANGE, SUBMIT_DESCRIPTION,
+    FETCH_ALL_ACTIVITY_LIST,
+    FETCH_DESCRIPTION,
+    SET_CHANGE_ACTIVITY,
+    SUBMIT_ACTIVITY_CHANGE,
+    SUBMIT_ACTIVITY_POSITION_CHANGE,
+    SUBMIT_ACTIVITY_STATUS_CHANGE,
+    SUBMIT_DESCRIPTION,
     SUBMIT_NEW_ACTIVITY
 } from "../action";
 import {
@@ -68,6 +73,18 @@ const actions = {
         newStatus.id = activityId;
         try {
             let res = await apiService.post(`/modifyActivity?activityId=${activityId}`, newStatus);
+            return res.activityId;
+        }catch (e) {
+            handleNetExcept(e, true);
+        }
+    },
+    async [SUBMIT_ACTIVITY_POSITION_CHANGE]({state, commit, rootState}, {activityId, posiStr}){
+        let obj = {
+            id: activityId,
+            position: posiStr
+        };
+        try {
+            let res = await apiService.post(`/modifyActivity?activityId=${activityId}`, obj);
             return res.activityId;
         }catch (e) {
             handleNetExcept(e, true);

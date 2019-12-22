@@ -102,7 +102,7 @@
             <input name="maxUser" :value="inputValue" />
         </view>
         <br>
-        <view style="display: flex;justify-content: center">
+        <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
     </form>
@@ -147,14 +147,8 @@
             })
         }
         initialForm(){
-            console.log(this.$refs);
-            // let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"];
-            // for(let refname of inputRefnameList){
-            //     console.log([refname, this.$refs[refname]]);
-            //     (this.$refs[refname] as any).value = "";
-            // }
-            this.inputValue = "1";
-            this.inputValue = "";
+            this.inputValue = " ";
+            setTimeout(()=>{this.inputValue = "";},100);
             this.imageUrl = "";
             this.startDate = this.DEFAULT_TIMEPICKER_VALUE;
             this.startTime = this.DEFAULT_TIMEPICKER_VALUE;
@@ -172,7 +166,6 @@
             }
             let defaultRule: SignupRule = {ruleType: RuleType.ACCEPT};
             this.$store.commit(SYNC_RULE_NEW_ACTIVITY, defaultRule);
-            console.log([1, this.$store.state.newActivity]);
         }
         async chooseImage(){
             uni.showLoading({title: "加载中", mask: true});
@@ -198,18 +191,14 @@
                         fileType: "image",
                         success(res) {
                             let obj: any = (typeof res.data === "string") ? JSON.parse(res.data) : res.data;
-                            console.log(obj);
                             if (obj.url) resolve(fullUrl(obj.url));
                             else reject(obj);
                         },
                         fail(e) {
-                            console.log("fail");
                             reject(e);
                         }
                     })
                 });
-                console.log(path);
-                console.log(absUrl);
                 this.imageUrl = absUrl;
             }finally {
                 uni.hideLoading()
@@ -236,12 +225,9 @@
         switchCanBeSearched: boolean = true;
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
-            console.log(temp.initialized);
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
             if(this.typeMultiIndex.length < temp.level){
-                console.log("chdt1", this.typeMultiIndex);
                 this.typeMultiIndex = this.typeMultiIndex.concat([0, 0, 0, 0, 0]).slice(0, temp.level);
-                console.log("chdt2", this.typeMultiIndex);
             }
             return temp;
         }
@@ -258,12 +244,9 @@
             return res;
         }
         typeMultiChange(e){
-            console.log(["chan", e.detail.value]);
             this.typeMultiIndex = e.detail.value;
-            console.log(["after", this.typeMultiIndex]);
         }
         typeMultiColumnChange(e){
-            console.log(["colu", e.detail]);
             let column = e.detail.column;
             if(this.typeMultiIndex[column] === e.detail.value)return;
             let newIndex = [];
@@ -275,9 +258,7 @@
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
-            console.log(["textbb", this.typeMultiIndex]);
             return this.typeMultiArray.map((nameList, i)=>{
-                console.log(["text", nameList, i, this.typeMultiIndex[i]]);
                 return nameList[this.typeMultiIndex[i]];
             }).join("-");
         }
@@ -305,7 +286,6 @@
             else return str;
         }
         async submitNewActivity(e){
-            console.log(e.detail.value);
             let formData = e.detail.value;
             let data = {
                 name: formData.name,
@@ -323,26 +303,30 @@
             };
             let sureText = data.type.substr(0,4) === "官方活动"?"您将要发起的是官方活动，该活动需要清华大学校友总会前置审核后才能被检索到和报名加入。您确定要发起这个活动吗？":"您确定要发起这个活动吗？";
             await ((this.$refs.SureModal as any).show(sureText));
-            this.$store.commit(SET_NEW_ACTIVITY, data);
-            let {activityId, result} = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
-            await new Promise((resolve,reject)=> {
-                wx.requestSubscribeMessage({
-                    tmplIds: result === "success"?initialGlobalData.subscribeMessagesIds.normal:initialGlobalData.subscribeMessagesIds.audit,
-                    success(res: any): void {
-                        console.log(["success", res]);
-                        resolve(res);
-                    },
-                    fail(res: any): void {
-                        console.log(["fail", res]);
-                        reject(res)
-                    }
-                })
-            });
-            uni.showToast({title: result === "success"?"成功":"已提交"});
+            uni.showLoading({title: "加载中", mask: true});
+            let resObj;
+            try {
+                this.$store.commit(SET_NEW_ACTIVITY, data);
+                resObj = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
+                await new Promise((resolve, reject) => {
+                    wx.requestSubscribeMessage({
+                        tmplIds: resObj.result === "success" ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
+                        success(res: any): void {
+                            resolve(res);
+                        },
+                        fail(res: any): void {
+                            reject(res)
+                        }
+                    })
+                });
+            }finally {
+                uni.hideLoading();
+            }
+            uni.showToast({title: resObj.result === "success" ? "成功" : "已提交"});
             this.initialForm();
             await delay(1000);
             uni.navigateTo({
-                url: `/pages/activityList/activityDetail/activityDetail?activityId=${activityId}`
+                url: `/pages/activityList/activityDetail/activityDetail?activityId=${resObj.activityId}`
             })
         }
         openAdvancedRulePage(){
@@ -354,7 +338,6 @@
         }
         advancedRuleToBeSync = false;
         get advancedRuleDescription(){
-            console.log([2, this.$store.state.newActivity.rules.ruleType]);
             return generateRuleDescription(this.$store.state.newActivity.rules)
         }
         onShow(){

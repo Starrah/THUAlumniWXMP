@@ -95,7 +95,6 @@
 		{
 			"path": "pages/activityList/participants/participants",
 			"style": {
-				"enablePullDownRefresh": true,
 				"navigationBarTitleText": "参与者"
 			}
 		}
