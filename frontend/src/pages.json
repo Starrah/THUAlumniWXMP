@@ -20,6 +20,12 @@
 			}
 		},
 		{
+			"path": "pages/me/extraEdit",
+			"style": {
+				"navigationBarTitleText": "修改个人补充信息"
+			}
+		},
+		{
 			"path": "pages/activityList/descriptionModify/descriptionModify",
 			"style": {
 				"navigationBarTitleText": "修改活动详情"

@@ -6,7 +6,7 @@ import {
   FETCH_ALUMN,
   GOTO_QHR,
   UPDATE_USER_AVATAR,
-  FETCH_MY_ACTIVITY_LIST, TRY_LOGIN_WITHOUT_NEW_CODE
+  FETCH_MY_ACTIVITY_LIST, TRY_LOGIN_WITHOUT_NEW_CODE, SUBMIT_EXTRA_DATA
 } from "../action";
 import {SET_PROFILE, SET_ALUMN} from "../mutation";
 import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
@@ -20,7 +20,10 @@ const state = {
   logined: false,
   openId: "",
   alumn: {},
-  inLoginStatus: false
+  inLoginStatus: false,
+  status: 1,
+  point: 0,
+  extraData: "{}"
 };
 
 const mutations = {
@@ -33,6 +36,14 @@ const mutations = {
 };
 
 const actions = {
+  async [SUBMIT_EXTRA_DATA]({dispatch}, data){
+    try{
+      await apiService.post("/setExtraData", {extraData: JSON.stringify(data)});
+      dispatch(FETCH_PROFILE);
+    }catch (e) {
+      handleNetExcept(e, true);
+    }
+  },
   async [TRY_LOGIN_WITHOUT_NEW_CODE]({dispatch}){
     //#ifdef MP-WEIXIN
     let session = uni.getStorageSync("session");

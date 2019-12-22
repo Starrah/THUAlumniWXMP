@@ -4,8 +4,14 @@
       <div class="cu-avatar round xl mecardavatar" :style="'background-image:url(' + fullUrl(profile.avatarUrl) + ');'"></div>
       <div class="content mecardtext" style>
         <div class="name">{{profile.name}}</div>
-<!--        <button class="cu-btn bg-green" >点击登录</button>-->
-        <div v-for="(item, idx) in profile.campusIdentity" :key="idx" :class="'cu-capsule round'">
+        <div v-if="!profile.status" class="cu-capsule round">
+          <span class="'cu-tag bg-red">封禁中</span>
+        </div>
+        <div v-if="profile.logined" class="cu-capsule round">
+          <span class="'cu-tag bg-cyan">积分</span>
+          <span class="'cu-tag line-cyan">{{profile.point}}</span>
+        </div>
+        <div v-for="(item, idx) in profile.campusIdentity" :key="idx" class="cu-capsule round">
           <span :class="'cu-tag bg-' + colorList[idx]">{{item.department}}</span>
           <span :class="'cu-tag line-' + colorList[idx]">{{item.enrollmentType}}</span>
         </div>
@@ -34,7 +40,13 @@
         </div>
       </div>
     </div>
-    <view class="cu-bar bg-white solid-bottom margin-top arrow" @click="jumpToRecommend">
+    <view class="cu-bar bg-white solid-bottom margin-top arrow" @click="jumpToExtraEdit">
+      <view class="action">
+        <text class="cuIcon-title text-green"></text>
+        <text class="text-xl">编辑个人补充信息</text>
+      </view>
+    </view>
+    <view class="cu-bar bg-white solid-bottom arrow" @click="jumpToRecommend">
       <view class="action">
         <text class="cuIcon-title text-green"></text>
         <text class="text-xl">为我推荐的活动</text>
@@ -58,7 +70,7 @@ import {fullUrl} from "@/apps/utils/networkUtils";
 
 export default {
   data() {
-    return { colorList: ["cyan", "blue", "orange", "yellow"] };
+    return { colorList: ["blue", "orange", "purple", "green", "yellow", ] };
   },
 
   computed: {
@@ -83,6 +95,11 @@ export default {
     jumpToAbout(){
       uni.navigateTo({
         url: "/pages/me/About"
+      })
+    },
+    jumpToExtraEdit(){
+      uni.navigateTo({
+        url: "/pages/me/extraEdit"
       })
     }
   },

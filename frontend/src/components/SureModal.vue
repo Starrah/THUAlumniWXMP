@@ -1,16 +1,17 @@
 <template>
-    <view class="cu-modal" :class="isShowing?'show':''">
-        <view class="cu-dialog">
-            <scroll-view style=" padding-top: 20px ; padding-bottom: 10px">
-                <text>{{content}}</text>
-            </scroll-view>
-            <view class="flex justify-around" style="padding-top: 10px">
-                <button class="cu-btn bg-green" @click="onPressOK">确定</button>
-                <button class="cu-btn bg-red" @click="onPressCancel">取消</button>
-            </view>
-            <br>
-        </view>
-    </view>
+    <view style="display: none"></view>
+<!--    <view class="cu-modal" :class="isShowing?'show':''">-->
+<!--        <view class="cu-dialog">-->
+<!--            <scroll-view style=" padding-top: 20px ; padding-bottom: 10px">-->
+<!--                <text>{{content}}</text>-->
+<!--            </scroll-view>-->
+<!--            <view class="flex justify-around" style="padding-top: 10px">-->
+<!--                <button class="cu-btn bg-green" @click="onPressOK">确定</button>-->
+<!--                <button class="cu-btn bg-red" @click="onPressCancel">取消</button>-->
+<!--            </view>-->
+<!--            <br>-->
+<!--        </view>-->
+<!--    </view>-->
 </template>
 
 <script lang="ts">

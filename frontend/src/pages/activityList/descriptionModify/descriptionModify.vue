@@ -15,6 +15,7 @@
     import Vue from "vue";
     import apiService from '../../../commons/api'
     import {SUBMIT_DESCRIPTION} from "@/store/action";
+    import delay from "delay";
 
     @Component
     export default class DescriptionModify extends Vue{
@@ -23,6 +24,7 @@
         async submit(){
             await this.$store.dispatch(SUBMIT_DESCRIPTION, this.desHtml);
             uni.showToast({title: "成功"});
+            await delay(1000);
             uni.navigateBack();
         }
         get areaHeightCss(){

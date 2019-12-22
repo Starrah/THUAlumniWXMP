@@ -9,10 +9,13 @@ const state = {
   campusIdentity: [],
   avatarUrl: initialGlobalData.devData.DEFAULT_AVATAR_URL,
   openId: "",
+  point: 0,
+  extraData: "{}"
 };
 
 const mutations = {
   [SET_PROFILE_OTHER](state, newProfile) {
+    state.extraData = "{}";
     Object.assign(state, newProfile);
   },
   [SET_OTHER_ID](state, openId){
@@ -21,8 +24,10 @@ const mutations = {
 };
 
 const actions = {
-  async [FETCH_PROFILE_OTHER]({ dispatch, commit, rootState, state }) {
-    return apiService.get("/userData", {openId: state.openId}).then(data => {
+  async [FETCH_PROFILE_OTHER]({ dispatch, commit, rootState, state }, activityId) {
+    let param = {openId: state.openId};
+    if(activityId)param["activityId"]= activityId;
+    return apiService.get("/userData", param).then(data => {
       commit(SET_PROFILE_OTHER, {
         ...data,
       });
