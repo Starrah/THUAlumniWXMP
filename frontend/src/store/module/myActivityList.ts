@@ -19,9 +19,9 @@ const state: {
 const mutations = {
     [SET_MY_ACTIVITY_LIST](state, ne) {
         Object.assign(state, ne);
-        state.history = state.activityList.filter((v: ActivitySchema)=>v.statusGlobal !== 1);
+        state.history = state.activityList.filter((v: ActivitySchema)=>(v.statusGlobal === 0 || v.statusGlobal === 2));
         state.myParticipate = state.activityList.filter((v: ActivitySchema)=>v.statusGlobal === 1 && v.selfRole !== 2);
-        state.mySponsor = state.activityList.filter((v: ActivitySchema)=>v.statusGlobal === 1 && v.selfRole === 2);
+        state.mySponsor = state.activityList.filter((v: ActivitySchema)=>(v.statusGlobal === 1 || v.statusGlobal === 3) && v.selfRole === 2);
     }
 };
 

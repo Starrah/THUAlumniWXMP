@@ -3,7 +3,7 @@
         <view class="search-form round">
             <text class="cuIcon-search"></text>
             <input :adjust-position="false" type="text" placeholder="搜索活动" confirm-type="search" :value="tempText" @input="onInput" @confirm="onChange" />
-            <text class="cuIcon-roundclose" style="font-size: 36upx;" @click="removeText"></text>
+            <text v-if="tempText && tempText !== ''" class="cuIcon-roundclose" style="font-size: 36upx;" @click="removeText"></text>
         </view>
         <view class="action">
             <button class="cu-btn bg-green shadow-blur round" @click="onChange">搜索</button>

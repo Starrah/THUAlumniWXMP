@@ -8,7 +8,10 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">活动类型</view>
+                <view>
                 <text>{{activityData.type}}</text>
+                <text class="text-orange cuIcon-roundcheck margin-left" style="font-size: 36upx;" v-if="isOfficial(activityData)" @click="showOfficialModal"></text>
+                </view>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">标签</view>
@@ -81,33 +84,33 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Stopped && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已停止</button>
         </view>
         <br v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager">
-        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;" class="cu-list grid col-3">
-            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && (activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
+        <view v-if="activityAdminable(activityData)" class="flex cu-list grid col-3">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && ((activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount)" @click="openAuditPage">
                 <text class="text-gray cuIcon-peoplefill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</text>
             </view>
-            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
                 <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">开放报名</text>
             </view>
-            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
                 <text class="text-gray cuIcon-stop" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">暂停报名</text>
             </view>
-            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal" @click="jumpToQRCodePage">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal" @click="jumpToQRCodePage">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">签到二维码</text>
             </view>
-            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">开放签到</text>
             </view>
-            <view class="cu-item" v-if="activityData.status === ActivityGlobalStatus.Normal && activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">暂停签到</text>
@@ -136,19 +139,21 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <!--        <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">-->
 <!--            <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>-->
 <!--        </view>-->
-        <br v-if="activityCancelable(activityData)">
+<!--        <br v-if="activityCancelable(activityData)">-->
         <SureModal ref="SureModal"></SureModal>
-        <view class="cu-modal" :class="auditModalShowing?'show':''" style="z-index: 990">
+        <view class="cu-modal" style="z-index: 990" :class="auditModalShowing?'show':''">
             <view class="cu-dialog">
                 <view class="cu-bar bg-white justify-center">
-                    <text class="text-lg text-bold">您报名后需要审核，您可在下方输入申请留言：</text>
+                    <text class="text-xl text-bold">您的报名需要审核</text>
                 </view>
                 <view class="cu-form-group align-start">
-                    <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
+                    <view class="title">申请留言</view>
+                    <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="选填，不超过300字"></textarea>
                 </view>
-                <br>
+                <view class="flex justify-around">
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
+                </view>
             </view>
         </view>
         <view class="cu-modal" style="z-index: 990" :class="reportModalShowing?'show':''">
@@ -168,8 +173,10 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     <view class="title">详细说明</view>
                     <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
                 </view>
+                <view class="flex justify-around">
                 <button class="cu-btn bg-green" @click="onPressSubmitReport">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelReport">取消</button>
+                </view>
             </view>
         </view>
         <br>
@@ -186,7 +193,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
 
 <script lang="ts">
     import Vue from 'vue'
-    import {Component} from 'vue-property-decorator'
+    import {Component, Watch} from 'vue-property-decorator'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import {isDateTimePast, withoutSec} from "@/apps/utils/DateStringFormat";
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
@@ -197,6 +204,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
+    import {isOfficial} from "@/apps/utils/ActivitySchemaUtils";
 
     @Component({
         components: {SureModal}
@@ -205,11 +213,19 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         name!: "activityDetail";
         console = console;
         fullUrl = fullUrl;
+        isOfficial = isOfficial;
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
         }
         get DEFAULT_AVATAR_URL(){
             return initialGlobalData.devData.DEFAULT_AVATAR_URL;
+        }
+        showOfficialModal(){
+            uni.showModal({
+                showCancel: false,
+                title: "认证活动标志",
+                content: "该活动已经清华大学校友总会审核认证。"
+            })
         }
         activityId: string;
         get activityData(): ActivitySchema{
@@ -234,14 +250,6 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         ANS=0;
         get columnOfButtons() {
-            // this.ANS=1;
-            // if((this.activityData.statusCheck === ActivityCheckStatus.Before && this.activityData.statusJoin !== ActivityJoinStatus.Before) || this.activityData.statusJoin === ActivityJoinStatus.Continue || this.activityData.needAuditCount)this.ANS++;
-            // if(this.activityData.statusJoin !== ActivityJoinStatus.Continue)this.ANS++;
-            // if(this.activityData.statusJoin === ActivityJoinStatus.Continue)this.ANS++;
-            // if(this.activityData.statusCheck !== ActivityCheckStatus.Continue && this.activityData.statusJoin !== ActivityJoinStatus.Before)this.ANS++;
-            // if(this.activityData.statusCheck === ActivityCheckStatus.Continue)this.ANS++;
-            // if(this.activityAdminable(this.activityData))this.ANS+=2;
-            // return this.ANS%3;
             return 3;
         }
         async updateActivityData(){
@@ -282,6 +290,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             let data = this.activityData;
             if(data.statusGlobal === ActivityGlobalStatus.Except)return "活动被取消";
             else if(data.statusGlobal === ActivityGlobalStatus.Finish)return "活动已结束";
+            else if(data.statusGlobal === ActivityGlobalStatus.Audit)return "活动待审核";
             else{
                 let statusAllStrs = [
                     ["报名尚未开始", "", "", ""],
@@ -365,10 +374,13 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         async attendCurActivity(){
             this.auditModalShowing = false;
+            if (this.activityData.ruleForMe === 'accept') {
+                await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
+            }
+            uni.showLoading({title: "加载中", mask: true});
             let res = null;
             try {
                 if (this.activityData.ruleForMe === 'accept') {
-                    await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {});
                 } else if (this.activityData.ruleForMe === 'needAudit') {
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: (this.auditReason && this.auditReason !== "")?this.auditReason:" "});
@@ -391,11 +403,14 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 }
             }catch (e) {
                 handleNetExcept(e)
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
         async exitCurActivity(){
             await ((this.$refs.SureModal as any).show("您确认要取消报名吗？"));
+            uni.showLoading({title: "加载中", mask: true});
             try {
                 let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
                 if (res && res.result === 'success') {
@@ -405,6 +420,8 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 }
             }catch (e) {
                 handleNetExcept(e);
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
@@ -416,6 +433,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     },
                 });
             });
+            uni.showLoading({title: "加载中", mask: true});
             try {
                 let res = await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
                 uni.showToast({
@@ -423,6 +441,8 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 });
             }catch (e) {
                 handleNetExcept(e)
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
@@ -433,6 +453,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         async startSignin(){
             await ((this.$refs.SureModal as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
+            uni.showLoading({title: "加载中", mask: true});
             try {
                 await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
                     activityId: this.activityId,
@@ -443,20 +464,33 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 });
             }catch (e) {
                 handleNetExcept(e);
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
         async endSignin(){
             await ((this.$refs.SureModal as any).show("您确认要暂停签到吗？（之后仍可恢复开放签到）"));
             let newStatusCheck = isDateTimePast(this.activityData.end)?ActivityCheckStatus.Stopped:ActivityCheckStatus.Paused;
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: newStatusCheck}});
-            uni.showToast({
-                title: "成功",
-            });
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusCheck: newStatusCheck}
+                });
+                uni.showToast({
+                    title: "成功",
+                });
+            }catch (e) {
+                handleNetExcept(e)
+            }finally {
+                uni.hideLoading();
+            }
             this.updateActivityData()
         }
         async startSignup(){
             await ((this.$refs.SureModal as any).show("您确认要开放报名吗？"));
+            uni.showLoading({title: "加载中", mask: true});
             try {
                 await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
                     activityId: this.activityId,
@@ -467,12 +501,15 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 });
             }catch (e) {
                 handleNetExcept(e);
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
         async endSignup(){
             await ((this.$refs.SureModal as any).show("您确认要暂停报名吗？（之后仍可恢复开放报名）"));
             let newStatusJoin = isDateTimePast(this.activityData.signupStopAt)?ActivityJoinStatus.Stopped:ActivityJoinStatus.Paused;
+            uni.showLoading({title: "加载中", mask: true});
             try {
                 await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
                     activityId: this.activityId,
@@ -483,6 +520,8 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 });
             }catch (e) {
                 handleNetExcept(e);
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
@@ -494,6 +533,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         async cancelActivityAdmin(){
             await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？\r\n一旦确认，活动将被彻底取消，无法恢复！\r\n"));
+            uni.showLoading({title: "加载中", mask: true});
             try {
                 await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
                 uni.showToast({
@@ -501,6 +541,8 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 });
             }catch (e) {
                 handleNetExcept(e);
+            }finally {
+                uni.hideLoading();
             }
             this.updateActivityData()
         }
@@ -520,6 +562,9 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
                urls: [url],
                current: url
             });
+        }
+        @Watch("activityData")onDataChange(nval){
+            if(this.activityData.statusGlobal === ActivityGlobalStatus.Audit)uni.hideShareMenu();
         }
         async showDescription(){
             await this.$store.dispatch(FETCH_DESCRIPTION);

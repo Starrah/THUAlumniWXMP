@@ -1,5 +1,5 @@
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
-import {RuleType} from "@/apps/typesDeclare/ActivityEnum";
+import {ActivityGlobalStatus, RuleType} from "@/apps/typesDeclare/ActivityEnum";
 import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 
 export function defaultBlankActivity(): ActivitySchema {
@@ -45,3 +45,6 @@ export function generateRuleDescription(rule: SignupRule){
     }
 }
 
+export function isOfficial(activity: ActivitySchema){
+    return activity.type && activity.type.substr(0, 4) === "官方活动" && (activity.statusGlobal === ActivityGlobalStatus.Normal || activity.statusGlobal === ActivityGlobalStatus.Finish);
+}

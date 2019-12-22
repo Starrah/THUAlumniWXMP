@@ -32,6 +32,12 @@
         }
         pageType: string = "";
         debugCode?:string = "";
+        get activities_valid(){
+            if(this.pageType === "history")return this.$store.state.myActivityList.history;
+            else if (this.pageType === "myParticipate")return this.$store.state.myActivityList.myParticipate;
+            else if (this.pageType === "mySponsor")return this.$store.state.myActivityList.mySponsor;
+            else return [];
+        }
         get activities_toShow(){
             let actualIndex = this.finalCount < this.activities_valid.length?this.finalCount:this.activities_valid.length;
             let actualArray = this.activities_valid;
@@ -41,11 +47,6 @@
                 })
             }
             return actualArray.slice(0, actualIndex);
-        }
-        get activities_valid(){
-            if(this.pageType === "history")return this.$store.state.myActivityList.history;
-            else if (this.pageType === "myParticipate")return this.$store.state.myActivityList.myParticipate;
-            else if (this.pageType === "mySponsor")return this.$store.state.myActivityList.mySponsor;
         }
         DEFAULT_ONCE_SHOW_COUNT = 15;
         finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
@@ -71,7 +72,7 @@
             if(this.pageType === "history")uni.setNavigationBarTitle({title: "历史记录"});
             else if(this.pageType === "myParticipate")uni.setNavigationBarTitle({title: "我参与的活动"});
             else if(this.pageType === "mySponsor")uni.setNavigationBarTitle({title: "我发起的活动"});
-            this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
+            //this.$store.dispatch(FETCH_MY_ACTIVITY_LIST);
             this.finalCount = this.DEFAULT_ONCE_SHOW_COUNT;
         }
     }

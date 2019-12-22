@@ -79,7 +79,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     {{signupBeginAtDate}}
                 </view>
             </picker>
-            <picker mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime" style="left: -20px">
+            <picker mode="time" :value="signupBeginAtTime" start="00:00" end="23:59" @change="signupBeginAtTime = $event.detail.value" name="signupBeginAtTime">
                 <view class="picker">
                     {{signupBeginAtTime}}
                 </view>
@@ -93,7 +93,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                         {{signupBeginAtDate2}}
                     </view>
                 </picker>
-                <picker mode="time" :value="signupBeginAtTime2" start="00:00" end="23:59" @change="signupBeginAtTime2 = $event.detail.value" name="signupBeginAtTime2" style="left: -20px">
+                <picker mode="time" :value="signupBeginAtTime2" start="00:00" end="23:59" @change="signupBeginAtTime2 = $event.detail.value" name="signupBeginAtTime2">
                     <view class="picker">
                         {{signupBeginAtTime2}}
                     </view>
@@ -107,7 +107,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                     {{signupStopAtDate}}
                 </view>
             </picker>
-            <picker mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime" style="left: -20px">
+            <picker mode="time" :value="signupStopAtTime" start="00:00" end="23:59" @change="signupStopAtTime = $event.detail.value" name="signupStopAtTime">
                 <view class="picker">
                     {{signupStopAtTime}}
                 </view>
@@ -121,7 +121,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                         {{signupStopAtDate2}}
                     </view>
                 </picker>
-                <picker mode="time" :value="signupStopAtTime2" start="00:00" end="23:59" @change="signupStopAtTime2 = $event.detail.value" name="signupStopAtTime2" style="left: -20px">
+                <picker mode="time" :value="signupStopAtTime2" start="00:00" end="23:59" @change="signupStopAtTime2 = $event.detail.value" name="signupStopAtTime2">
                     <view class="picker">
                         {{signupStopAtTime2}}
                     </view>
@@ -160,8 +160,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             </picker>
         </view>
         <br>
-        <view style="display: flex;justify-content: center">
-            <button form-type="submit" class="cu-btn bg-green">提交</button>
+        <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
+            <button form-type="submit" class="cu-btn bg-green lg">提交</button>
         </view>
     </form>
         <SureModal ref="SureModal"></SureModal>
@@ -227,53 +227,16 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         switchCanBeSearched: boolean = true;
         statusJoin: ActivityJoinStatus = 4;
         statusCheck: ActivityCheckStatus = 4;
-        statusGlobal: ActivityGlobalStatus = 3;
+        statusGlobal: ActivityGlobalStatus = 2;
         ruleForMe: RuleType = 3;
         imageUrl: string = "";
         STATUS_RULEFORME_WORDS = ["可直接加入", "需要审核", "不可加入", "不限"];
-        STATUS_GLOBAL_WORDS = ["活动被取消", "活动状态正常", "活动已结束", "不限"];
+        STATUS_RULEFORME_APIVALUES = [1, 0, -1, undefined];
+        STATUS_GLOBAL_WORDS = ["活动状态正常", "活动已结束", "不限"];
+        STATUS_GLOBAL_APIVALUES = [1, 2, undefined];
         STATUS_JOIN_WORDS = ["报名尚未开始", "报名中", "报名已暂停", "报名已截止", "不限"];
         STATUS_CHECK_WORDS = ["签到尚未开始", "签到中", "签到已暂停", "签到已截止", "不限"];
         createDateTime: string = "";
-        async chooseImage(){
-            uni.showLoading({title: "加载中", mask: true});
-            try {
-                let path: string = await new Promise((resolve, reject) => {
-                    uni.chooseImage({
-                        count: 1,
-                        sizeType: ["compressed"],
-                        sourceType: ["album"],
-                        success(res) {
-                            resolve(res.tempFiles[0].path);
-                        },
-                        fail(){
-                            reject();
-                        }
-                    })
-                });
-                let absUrl = await new Promise<string>((resolve, reject) => {
-                    uni.uploadFile({
-                        url: apiService.baseUrl + `/uploadImage?session=${apiService.session}`,
-                        name: "file",
-                        filePath: path,
-                        fileType: "image",
-                        success(res) {
-                            let obj: any = (typeof res.data === "string") ? JSON.parse(res.data) : res.data;
-                            if (obj.url) resolve(fullUrl(obj.url));
-                            else reject(obj);
-                        },
-                        fail(e) {
-                            reject(e);
-                        }
-                    })
-                });
-                console.log(path);
-                console.log(absUrl);
-                this.imageUrl = absUrl;
-            }finally {
-                uni.hideLoading()
-            }
-        }
         get typeMultiData(){
             let temp = this.$store.state.activityTypeList;
             if(!temp.initialized)this.$store.dispatch(FETCH_ACTIVITY_TYPE_LIST);
@@ -286,9 +249,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             }
             res.unshift({name: "不限", children:[{name: "不限"}]});
             if(this.typeMultiIndex.length < temp.level){
-                console.log("chdt1", this.typeMultiIndex);
                 this.typeMultiIndex = this.typeMultiIndex.concat([0, 0, 0, 0, 0]).slice(0, temp.level);
-                console.log("chdt2", this.typeMultiIndex);
             }
             return {types: res};
         }
@@ -305,12 +266,9 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             return res;
         }
         typeMultiChange(e){
-            console.log(["chan", e.detail.value]);
             this.typeMultiIndex = e.detail.value;
-            console.log(["after", this.typeMultiIndex]);
         }
         typeMultiColumnChange(e){
-            console.log(["colu", e.detail]);
             let column = e.detail.column;
             if(this.typeMultiIndex[column] === e.detail.value)return;
             let newIndex = [];
@@ -322,9 +280,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.typeMultiIndex = newIndex;
         }
         get typeMultiShowText(){
-            console.log(["textbb", this.typeMultiIndex]);
             return this.typeMultiArray.map((nameList, i)=>{
-                console.log(["text", nameList, i, this.typeMultiIndex[i]]);
                 return nameList[this.typeMultiIndex[i]];
             }).join("-");
         }
@@ -360,7 +316,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         async submitAdvancedSearch(e){
             let formData = e.detail.value;
-            console.log(["fd", formData]);
             let data = {
                 place: (formData.place && formData.place !== "")?formData.place:undefined,
                 startMin: this.dateTimeConvert(this.startDate, this.startTime),
@@ -374,8 +329,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 type: this.typeMultiSubmitText,
                 statusJoin: this.statusJoin !== 4?this.statusJoin:undefined,
                 statusCheck: this.statusCheck !== 4?this.statusCheck:undefined,
-                statusGlobal: this.statusGlobal !== 3?this.statusGlobal:undefined,
-                ruleForMe: this.ruleForMe !== 3?this.ruleForMe:undefined
+                statusGlobal: this.STATUS_GLOBAL_APIVALUES[this.statusGlobal],
+                ruleForMe: this.STATUS_RULEFORME_APIVALUES[this.ruleForMe]
             };
             this.$store.commit(SET_ADVAN_SEARCH_DATA, data);
             uni.navigateTo({

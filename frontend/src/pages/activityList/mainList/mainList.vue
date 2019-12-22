@@ -50,7 +50,6 @@
             this.loadMore();
         }
         async loadMore(){
-            console.log("loadMore");
             this.isLoadingMore = true;
             let allActivityes: Array<ActivitySchema> = this.activities_toShow;
             let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;

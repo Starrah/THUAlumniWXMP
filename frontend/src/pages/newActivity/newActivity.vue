@@ -12,6 +12,7 @@
                     {{typeMultiShowText}}
                 </view>
             </picker>
+            <text class="cuIcon-question margin-left" @click.stop="showTypeHelp"></text>
         </view>
         <view class="cu-form-group margin-top-sm">
             <view class="title">标签</view>
@@ -135,6 +136,16 @@
         inputValue: string = "";
         console = console;
         imageUrl: string = "";
+        showTypeHelp(){
+            uni.showModal({
+                showCancel: false,
+                title: "活动类型说明",
+                content: "活动类型分为个人活动、班级活动、官方活动三类。" +
+                    "个人活动、班级活动不需要前置审核，发起后即可被检索和报名。" +
+                    "官方活动需要清华大学校友总会的前置审核，审核通过后活动方可被检索和报名。" +
+                    "如需催促校友总会的审核进度，请邮件联系example@tsinghua.org.cn。"
+            })
+        }
         initialForm(){
             console.log(this.$refs);
             // let inputRefnameList = ["name", "place", "minUser", "maxUser", "tag"];
@@ -310,13 +321,13 @@
                 canBeSearched: this.switchCanBeSearched,
                 imageUrl: (this.imageUrl && this.imageUrl !== "")?this.imageUrl:undefined
             };
-            await ((this.$refs.SureModal as any).show("您确定要发起这个活动吗？"));
+            let sureText = data.type.substr(0,4) === "官方活动"?"您将要发起的是官方活动，该活动需要清华大学校友总会前置审核后才能被检索到和报名加入。您确定要发起这个活动吗？":"您确定要发起这个活动吗？";
+            await ((this.$refs.SureModal as any).show(sureText));
             this.$store.commit(SET_NEW_ACTIVITY, data);
-            let activityId = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
-            console.log("reqSubMesBegin");
+            let {activityId, result} = await this.$store.dispatch(SUBMIT_NEW_ACTIVITY);
             await new Promise((resolve,reject)=> {
                 wx.requestSubscribeMessage({
-                    tmplIds: initialGlobalData.subscribeMessagesIds.normal,
+                    tmplIds: result === "success"?initialGlobalData.subscribeMessagesIds.normal:initialGlobalData.subscribeMessagesIds.audit,
                     success(res: any): void {
                         console.log(["success", res]);
                         resolve(res);
@@ -327,7 +338,7 @@
                     }
                 })
             });
-            uni.showToast({title: "成功", icon: "none"});
+            uni.showToast({title: result === "success"?"成功":"已提交"});
             this.initialForm();
             await delay(1000);
             uni.navigateTo({

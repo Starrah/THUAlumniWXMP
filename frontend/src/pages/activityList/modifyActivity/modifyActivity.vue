@@ -220,8 +220,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                         }
                     })
                 });
-                console.log(path);
-                console.log(absUrl);
                 this.imageUrl = absUrl;
             }finally {
                 uni.hideLoading()
@@ -280,7 +278,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         async modifyNewActivity(e){
             let formData = e.detail.value;
-            console.log(["fd", formData])
             let data = {
                 name: formData.name,
                 place: formData.place,
@@ -298,28 +295,31 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 rules: this.rules,
                 imageUrl: this.imageUrl
             };
-            console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
             this.$store.commit(SET_CHANGE_ACTIVITY, data);
-            let res = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
-            if(res){
-                let isPush;
-                try {
-                    await ((this.$refs.SureModal as any).show("您可以选择向当前所有活动参加者推送一条消息，以通知他们活动的更改。但根据微信相关规则，该类消息整个活动期间活动只能推送一次。您要使用这个机会吗？"));
-                    isPush = true;
-                }catch(e){
-                    isPush = false;
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                let res = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
+                if(res){
+                    let isPush;
+                    try {
+                        await ((this.$refs.SureModal as any).show("您可以选择向当前所有活动参加者推送一条消息，以通知他们活动的更改。但根据微信相关规则，该类消息整个活动期间活动只能推送一次。您要使用这个机会吗？"));
+                        isPush = true;
+                    }catch(e){
+                        isPush = false;
+                    }
+                    if(isPush)await res.push();
+                    else await res.notPush();
                 }
-                if(isPush)await res.push();
-                else await res.notPush();
+                uni.showToast({title: "成功", icon: "none"});
+            }finally {
+                uni.hideLoading();
             }
-            uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
             uni.navigateBack();
         }
         showCurrentValue(){
             let obj = this.$store.state.activityDetail.changeBuffer as ActivitySchema;
-            console.log(obj);
             this.activityId = obj.id;
             this.activityName = obj.name;
             this.place = obj.place;
@@ -372,7 +372,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         advancedRuleToBeSync = false;
         get advancedRuleDescription(){
-            console.log([2, this.$store.state.newActivity.rules.ruleType]);
             return generateRuleDescription(this.$store.state.newActivity.rules)
         }
         rules: SignupRule;

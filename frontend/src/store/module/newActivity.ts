@@ -57,7 +57,7 @@ const actions = {
     async [SUBMIT_NEW_ACTIVITY]({state, commit, rootState}){
         try {
             let res = await apiService.post('/createActivity', state);
-            return res.activityId;
+            return res;
         }catch (e) {
             handleNetExcept(e, true);
         }

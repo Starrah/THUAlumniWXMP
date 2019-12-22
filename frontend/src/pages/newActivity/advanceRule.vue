@@ -39,9 +39,6 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify" @click="acAdd" class="cu-btn line-green round cuIcon">
-          <text style="color: #555555">+</text>
-        </button>
         <button v-if="allowModify" @click="acRemove(idx)" class="cu-btn line-green round cuIcon">
           <text style="color: #555555">-</text>
         </button>
@@ -70,9 +67,6 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify" @click="adAdd" class="cu-btn line-green round cuIcon">
-          <text style="color: #555555">+</text>
-        </button>
         <button v-if="allowModify" @click="adRemove(idx)" class="cu-btn line-green round cuIcon">
           <text style="color: #555555">-</text>
         </button>
