@@ -20,3 +20,5 @@ export const FETCH_EDUCATION_LIST = "fetchEducationList";
 export const TRY_LOGIN_WITHOUT_NEW_CODE = "tryLoginWithoutNewCode";
 export const FETCH_RECOMMEND = "fetchRecommend";
 export const FETCH_PROFILE_OTHER = "fetchProfileOther";
+export const SUBMIT_EXTRA_DATA = "submitExtraData";
+export const SUBMIT_ACTIVITY_POSITION_CHANGE = "submitActivityPositionChange";

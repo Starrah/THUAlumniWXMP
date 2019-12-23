@@ -1,3 +1,4 @@
+import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
 <template>
     <view>
         <view>
@@ -7,7 +8,10 @@
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">活动类型</view>
+                <view>
                 <text>{{activityData.type}}</text>
+                <text class="text-orange cuIcon-roundcheck margin-left" style="font-size: 36upx;" v-if="isOfficial(activityData)" @click="showOfficialModal"></text>
+                </view>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">标签</view>
@@ -21,7 +25,7 @@
             </view>
             <view class="cu-form-group margin-top">
                 <view class="title">公开活动</view>
-                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" :disabled="true"></checkbox>
+                <checkbox class="round" :class="activityData.canBeSearched?'checked':'notchecked'" :checked="activityData.canBeSearched" :disabled="true"></checkbox>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">地点</view>
@@ -42,6 +46,10 @@
             <view v-if="activityData.signupStopAt" class="cu-form-group margin-top">
                 <view class="title">报名截止</view>
                 <text>{{activityData.signupStopAt?withoutSec(activityData.signupStopAt):'直到活动开始前均可报名'}}</text>
+            </view>
+            <view class="cu-form-group margin-top arrow" @click="openAdvancedRulePage">
+                <view class="title">报名规则</view>
+                <view>{{advancedRuleDescription}}</view>
             </view>
             <view class="cu-form-group margin-top arrow" @click="openParticipantsPage">
                 <view class="title">人数</view>
@@ -80,36 +88,26 @@
             <button v-if="activityData.statusCheck === ActivityCheckStatus.Stopped && (activityData.selfStatus === UserStatus.Joined || activityData.selfStatus === UserStatus.NotChecked)" class="cu-btn bg-green lg align-center" :disabled="true">签到已停止</button>
         </view>
         <br v-if="activityData.selfRole === UserRole.Common || activityData.selfRole === UserRole.Manager">
-        <view v-if="activityAdminable(activityData)" style="display: flex;justify-content: space-around;" class="cu-list grid col-3">
-            <view class="cu-item" v-if="(activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount" @click="openAuditPage">
+        <view v-if="activityAdminable(activityData)" class="flex cu-list grid col-3">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && ((activityData.statusCheck === ActivityCheckStatus.Before && activityData.statusJoin !== ActivityJoinStatus.Before) || activityData.statusJoin === ActivityJoinStatus.Continue || activityData.needAuditCount)" @click="openAuditPage">
                 <text class="text-gray cuIcon-peoplefill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">审核({{activityData.needAuditCount?activityData.needAuditCount:0}}人)</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusJoin !== ActivityJoinStatus.Continue" @click="startSignup">
                 <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">开放报名</text>
             </view>
-            <view class="cu-item" v-if="activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusJoin === ActivityJoinStatus.Continue"  @click="endSignup">
                 <text class="text-gray cuIcon-stop" style="text-align: center"></text>
                 <br>
                 <text style="color: #555555;">暂停报名</text>
             </view>
-            <view class="cu-item" @click="jumpToQRCodePage">
+            <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal" @click="signinAdminModalShowing = true">
                 <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
                 <br>
-                <text style="color: #555555;">签到二维码</text>
-            </view>
-            <view class="cu-item" v-if="activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
-                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
-                <br>
-                <text style="color: #555555;">开放签到</text>
-            </view>
-            <view class="cu-item" v-if="activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
-                <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
-                <br>
-                <text style="color: #555555;">暂停签到</text>
+                <text style="color: #555555;">签到管理</text>
             </view>
             <view class="cu-item" @click="openModifyPage">
                 <text class="text-gray cuIcon-info" style="text-align: center"></text>
@@ -121,28 +119,35 @@
                 <br>
                 <text style="color: #555555;">设置活动详情</text>
             </view>
-            <view class="cu-item" v-if="columnOfButtons==2">
+            <view class="cu-item" v-if="activityCancelable(activityData)" @click="">
+                <text class="text-gray cuIcon-deletefill" style="text-align: center"></text>
+                <br>
+                <text style="color: #555555;">取消活动</text>
             </view>
-            <view class="cu-item" v-if="columnOfButtons==1">
-            </view>
+<!--            <view class="cu-item" v-if="columnOfButtons==2">-->
+<!--            </view>-->
+<!--            <view class="cu-item" v-if="columnOfButtons==1">-->
+<!--            </view>-->
         </view>
-        <br v-if="activityAdminable(activityData)">
-        <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">
-            <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>
-        </view>
-        <br v-if="activityCancelable(activityData)">
+<!--        <br v-if="activityAdminable(activityData)">-->
+<!--        <view v-if="activityCancelable(activityData)" style="display: flex;justify-content: space-around;">-->
+<!--            <button class="cu-btn bg-red lg align-center" @click="cancelActivityAdmin">取消活动</button>-->
+<!--        </view>-->
+<!--        <br v-if="activityCancelable(activityData)">-->
         <SureModal ref="SureModal"></SureModal>
-        <view class="cu-modal" :class="auditModalShowing?'show':''" style="z-index: 990">
+        <view class="cu-modal" style="z-index: 990" :class="auditModalShowing?'show':''">
             <view class="cu-dialog">
                 <view class="cu-bar bg-white justify-center">
-                    <text class="text-lg text-bold">您报名后需要审核，您可在下方输入申请留言：</text>
+                    <text class="text-xl text-bold">您的报名需要审核</text>
                 </view>
                 <view class="cu-form-group align-start">
-                    <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="可选，不超过300字"></textarea>
+                    <view class="title">申请留言</view>
+                    <textarea v-if="auditModalShowing" style="width: 90%;height: 100px;" v-model="auditReason" placeholder="选填，不超过300字"></textarea>
                 </view>
-                <br>
+                <view class="flex justify-around">
                 <button class="cu-btn bg-green" @click="attendCurActivity">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelAudit">取消</button>
+                </view>
             </view>
         </view>
         <view class="cu-modal" style="z-index: 990" :class="reportModalShowing?'show':''">
@@ -162,8 +167,52 @@
                     <view class="title">详细说明</view>
                     <textarea v-if="reportModalShowing" style="width: 90%;height: 100px;" v-model="reportReason" placeholder="可选，不超过300字"></textarea>
                 </view>
+                <view class="flex justify-around">
                 <button class="cu-btn bg-green" @click="onPressSubmitReport">确定</button>
                 <button class="cu-btn bg-red" @click="onPressCancelReport">取消</button>
+                </view>
+            </view>
+        </view>
+        <view class="cu-modal" style="z-index: 990" :class="signinAdminModalShowing?'show':''">
+            <view class="cu-dialog">
+                <view class="cu-bar bg-white justify-end">
+                    <text class="content text-xl text-bold">签到管理</text>
+                    <view class="action" @click="signinAdminModalShowing = false">
+                        <text class="cuIcon-close"></text>
+                    </view>
+                </view>
+                <view v-if="activityAdminable(activityData)" class="flex cu-list grid col-3">
+                    <view class="cu-item" @click="openSigninAdminHelp">
+                        <text class="text-gray cuIcon-question" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">帮助</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck !== ActivityCheckStatus.Continue && activityData.statusJoin !== ActivityJoinStatus.Before" @click="startSignin">
+                        <text class="text-gray cuIcon-playfill" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">开放签到</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.statusCheck === ActivityCheckStatus.Continue" @click="endSignin">
+                        <text class="text-gray cuIcon-stop" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">暂停签到</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal" @click="jumpToQRCodePage">
+                        <text class="text-gray cuIcon-qr_code" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">查看二维码</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.selfRole === UserRole.Creator" @click="openPositionChoose">
+                        <text class="text-gray cuIcon-locationfill" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">{{activityData.position && activityData.position !== ''?'修改位置':'设置位置'}}</text>
+                    </view>
+                    <view class="cu-item" v-if="activityData.statusGlobal === ActivityGlobalStatus.Normal && activityData.selfRole === UserRole.Creator && activityData.position && activityData.position !== ''" @click="deletePosition">
+                        <text class="text-gray cuIcon-deletefill" style="text-align: center"></text>
+                        <br>
+                        <text style="color: #555555;">删除位置</text>
+                    </view>
+                </view>
             </view>
         </view>
         <br>
@@ -180,17 +229,34 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {Component} from 'vue-property-decorator'
+    import {Component, Watch} from 'vue-property-decorator'
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import {isDateTimePast, withoutSec} from "@/apps/utils/DateStringFormat";
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
-    import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
-    import {FETCH_ACTIVITY_DETAIL, FETCH_DESCRIPTION, SUBMIT_ACTIVITY_STATUS_CHANGE} from "@/store/action";
+    import {
+        SET_ACTIVITY_DETAIL_ID,
+        SET_ADVANCE_RULE,
+        SET_ADVANCE_RULE_SAVED,
+        SYNC_CHANGE_ACTIVITY_DATA
+    } from "@/store/mutation";
+    import {
+        FETCH_ACTIVITY_DETAIL,
+        FETCH_DESCRIPTION,
+        SUBMIT_ACTIVITY_POSITION_CHANGE,
+        SUBMIT_ACTIVITY_STATUS_CHANGE
+    } from "@/store/action";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
-    import {fullUrl} from "@/apps/utils/networkUtils";
+    import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
+    import {generateRuleDescription, isOfficial} from "@/apps/utils/ActivitySchemaUtils";
+    interface EarthDistanceLibPosi{
+        lat: number,
+        lon: number
+    }
+    var haversine: ((a: EarthDistanceLibPosi, b: EarthDistanceLibPosi)=>number) = require("earth-distance-js").haversine;
+
     @Component({
         components: {SureModal}
     })
@@ -198,17 +264,61 @@
         name!: "activityDetail";
         console = console;
         fullUrl = fullUrl;
+        isOfficial = isOfficial;
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
         }
         get DEFAULT_AVATAR_URL(){
             return initialGlobalData.devData.DEFAULT_AVATAR_URL;
         }
+        showOfficialModal(){
+            uni.showModal({
+                showCancel: false,
+                title: "认证活动标志",
+                content: "该活动已经清华大学校友总会审核认证。"
+            })
+        }
         activityId: string;
         get activityData(): ActivitySchema{
-            console.log("activityDataChANGED");
-            console.log(this.$store.state.activityDetail);
             return this.$store.state.activityDetail.activity;
+        }
+        signinAdminModalShowing: boolean = false;
+        async openPositionChoose(){
+            let choosePosi: ChooseLocationSuccess;
+            try {
+                choosePosi = await new Promise<ChooseLocationSuccess>((resolve, reject) => {
+                    uni.chooseLocation({
+                        success(res){
+                            resolve(res)
+                        },
+                        fail(){
+                            reject()
+                        }
+                    })
+                });
+            }catch (e) {
+                uni.showToast({title: "获取位置失败，可能是您没有给予授权，或者关闭了窗口界面。", icon: "none"});
+                throw e;
+            }
+            this.$store.dispatch(SUBMIT_ACTIVITY_POSITION_CHANGE, {activityId: this.activityId, posiStr: `${choosePosi.latitude} ${choosePosi.longitude}`});
+            uni.showToast({title: "设置位置成功"});
+            this.updateActivityData();
+        }
+        deletePosition(){
+            this.$store.dispatch(SUBMIT_ACTIVITY_POSITION_CHANGE, {activityId: this.activityId, posiStr: ""});
+            uni.showToast({title: "删除位置成功"});
+            this.updateActivityData();
+        }
+        openSigninAdminHelp(){
+            uni.showModal({
+                title: "签到功能帮助",
+                showCancel: false,
+                content: "支持二维码签到和位置签到两种模式。" +
+                    "位置签到需要您设置基准位置，则其他参加者点击签到按钮时可自动定位无需您额外操作；" +
+                    "二维码签到则需要扫描签到二维码图片，您可稍后查看二维码界面中长按将其保存下来，提前打印粘贴在会场等。" +
+                    "如果您设置了位置，则会优先位置签到，若位置签到失败则会允许二维码签到；" +
+                    "如果您没有设置位置或删除了设置的位置，则会直接进行二维码签到。"
+            })
         }
         AVATAR_GROUP_MAX = 4;
         get avatarShowList(){
@@ -223,22 +333,13 @@
             else return [];
         }
         get signupButtonWords(){
-            console.log(this.activityData);
-            console.log(this.activityData.ruleForMe);
             if(this.activityData.ruleForMe === 'accept')return '立即报名';
             else if(this.activityData.ruleForMe === 'needAudit')return '申请报名';
             else return '您不可参加';
         }
         ANS=0;
         get columnOfButtons() {
-            this.ANS=1;
-            if((this.activityData.statusCheck === ActivityCheckStatus.Before && this.activityData.statusJoin !== ActivityJoinStatus.Before) || this.activityData.statusJoin === ActivityJoinStatus.Continue || this.activityData.needAuditCount)this.ANS++;
-            if(this.activityData.statusJoin !== ActivityJoinStatus.Continue)this.ANS++;
-            if(this.activityData.statusJoin === ActivityJoinStatus.Continue)this.ANS++;
-            if(this.activityData.statusCheck !== ActivityCheckStatus.Continue && this.activityData.statusJoin !== ActivityJoinStatus.Before)this.ANS++;
-            if(this.activityData.statusCheck === ActivityCheckStatus.Continue)this.ANS++;
-            if(this.activityAdminable(this.activityData))this.ANS+=2;
-            return this.ANS%3;
+            return 3;
         }
         async updateActivityData(){
             this.$store.dispatch(FETCH_ACTIVITY_DETAIL);
@@ -278,6 +379,7 @@
             let data = this.activityData;
             if(data.statusGlobal === ActivityGlobalStatus.Except)return "活动被取消";
             else if(data.statusGlobal === ActivityGlobalStatus.Finish)return "活动已结束";
+            else if(data.statusGlobal === ActivityGlobalStatus.Audit)return "活动待审核";
             else{
                 let statusAllStrs = [
                     ["报名尚未开始", "", "", ""],
@@ -296,10 +398,10 @@
         ActivityJoinStatus = ActivityJoinStatus;
         ActivityCheckStatus = ActivityCheckStatus;
         activityCancelable(d: ActivitySchema){
-            return d.statusGlobal === ActivityGlobalStatus.Normal && d.statusCheck === ActivityCheckStatus.Before && d.selfRole === UserRole.Creator
+            return (d.statusGlobal === ActivityGlobalStatus.Normal || d.statusGlobal === ActivityGlobalStatus.Audit) && d.statusCheck === ActivityCheckStatus.Before && d.selfRole === UserRole.Creator
         }
         activityAdminable(d: ActivitySchema) {
-            return d.statusGlobal === ActivityGlobalStatus.Normal && (d.selfRole === UserRole.Creator || d.selfRole === UserRole.Manager);
+            return (d.statusGlobal === ActivityGlobalStatus.Normal || d.statusGlobal === ActivityGlobalStatus.Audit) && (d.selfRole === UserRole.Creator || d.selfRole === UserRole.Manager);
         }
         auditModalShowing: boolean = false;
         auditReason: string = "";
@@ -319,16 +421,11 @@
                     await apiService.post(`/reportActivity?activityId=${this.activityId}`, {reason: this.reportPickerRange[this.reportPickerValue] + ": " + this.reportReason})
                     uni.showToast({
                         title: "举报成功"
-                    })
+                    });
+                    this.reportModalShowing = false;
                 }catch (e) {
-                    if(e.errid && e.errid >= 500 && e.errid <= 599){
-                        uni.showToast({
-                            title: e.errmsg,
-                            icon: "none"
-                        })
-                    }
+                    handleNetExcept(e)
                 }
-                this.reportModalShowing = false;
             }
         }
         onPressCancelReport(){
@@ -366,85 +463,151 @@
         }
         async attendCurActivity(){
             this.auditModalShowing = false;
+            if (this.activityData.ruleForMe === 'accept') {
+                await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
+            }
+            uni.showLoading({title: "加载中", mask: true});
             let res = null;
             try {
                 if (this.activityData.ruleForMe === 'accept') {
-                    await ((this.$refs.SureModal as any).show("您报名后无需审核，可以直接加入本活动。\r\n确认要报名参加本活动吗？"));
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {});
                 } else if (this.activityData.ruleForMe === 'needAudit') {
                     res = await apiService.post(`/joinActivity?activityId=${this.activityId}`, {reason: (this.auditReason && this.auditReason !== "")?this.auditReason:" "});
                 }
-            }finally {}
-            console.log(res);
-            if(res && res.result === 'success'){
-                console.log("reqSubMesBegin");
-                await new Promise((resolve,reject)=> {
-                    wx.requestSubscribeMessage({
-                        tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
-                        success(res: any): void {
-                            console.log(["success", res]);
-                            resolve(res);
-                        },
-                        fail(res: any): void {
-                            console.log(["fail", res]);
-                            reject(res)
-                        }
-                    })
-                });
-                uni.showToast({
-                    title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
-                });
-            }else{
-                uni.showToast({
-                    title: (res && res.errmsg) || '参加失败',
-                    icon: "none"
-                })
+                if(res && res.result === 'success'){
+                    await new Promise((resolve,reject)=> {
+                        wx.requestSubscribeMessage({
+                            tmplIds: this.activityData.ruleForMe === 'accept' ? initialGlobalData.subscribeMessagesIds.normal : initialGlobalData.subscribeMessagesIds.audit,
+                            success(res: any): void {
+                                resolve(res);
+                            },
+                            fail(res: any): void {
+                                reject(res)
+                            }
+                        })
+                    });
+                }
+            }catch (e) {
+                handleNetExcept(e, true)
+            }finally {
+                uni.hideLoading();
             }
+            uni.showToast({
+                title: this.activityData.ruleForMe === 'accept'?"报名成功":"提交审核成功",
+            });
             this.updateActivityData()
         }
         async exitCurActivity(){
             await ((this.$refs.SureModal as any).show("您确认要取消报名吗？"));
-            let res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
-            if(res && res.result === 'success'){
+            uni.showLoading({title: "加载中", mask: true});
+            let res;
+            try {
+                res = await apiService.post(`/cancelJoinActivity?activityId=${this.activityId}`, {});
+            }catch (e) {
+                handleNetExcept(e, true);
+            }finally {
+                uni.hideLoading();
+            }
+            if (res && res.result === 'success') {
                 uni.showToast({
-                    title: this.activityData.selfStatus === UserStatus.WaitValidate?"取消加入申请成功":"取消报名成功",
+                    title: this.activityData.selfStatus === UserStatus.WaitValidate ? "取消加入申请成功" : "取消报名成功",
                 });
-            }else{
-                uni.showToast({
-                    title: (res && res.errmsg) || '取消报名失败',
-                    icon: "none"
-                })
             }
             this.updateActivityData()
         }
-        async signinActivity(){
-            console.log("qwqwqwqw");
-            let code = await new Promise((resolve, reject)=>{
-                uni.scanCode({
-                    success: (r)=>{
-                        console.log("scanResult", r.result);
-                        resolve(r.result);
-                    },
-                    complete: ()=>console.log("comp")
-                });
-            });
-            console.log(code);
-            try {
-                let res = await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
-                console.log(res);
-                uni.showToast({
-                    title: "签到成功",
-                });
-            }catch (e) {
-                console.log(e);
-                if(e.errid && e.errid >= 500 && e.errid <= 599){
-                    uni.showToast({
-                        title: e.errmsg,
-                        icon: "none"
-                    })
+        async signinActivity() {
+            let MAX_POSITION_REPEAT = 3;
+            let posiAvailable = this.activityData.position && this.activityData.position !== "";
+            let qrConfirm = false;
+            if(posiAvailable) {
+                let isPosiSuccess = false;
+                let exampleException;
+                uni.showLoading({title: "加载中", mask: true});
+                let basicObj = {
+                    lat: Number(this.activityData.position.split(" ")[0]),
+                    lon: Number(this.activityData.position.split(" ")[1])
+                };
+                for(let i=0;i<MAX_POSITION_REPEAT;i++) {
+                    try {
+                        await this.signinByPosition(basicObj);
+                        isPosiSuccess = true;
+                        break;
+                    }catch (e) {
+                        exampleException = e;
+                    }
+                }
+                uni.hideLoading();
+                if(isPosiSuccess){
+                    uni.showToast({title: "签到成功"});
+                    this.updateActivityData();
+                }
+                else{
+                    try {
+                        await new Promise((resolve, reject) => {
+                            uni.showModal({
+                                title: "提示",
+                                content: exampleException.errmsg + "。是否要进行二维码签到？",
+                                success(res) {
+                                    if (res.confirm) resolve();
+                                    else reject();
+                                },
+                                fail() {
+                                    reject();
+                                }
+                            })
+                        });
+                        qrConfirm = true;
+                    }catch (e) {
+                        throw exampleException;
+                    }
                 }
             }
-            this.updateActivityData()
+            if(!posiAvailable || qrConfirm){
+                uni.showLoading({title: "加载中", mask: true});
+                try{
+                    await this.signinByQR();
+                }catch (e) {
+                    handleNetExcept(e, true);
+                }finally {
+                    uni.hideLoading();
+                }
+                uni.showToast({title: "签到成功"});
+            }
+        }
+        async signinByPosition(basicPosi: EarthDistanceLibPosi){
+            let myPosi: GetLocationSuccess;
+            try{
+                myPosi = await new Promise<GetLocationSuccess>((resolve, reject) => {
+                    uni.getLocation({
+                        type: "gcj02",
+                        success(res) {
+                            resolve(res);
+                        },
+                        fail() {
+                            reject();
+                        }
+                    })
+                });
+            }catch (e) {
+                throw {errid: 590, errmsg: "获取位置失败，可能是您没有给予授权，或者当前定位信号环境太差。"};
+            }
+            let myPosiEarth: EarthDistanceLibPosi = {lat: myPosi.latitude, lon: myPosi.longitude};
+            let distanceInKm = haversine(myPosiEarth, basicPosi);
+            let disanceInM = Math.round(distanceInKm * 1000);
+            await apiService.post(`/checkInActivity?distance=${disanceInM}&activityId=${this.activityId}`);
+        }
+        async signinByQR(){
+            let code = await new Promise((resolve, reject)=>{
+                uni.scanCode({
+                    success(r){
+                        resolve(r.result);
+                    },
+                    fail(){
+                        reject();
+                    }
+                });
+            });
+            await apiService.post(`/checkInActivity?code=${code}&activityId=${this.activityId}`);
         }
         async openAuditPage(){
             uni.navigateTo({
@@ -453,25 +616,48 @@
         }
         async startSignin(){
             await ((this.$refs.SureModal as any).show("请注意，一旦开放签到（无论是由于您手动操作还是由于到达活动开始时间且人数足够的情况下系统自动为您开放签到），活动便不可再被取消。\r\n您确认要开放签到吗？"));
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: ActivityCheckStatus.Continue}});
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusCheck: ActivityCheckStatus.Continue}
+                });
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({
-                title: "成功",
+                title: "成功"
             });
             this.updateActivityData()
         }
         async endSignin(){
             await ((this.$refs.SureModal as any).show("您确认要暂停签到吗？（之后仍可恢复开放签到）"));
             let newStatusCheck = isDateTimePast(this.activityData.end)?ActivityCheckStatus.Stopped:ActivityCheckStatus.Paused;
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusCheck: newStatusCheck}});
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusCheck: newStatusCheck}
+                });
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({
                 title: "成功",
             });
             this.updateActivityData()
         }
         async startSignup(){
-            console.log(this.$refs);
             await ((this.$refs.SureModal as any).show("您确认要开放报名吗？"));
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: ActivityJoinStatus.Continue}});
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusJoin: ActivityJoinStatus.Continue}
+                });
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({
                 title: "成功",
             });
@@ -480,7 +666,15 @@
         async endSignup(){
             await ((this.$refs.SureModal as any).show("您确认要暂停报名吗？（之后仍可恢复开放报名）"));
             let newStatusJoin = isDateTimePast(this.activityData.signupStopAt)?ActivityJoinStatus.Stopped:ActivityJoinStatus.Paused;
-            await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {activityId: this.activityId, newStatus: {statusJoin: newStatusJoin}});
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await this.$store.dispatch(SUBMIT_ACTIVITY_STATUS_CHANGE, {
+                    activityId: this.activityId,
+                    newStatus: {statusJoin: newStatusJoin}
+                });
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({
                 title: "成功",
             });
@@ -494,7 +688,14 @@
         }
         async cancelActivityAdmin(){
             await ((this.$refs.SureModal as any).show("您确定要取消这个活动吗？\r\n一旦确认，活动将被彻底取消，无法恢复！\r\n"));
-            await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                await apiService.post(`/deleteActivity?activityId=${this.activityId}`, {});
+            }catch (e) {
+                handleNetExcept(e, true);
+            }finally {
+                uni.hideLoading();
+            }
             uni.showToast({
                 title: "活动已被取消",
             });
@@ -506,7 +707,7 @@
         onShareAppMessage(){
             return{
                 title: this.activityData.name,
-                path: `/pages/activityDetail/activityDetail?activityId=${this.activityId}`,
+                path: `/pages/activityList/activityDetail/activityDetail?activityId=${this.activityId}`,
                 imageUrl: fullUrl(this.activityData.imageUrl)
             }
         }
@@ -516,6 +717,9 @@
                urls: [url],
                current: url
             });
+        }
+        @Watch("activityData")onDataChange(nval){
+            if(this.activityData.statusGlobal === ActivityGlobalStatus.Audit)uni.hideShareMenu();
         }
         async showDescription(){
             await this.$store.dispatch(FETCH_DESCRIPTION);
@@ -540,6 +744,20 @@
             uni.navigateTo({
                 url: '/pages/activityList/participants/participants?enableAudit=0'
             })
+        }
+        openAdvancedRulePage() {
+            if(!this.activityData.rules) {
+                uni.showToast({title: "无有效报名规则", icon: "none"});
+                return;
+            }
+            this.$store.commit(SET_ADVANCE_RULE, this.activityData.rules);
+            this.$store.commit(SET_ADVANCE_RULE_SAVED, false);
+            uni.navigateTo({
+                url: '/pages/newActivity/advanceRule'
+            });
+        }
+        get advancedRuleDescription() {
+            return generateRuleDescription(this.activityData.rules);
         }
     }
 </script>

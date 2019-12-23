@@ -1,16 +1,22 @@
-import { SET_ADVANCE_RULE } from "../mutation";
+import {SET_ADVANCE_RULE, SET_ADVANCE_RULE_SAVED} from "../mutation";
 import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 
-const state: SignupRule = {
-    ruleType: 0,
-    accept: [],
-    needAudit: [],
-    reject: []
+const state: {rule: SignupRule, saved: boolean} = {
+    rule: {
+        ruleType: 0,
+        accept: [],
+        needAudit: [],
+        reject: []
+    },
+    saved: false
 };
 
 const mutations = {
-  [SET_ADVANCE_RULE](state: SignupRule, newAdvanceRule: SignupRule) {
-    Object.assign(state, newAdvanceRule);
+  [SET_ADVANCE_RULE](state, newAdvanceRule: SignupRule) {
+    state.rule = newAdvanceRule;
+  },
+  [SET_ADVANCE_RULE_SAVED](state, b: boolean){
+      state.saved = b;
   }
 };
 

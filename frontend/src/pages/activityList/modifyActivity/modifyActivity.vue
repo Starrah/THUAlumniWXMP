@@ -119,7 +119,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <input ref="maxUser" name="maxUser" :value="maxUser"/>
         </view>
         <br>
-        <view style="display: flex;justify-content: center">
+        <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
             <button form-type="submit" class="cu-btn bg-green">提交</button>
         </view>
     </form>
@@ -133,7 +133,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import dateFormat from 'dateformat'
     import delay from 'delay';
     import {
-        SET_ADVANCE_RULE,
+        SET_ADVANCE_RULE, SET_ADVANCE_RULE_SAVED,
         SET_NEW_ACTIVITY,
         SYNC_RULE_MODIFY_ACTIVITY,
         SYNC_RULE_NEW_ACTIVITY
@@ -220,8 +220,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                         }
                     })
                 });
-                console.log(path);
-                console.log(absUrl);
                 this.imageUrl = absUrl;
             }finally {
                 uni.hideLoading()
@@ -280,7 +278,6 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         async modifyNewActivity(e){
             let formData = e.detail.value;
-            console.log(["fd", formData])
             let data = {
                 name: formData.name,
                 place: formData.place,
@@ -298,20 +295,24 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
                 rules: this.rules,
                 imageUrl: this.imageUrl
             };
-            console.log(data.signupStopAt);
             await ((this.$refs.SureModal as any).show("您确定要修改这个活动吗？"));
             this.$store.commit(SET_CHANGE_ACTIVITY, data);
-            let res = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
-            if(res){
-                let isPush;
-                try {
-                    await ((this.$refs.SureModal as any).show("您可以选择向当前所有活动参加者推送一条消息，以通知他们活动的更改。但根据微信相关规则，该类消息整个活动期间活动只能推送一次。您要使用这个机会吗？"));
-                    isPush = true;
-                }catch(e){
-                    isPush = false;
+            uni.showLoading({title: "加载中", mask: true});
+            try {
+                let res = await this.$store.dispatch(SUBMIT_ACTIVITY_CHANGE);
+                if(res){
+                    let isPush;
+                    try {
+                        await ((this.$refs.SureModal as any).show("您可以选择向当前所有活动参加者推送一条消息，以通知他们活动的更改。但根据微信相关规则，该类消息整个活动期间活动只能推送一次。您要使用这个机会吗？"));
+                        isPush = true;
+                    }catch(e){
+                        isPush = false;
+                    }
+                    if(isPush)await res.push();
+                    else await res.notPush();
                 }
-                if(isPush)await res.push();
-                else await res.notPush();
+            }finally {
+                uni.hideLoading();
             }
             uni.showToast({title: "成功", icon: "none"});
             await delay(1000);
@@ -319,11 +320,12 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         showCurrentValue(){
             let obj = this.$store.state.activityDetail.changeBuffer as ActivitySchema;
-            console.log(obj);
             this.activityId = obj.id;
             this.activityName = obj.name;
             this.place = obj.place;
             this.tag = obj.tags.join(",");
+            this.rules = obj.rules;
+            console.log(obj.rules);
             this.minUser = obj.minUser !== 0?obj.minUser:"";
             this.maxUser = obj.maxUser !== -1?obj.maxUser:"";
             this.switchCanBeSearched = obj.canBeSearched;
@@ -365,6 +367,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         openAdvancedRulePage(){
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.activityDetail.changeBuffer.rules);
+            this.$store.commit(SET_ADVANCE_RULE_SAVED, false);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
                 url: '/pages/newActivity/advanceRule?allowModify=1'
@@ -372,12 +375,11 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         advancedRuleToBeSync = false;
         get advancedRuleDescription(){
-            console.log([2, this.$store.state.newActivity.rules.ruleType]);
-            return generateRuleDescription(this.$store.state.newActivity.rules)
+            return generateRuleDescription(this.rules)
         }
-        rules: SignupRule;
+        rules: SignupRule = null;
         onShow(){
-            if(this.advancedRuleToBeSync)this.rules = this.$store.state.advancedRule;
+            if(this.advancedRuleToBeSync && this.$store.state.advancedRule.saved)this.rules = this.$store.state.advancedRule.rule;
         }
     }
 </script>

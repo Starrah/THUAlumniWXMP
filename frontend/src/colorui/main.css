@@ -286,6 +286,16 @@ radio.red.checked .uni-radio-input {
 	color: #ffffff !important;
 }
 
+switch.notchecked .wx-switch-input.wx-switch-input-checked,
+checkbox.notchecked .wx-checkbox-input,
+radio.notchecked .wx-radio-input,
+switch.notchecked .uni-switch-input.uni-switch-input-checked,
+checkbox.notchecked .uni-checkbox-input,
+radio.notchecked .uni-radio-input {
+	background-color: #ffffff !important;
+	color: #ffffff !important;
+}
+
 switch.orange[checked] .wx-switch-input,
 checkbox.orange[checked] .wx-checkbox-input,
 radio.orange[checked] .wx-radio-input,
