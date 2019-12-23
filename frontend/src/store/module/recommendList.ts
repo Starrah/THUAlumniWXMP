@@ -109,7 +109,8 @@ const actions = {
             }else{
                 res = await apiService.get('/getAllActivity', param);
             }
-            commit(ADD_MORE_ACTIVITY, res)
+            commit(ADD_MORE_ACTIVITY, res);
+            return res.activityList && res.activityList.length !== 0;
         }catch (e) {
             handleNetExcept(e, true);
         }

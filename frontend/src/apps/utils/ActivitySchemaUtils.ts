@@ -25,6 +25,7 @@ function isArrayNotEmpty(a: Array<any>){
 }
 
 export function generateRuleDescription(rule: SignupRule){
+    if(!rule)return "";
     if(rule.ruleType === RuleType.ACCEPT) {
         if(isArrayNotEmpty(rule.needAudit) && isArrayNotEmpty(rule.reject))return "审核或拒绝指定人，接受其余人";
         else if(!isArrayNotEmpty(rule.needAudit) && isArrayNotEmpty(rule.reject))return "拒绝指定人，接受其余人";

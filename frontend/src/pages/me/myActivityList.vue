@@ -2,9 +2,7 @@
     <view>
         <SearchBar v-model="searchText"></SearchBar>
         <ActivityListShow :list="activities_toShow"></ActivityListShow>
-        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore">
-            <text>加载中</text>
-        </view>
+        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore"></view>
     </view>
 </template>
 

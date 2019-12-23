@@ -115,7 +115,7 @@
     import {Component} from 'vue-property-decorator'
     import dateFormat from 'dateformat'
     import delay from 'delay';
-    import {SET_ADVANCE_RULE, SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "@/store/mutation";
+    import {SET_ADVANCE_RULE, SET_ADVANCE_RULE_SAVED, SET_NEW_ACTIVITY, SYNC_RULE_NEW_ACTIVITY} from "@/store/mutation";
     import {FETCH_ACTIVITY_TYPE_LIST, SUBMIT_NEW_ACTIVITY} from "@/store/action";
     import {withSec} from "@/apps/utils/DateStringFormat";
     import SureModal from "@/components/SureModal.vue";
@@ -331,6 +331,7 @@
         }
         openAdvancedRulePage(){
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.newActivity.rules);
+            this.$store.commit(SET_ADVANCE_RULE_SAVED, false);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
                 url: '/pages/newActivity/advanceRule?allowModify=1'
@@ -341,7 +342,7 @@
             return generateRuleDescription(this.$store.state.newActivity.rules)
         }
         onShow(){
-            if(this.advancedRuleToBeSync)this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state.advancedRule)
+            if(this.advancedRuleToBeSync && this.$store.state.advancedRule.saved)this.$store.commit(SYNC_RULE_NEW_ACTIVITY, this.$store.state.advancedRule.rule);
         }
     }
 </script>

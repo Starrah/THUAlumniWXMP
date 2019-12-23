@@ -36,20 +36,22 @@ const actions = {
         param.most = param.most || 15;
         try {
             let res;
-            if(param.searchWord && param.searchWord !== "") {
+            if (param.searchWord && param.searchWord !== "") {
                 try {
                     res = await apiService.get('/searchActivity', param);
-                }catch(e){
-                    if(e.errid && e.errid === 201){
+                } catch (e) {
+                    if (e.errid && e.errid === 201) {
                         uni.showToast({title: e.errmsg, icon: "none"});
                         res = {activityList: []};
-                    }else throw e;
+                    } else throw e;
                 }
-            }else{
+            } else {
                 res = await apiService.get('/getAllActivity', param);
             }
             commit(SET_ALL_ACTIVITY_LIST, res);
-        }catch (e) {
+            return res.activityList && res.activityList.length !== 0;
+        }
+        catch (e) {
             handleNetExcept(e, true);
         }
     },

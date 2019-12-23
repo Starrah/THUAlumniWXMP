@@ -1,16 +1,11 @@
 <template>
   <view>
     <view class="cu-form-group margin-top-sm" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
-      <view class="title">活动名称</view>
-      <view>XXXXX活动</view>
-    </view>
-
-    <view class="cu-form-group margin-top-sm" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
       <view class="title">默认规则</view>
       <view>
-        <radio-group @change="defaultRuleChanged" :disabled="!allowModify">
+        <radio-group @change="defaultRuleChanged">
           <label v-for="(item, idx) in rules" :key="item.value" style="margin-left: 5px">
-            <radio :value="item.value" :checked="idx === currentRuleIdx" />
+            <radio :class="idx === currentRuleIdx?'checked':'notchecked'" :value="item.value" :checked="idx === currentRuleIdx"  :disabled="!allowModify"/>
             {{item.text}}
           </label>
         </radio-group>
@@ -108,7 +103,7 @@
 
 
 <script lang="ts">
-  import { SET_ADVANCE_RULE } from "@/store/mutation";
+  import {SET_ADVANCE_RULE, SET_ADVANCE_RULE_SAVED} from "@/store/mutation";
   import {OneSpecificSingupRule} from "@/apps/typesDeclare/SignupRule";
   import {FETCH_DEPARTMENT_LIST, FETCH_EDUCATION_LIST} from "@/store/action";
 
@@ -170,38 +165,44 @@ export default {
       acRuleList: [], //ruleList
       adRuleList: [], //ruleList
       rjRuleList: [], //ruleList
-      allowModify: 1
+      allowModify: 0
     };
   },
 
   async mounted() {
     if(!this.$store.state.departmentList.initialized)await this.$store.dispatch(FETCH_DEPARTMENT_LIST);
     if(!this.$store.state.educationTypesList.initialized)await this.$store.dispatch(FETCH_EDUCATION_LIST);
-    this.currentRuleIdx = this.$store.state.advancedRule.ruleType;
-    this.acRuleList = this.$store.state.advancedRule.accept.map((v: OneSpecificSingupRule): Rule=>{
-      return {
-        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
-        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
-        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
-        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
-      }
-    });
-    this.adRuleList = this.$store.state.advancedRule.needAudit.map((v: OneSpecificSingupRule): Rule=>{
-      return {
-        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
-        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
-        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
-        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
-      }
-    });
-    this.rjRuleList = this.$store.state.advancedRule.reject.map((v: OneSpecificSingupRule): Rule=>{
-      return {
-        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
-        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
-        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
-        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
-      }
-    });
+    this.currentRuleIdx = this.$store.state.advancedRule.rule.ruleType;
+    if(this.$store.state.advancedRule.rule.accept) {
+      this.acRuleList = this.$store.state.advancedRule.rule.accept.map((v: OneSpecificSingupRule): Rule => {
+        return {
+          enrollIdx: v.enrollmentType ? this.educationList.indexOf(v.enrollmentType) : 0,
+          departIdx: v.enrollmentType ? this.departmentList.indexOf(v.department) : 0,
+          startIdx: v.minEnrollmentYear ? this.yearList.indexOf(v.minEnrollmentYear) : 0,
+          endIdx: v.maxEnrollmentYear ? this.yearList.indexOf(v.maxEnrollmentYear) : 0
+        }
+      });
+    }
+    if(this.$store.state.advancedRule.rule.needAudit) {
+      this.adRuleList = this.$store.state.advancedRule.rule.needAudit.map((v: OneSpecificSingupRule): Rule => {
+        return {
+          enrollIdx: v.enrollmentType ? this.educationList.indexOf(v.enrollmentType) : 0,
+          departIdx: v.enrollmentType ? this.departmentList.indexOf(v.department) : 0,
+          startIdx: v.minEnrollmentYear ? this.yearList.indexOf(v.minEnrollmentYear) : 0,
+          endIdx: v.maxEnrollmentYear ? this.yearList.indexOf(v.maxEnrollmentYear) : 0
+        }
+      });
+    }
+    if(this.$store.state.advancedRule.rule.reject) {
+      this.rjRuleList = this.$store.state.advancedRule.rule.reject.map((v: OneSpecificSingupRule): Rule => {
+        return {
+          enrollIdx: v.enrollmentType ? this.educationList.indexOf(v.enrollmentType) : 0,
+          departIdx: v.enrollmentType ? this.departmentList.indexOf(v.department) : 0,
+          startIdx: v.minEnrollmentYear ? this.yearList.indexOf(v.minEnrollmentYear) : 0,
+          endIdx: v.maxEnrollmentYear ? this.yearList.indexOf(v.maxEnrollmentYear) : 0
+        }
+      });
+    }
   },
 
   onLoad(param){
@@ -237,6 +238,7 @@ export default {
           }
         }),
       });
+      this.$store.commit(SET_ADVANCE_RULE_SAVED, true);
       uni.navigateBack();
     },
     ruleToList(rule: Rule) {
@@ -248,6 +250,7 @@ export default {
       ];
     },
     defaultRuleChanged(event) {
+      if(!this.allowModify)return;
       this.rules.forEach((r, idx) => {
         if (r.value === event.target.value) {
           this.currentRuleIdx = idx;

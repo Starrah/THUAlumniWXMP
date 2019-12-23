@@ -133,7 +133,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import dateFormat from 'dateformat'
     import delay from 'delay';
     import {
-        SET_ADVANCE_RULE,
+        SET_ADVANCE_RULE, SET_ADVANCE_RULE_SAVED,
         SET_NEW_ACTIVITY,
         SYNC_RULE_MODIFY_ACTIVITY,
         SYNC_RULE_NEW_ACTIVITY
@@ -324,6 +324,8 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.activityName = obj.name;
             this.place = obj.place;
             this.tag = obj.tags.join(",");
+            this.rules = obj.rules;
+            console.log(obj.rules);
             this.minUser = obj.minUser !== 0?obj.minUser:"";
             this.maxUser = obj.maxUser !== -1?obj.maxUser:"";
             this.switchCanBeSearched = obj.canBeSearched;
@@ -365,6 +367,7 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         openAdvancedRulePage(){
             this.$store.commit(SET_ADVANCE_RULE, this.$store.state.activityDetail.changeBuffer.rules);
+            this.$store.commit(SET_ADVANCE_RULE_SAVED, false);
             this.advancedRuleToBeSync = true;
             uni.navigateTo({
                 url: '/pages/newActivity/advanceRule?allowModify=1'
@@ -372,11 +375,11 @@ import {ActivityJoinStatus} from "../../../apps/typesDeclare/ActivityEnum";
         }
         advancedRuleToBeSync = false;
         get advancedRuleDescription(){
-            return generateRuleDescription(this.$store.state.newActivity.rules)
+            return generateRuleDescription(this.rules)
         }
-        rules: SignupRule;
+        rules: SignupRule = null;
         onShow(){
-            if(this.advancedRuleToBeSync)this.rules = this.$store.state.advancedRule;
+            if(this.advancedRuleToBeSync && this.$store.state.advancedRule.saved)this.rules = this.$store.state.advancedRule.rule;
         }
     }
 </script>

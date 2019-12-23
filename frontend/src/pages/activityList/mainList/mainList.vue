@@ -6,9 +6,7 @@
             </view>
         </SearchBar>
         <ActivityListShow :list="activities_toShow"></ActivityListShow>
-        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore">
-            <text>加载中</text>
-        </view>
+        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore"></view>
     </view>
 </template>
 
@@ -55,14 +53,19 @@
             let allActivityes: Array<ActivitySchema> = this.activities_toShow;
             let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;
             try {
-                await this.$store.dispatch(FETCH_MORE_ACTIVITY, {
+                let haveMore = await this.$store.dispatch(FETCH_MORE_ACTIVITY, {
                     lastSeenId,
                     searchWord: this.searchText
                 });
-                this.isLoadingMore = "over";
+                if(haveMore){
+                    this.isLoadingMore = null;
+                }else{
+                    this.isLoadingMore = "over";
+                    await delay(1000);
+                    this.isLoadingMore = null;
+                }
             }catch (e) {
                 this.isLoadingMore = "erro";
-            }finally {
                 await delay(1000);
                 this.isLoadingMore = null;
             }
