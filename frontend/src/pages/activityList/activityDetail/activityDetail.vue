@@ -25,7 +25,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             </view>
             <view class="cu-form-group margin-top">
                 <view class="title">公开活动</view>
-                <checkbox class="round" :class="activityData.canBeSearched?'checked':''" :checked="activityData.canBeSearched" :disabled="true"></checkbox>
+                <checkbox class="round" :class="activityData.canBeSearched?'checked':'notchecked'" :checked="activityData.canBeSearched" :disabled="true"></checkbox>
             </view>
             <view class="cu-form-group margin-top-sm">
                 <view class="title">地点</view>
@@ -46,6 +46,10 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             <view v-if="activityData.signupStopAt" class="cu-form-group margin-top">
                 <view class="title">报名截止</view>
                 <text>{{activityData.signupStopAt?withoutSec(activityData.signupStopAt):'直到活动开始前均可报名'}}</text>
+            </view>
+            <view class="cu-form-group margin-top arrow" @click="openAdvancedRulePage">
+                <view class="title">报名规则</view>
+                <view>{{advancedRuleDescription}}</view>
             </view>
             <view class="cu-form-group margin-top arrow" @click="openParticipantsPage">
                 <view class="title">人数</view>
@@ -231,7 +235,12 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import {UserRole, UserStatus, UserStatusShowStrings} from "@/apps/typesDeclare/UserEnum";
     import apiService from '../../../commons/api'
     import SureModal from "@/components/SureModal.vue";
-    import {SET_ACTIVITY_DETAIL_ID, SYNC_CHANGE_ACTIVITY_DATA} from "@/store/mutation";
+    import {
+        SET_ACTIVITY_DETAIL_ID,
+        SET_ADVANCE_RULE,
+        SET_ADVANCE_RULE_SAVED,
+        SYNC_CHANGE_ACTIVITY_DATA
+    } from "@/store/mutation";
     import {
         FETCH_ACTIVITY_DETAIL,
         FETCH_DESCRIPTION,
@@ -241,7 +250,7 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
     import {ActivityCheckStatus, ActivityGlobalStatus, ActivityJoinStatus} from "@/apps/typesDeclare/ActivityEnum";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
     import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
-    import {isOfficial} from "@/apps/utils/ActivitySchemaUtils";
+    import {generateRuleDescription, isOfficial} from "@/apps/utils/ActivitySchemaUtils";
     interface EarthDistanceLibPosi{
         lat: number,
         lon: number
@@ -301,16 +310,15 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             this.updateActivityData();
         }
         openSigninAdminHelp(){
-            this.signinActivity();
-            // uni.showModal({
-            //     title: "签到功能帮助",
-            //     showCancel: false,
-            //     content: "支持二维码签到和位置签到两种模式。" +
-            //         "位置签到需要您设置基准位置，则其他参加者点击签到按钮时可自动定位无需您额外操作；" +
-            //         "二维码签到则需要扫描签到二维码图片，您可稍后查看二维码界面中长按将其保存下来，提前打印粘贴在会场等。" +
-            //         "如果您设置了位置，则会优先位置签到，若位置签到失败则会允许二维码签到；" +
-            //         "如果您没有设置位置或删除了设置的位置，则会直接进行二维码签到。"
-            // })
+            uni.showModal({
+                title: "签到功能帮助",
+                showCancel: false,
+                content: "支持二维码签到和位置签到两种模式。" +
+                    "位置签到需要您设置基准位置，则其他参加者点击签到按钮时可自动定位无需您额外操作；" +
+                    "二维码签到则需要扫描签到二维码图片，您可稍后查看二维码界面中长按将其保存下来，提前打印粘贴在会场等。" +
+                    "如果您设置了位置，则会优先位置签到，若位置签到失败则会允许二维码签到；" +
+                    "如果您没有设置位置或删除了设置的位置，则会直接进行二维码签到。"
+            })
         }
         AVATAR_GROUP_MAX = 4;
         get avatarShowList(){
@@ -736,6 +744,20 @@ import {ActivityGlobalStatus} from "../../../apps/typesDeclare/ActivityEnum";
             uni.navigateTo({
                 url: '/pages/activityList/participants/participants?enableAudit=0'
             })
+        }
+        openAdvancedRulePage() {
+            if(!this.activityData.rules) {
+                uni.showToast({title: "无有效报名规则", icon: "none"});
+                return;
+            }
+            this.$store.commit(SET_ADVANCE_RULE, this.activityData.rules);
+            this.$store.commit(SET_ADVANCE_RULE_SAVED, false);
+            uni.navigateTo({
+                url: '/pages/newActivity/advanceRule'
+            });
+        }
+        get advancedRuleDescription() {
+            return generateRuleDescription(this.activityData.rules);
         }
     }
 </script>
