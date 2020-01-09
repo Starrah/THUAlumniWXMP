@@ -17,9 +17,15 @@
                 <text class="cuIcon-title text-green "></text>
                 <text :selectable="true" class="text-xl">{{fullUrl(result)}}</text>
             </view>
+
             <view v-else class="action">
-                <text class="cuIcon-title text-green "></text>
-                <text class="text-xl">正在生成中，请稍等：{{percentageShow}}%</text>
+                <text class="cuIcon-title text-green"></text>
+                <view style="position: center">
+                    <text class="text-xl">正在生成中\n请稍等：</text>
+                </view>
+                <view class="cu-progress round margin-top" style="position: relative;left: 40px;margin: 0px">
+                    <view class="bg-red" :style="'width: '+percentageShow">{{percentageShow}}</view>
+                </view>
             </view>
         </view>
     </view>

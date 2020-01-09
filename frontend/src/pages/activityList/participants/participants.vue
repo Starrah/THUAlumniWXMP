@@ -1,8 +1,5 @@
 <template>
   <div :style="{position: 'relative', height: '100%'}">
-    <view style="display: flex;justify-content: space-around;">
-      <button v-if="myRole !== 0 && !enableAudit"  class="cu-btn bg-white align-center" @click="jumpToGenerateCSV">下载成员列表</button>
-    </view>
     <div class="cu-list menu-avatar" v-for="(user, idx) in participants" :key="idx" style="margin-top: 5px">
       <div class="cu-item" style="margin-top: 5px" @click="openOtherPage(user)">
 
@@ -73,6 +70,11 @@
 
   <SureModal ref="SureModal"></SureModal>
     <!-- Button to return last page -->
+      <br>
+      <view style="display: flex;justify-content: space-around;">
+          <button v-if="myRole !== 0 && !enableAudit"  class="cu-btn bg-white align-center" @click="jumpToGenerateCSV">下载成员列表</button>
+      </view>
+
 
 
   </div>
