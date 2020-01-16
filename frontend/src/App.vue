@@ -32,9 +32,14 @@ export default Vue.extend({
     );
   },
   //@ts-ignore
-  onShow(res) {
+  async onShow(res) {
     if(!!res && !!res["referrerInfo"] && !!res["referrerInfo"]["extraData"] && !!res["referrerInfo"]["extraData"]["oAuthSuccess"]) {
-      store.dispatch(FETCH_PROFILE);
+        uni.showLoading({title: "加载中", mask: true});
+        try{
+            await store.dispatch(FETCH_PROFILE);
+        }finally {
+            uni.hideLoading();
+        }
     }
   },
   mpType: "app",
@@ -42,7 +47,7 @@ export default Vue.extend({
         //#ifdef MP-WEIXIN
         uni.setEnableDebug({
             enableDebug: true
-        })
+        });
         //#endif
         this.$store.dispatch(TRY_LOGIN_WITHOUT_NEW_CODE);
     }

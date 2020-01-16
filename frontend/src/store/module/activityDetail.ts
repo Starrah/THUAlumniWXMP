@@ -1,8 +1,13 @@
 import apiService from "../../commons/api";
 import {
     FETCH_ACTIVITY_DETAIL,
-    FETCH_ALL_ACTIVITY_LIST, FETCH_DESCRIPTION, SET_CHANGE_ACTIVITY, SUBMIT_ACTIVITY_CHANGE,
-    SUBMIT_ACTIVITY_STATUS_CHANGE, SUBMIT_DESCRIPTION,
+    FETCH_ALL_ACTIVITY_LIST,
+    FETCH_DESCRIPTION,
+    SET_CHANGE_ACTIVITY,
+    SUBMIT_ACTIVITY_CHANGE,
+    SUBMIT_ACTIVITY_POSITION_CHANGE,
+    SUBMIT_ACTIVITY_STATUS_CHANGE,
+    SUBMIT_DESCRIPTION,
     SUBMIT_NEW_ACTIVITY
 } from "../action";
 import {
@@ -20,6 +25,7 @@ import {
 import {defaultBlankActivity} from "@/apps/utils/ActivitySchemaUtils";
 import {OneSpecificSingupRule, SignupRule} from "@/apps/typesDeclare/SignupRule";
 import SureModal from "@/components/SureModal.vue";
+import {handleNetExcept} from "@/apps/utils/networkUtils";
 
 const state: {
     activity: ActivitySchema,
@@ -60,8 +66,7 @@ const actions = {
             res.id = state.id;
             commit(SET_ACTIVITY_DETAIL, res)
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     },
     async [SUBMIT_ACTIVITY_STATUS_CHANGE]({state, commit, rootState}, {activityId, newStatus}){
@@ -70,8 +75,19 @@ const actions = {
             let res = await apiService.post(`/modifyActivity?activityId=${activityId}`, newStatus);
             return res.activityId;
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
+        }
+    },
+    async [SUBMIT_ACTIVITY_POSITION_CHANGE]({state, commit, rootState}, {activityId, posiStr}){
+        let obj = {
+            id: activityId,
+            position: posiStr
+        };
+        try {
+            let res = await apiService.post(`/modifyActivity?activityId=${activityId}`, obj);
+            return res.activityId;
+        }catch (e) {
+            handleNetExcept(e, true);
         }
     },
     async [SUBMIT_ACTIVITY_CHANGE]({state, rootState}){
@@ -92,16 +108,14 @@ const actions = {
                     try {
                         let res = await apiService.post(`/modifyActivity?activityId=${state.id}&needPush=1`, submitObj);
                     }catch (e) {
-                        if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-                        throw e;
+                        handleNetExcept(e, true);
                     }
                 },
                 notPush: async ()=>{
                     try {
                         let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
                     }catch (e) {
-                        if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-                        throw e;
+                        handleNetExcept(e, true);
                     }
                 }
             }
@@ -110,8 +124,7 @@ const actions = {
             try {
                 let res = await apiService.post(`/modifyActivity?activityId=${state.id}`, submitObj);
             } catch (e) {
-                if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-                throw e;
+                handleNetExcept(e, true);
             }
         }
     },
@@ -120,16 +133,14 @@ const actions = {
             let res = await apiService.get(`/getActivityDescription`, {activityId: state.id});
             commit(SET_DESCRIPTION, res.description)
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     },
     async [SUBMIT_DESCRIPTION]({commit, state, rootState}, description){
         try {
             let res = await apiService.post(`/modifyActivityDescription?activityId=${state.id}`, {description: description});
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     }
 };

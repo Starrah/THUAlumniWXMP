@@ -6,18 +6,26 @@
                 <text class="text-xl">{{activity.name}}</text>
             </view>
         </view>
-        <view class="cu-bar bg-white solid-bottom margin-top">
-            <view v-if="result" class="action">
+        <view v-if="result" class="cu-bar bg-white solid-bottom margin-top">
+            <view class="action">
                 <text class="cuIcon-title text-green "></text>
                 <text class="text-xl">由于微信小程序下载的文件不方便您找到存储位置，我们建议您使用手机或电脑浏览器直接下载。请您访问以下链接：</text>
             </view>
+        </view>
+        <view class="cu-bar bg-white solid-bottom margin-top">
             <view v-if="result" class="action">
                 <text class="cuIcon-title text-green "></text>
-                <text class="text-xl">{{fullUrl(result)}}</text>
+                <text :selectable="true" class="text-xl">{{fullUrl(result)}}</text>
             </view>
+
             <view v-else class="action">
-                <text class="cuIcon-title text-green "></text>
-                <text class="text-xl">正在生成中，请稍等：{{percentageShow}}%</text>
+                <text class="cuIcon-title text-green"></text>
+                <view style="position: center">
+                    <text class="text-xl">正在生成中\n请稍等：</text>
+                </view>
+                <view class="cu-progress round margin-top" style="position: relative;left: 40px;margin: 0px">
+                    <view class="bg-red" :style="'width: '+percentageShow">{{percentageShow}}</view>
+                </view>
             </view>
         </view>
     </view>
@@ -30,6 +38,7 @@
     import apiService from "@/commons/api"
     import {UserRole} from "@/apps/typesDeclare/UserEnum";
     import {fullUrl} from "@/apps/utils/networkUtils";
+    import {fillExtraDataObj} from "@/apps/utils/ActivitySchemaUtils";
 
     @Component
     export default class generateCSV extends Vue{
@@ -51,7 +60,7 @@
             let fileName = wx.env.USER_DATA_PATH + "/" + this.activity.name + ".csv";
             let bom = new Uint8Array([239, 187, 191]);//utf-8 bom: 0xefbbbf
             let RoleWords = ["", "管理员", "发起人"];
-            let title = "姓名,身份,院系,类型,年级,状态,";
+            let title = "姓名,身份,院系,类型,年级,状态,电话,微信,行业,公司,性别,邮件,微博,其他教育经历,";
             let userWords = [
                 "待审核",
                 "未签到",
@@ -68,17 +77,32 @@
                 try {
                     let info: {
                         name: string,
-                        campusIdentity: Array<{enrollmentYear: string, enrollmentType: string, department: string}>
+                        campusIdentity: Array<{enrollmentYear: string, enrollmentType: string, department: string}>,
+                        extraData: string;
                     };
                     try {
                         info = await apiService.get("/userData", {openId: p.openId});
                     }catch(e){}
-                    console.log("info", info);
                     let firstIdentity: {enrollmentYear?: string, enrollmentType?: string, department?: string} =
                         info && info.campusIdentity && info.campusIdentity.length > 0 ? info.campusIdentity[0]:{};
+                    let extraObj: any = {};
+                    try{
+                        extraObj = JSON.parse(info.extraData);
+                    }finally {}
+                    extraObj = fillExtraDataObj(extraObj);
+                    let extraStr = `${extraObj.phone},${extraObj.wechat},${extraObj.trade},${extraObj.company},${extraObj.gender},${extraObj.email},${extraObj.weibo},`;
+                    let moreIdentityStr = "";
+                    if(info && info.campusIdentity && info.campusIdentity.length > 1){
+                        for(let i=1;i<info.campusIdentity.length;i++){
+                            let identityObj = info.campusIdentity[i];
+                            moreIdentityStr += `${identityObj.department}${identityObj.enrollmentYear}${identityObj.enrollmentType}；`
+                        }
+                    }
+                    moreIdentityStr += ",";
                     let line = `${p.name},${RoleWords[p.userRole]},${firstIdentity.department},${firstIdentity.enrollmentType},${firstIdentity.enrollmentYear},${userWords[p.userStatus]},`;
+                    line += extraStr;
+                    line += moreIdentityStr;
                     result[p.userRole].push(line);
-                    console.log("line", line);
                 }catch (e) {
                     try {
                         let line =`${p.name},,,,,,`
@@ -88,7 +112,6 @@
             let toOutput = "";
             toOutput += (title + "\r\n");
             for(let li of result[UserRole.Creator]){
-                console.log(li);
                 toOutput += (li + "\r\n");
             }
             for(let li of result[UserRole.Manager]){

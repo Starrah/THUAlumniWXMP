@@ -7,6 +7,7 @@ import {
     SET_RECOMMEND_PAGE_ID
 } from "../mutation";
 import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
+import {handleNetExcept} from "@/apps/utils/networkUtils";
 
 const state: {
     activityList: Array<ActivitySchema>,
@@ -32,12 +33,10 @@ const mutations = {
         state.advanData = data;
     },
     [ADD_RECOMMEND](state, ne){
-        console.log(ne);
         if(ne.activityList && ne.activityList.length !== 0) {
             if (state.activityList.length !== 0) {
                 let lastId = state.activityList[state.activityList.length - 1].id;
                 let lastIndex = ne.activityList.findIndex((v)=>v.id === lastId);
-                console.log(lastIndex);
                 if(lastIndex === -1)state.activityList = state.activityList.concat(ne.activityList);
                 else{
                     for(let i=lastIndex+1;i<ne.activityList.length;i++){
@@ -46,13 +45,11 @@ const mutations = {
                 }
             } else state.activityList.concat(ne.activityList)
         }
-        console.log(state.activityList);
     }
 };
 
 const actions = {
     async [FETCH_RECOMMEND]({state, commit, rootState}, param){
-        console.log("fetchRecommend");
         if(!param)param = {};
         param.most = param.most || 15;
         try {
@@ -61,7 +58,6 @@ const actions = {
                 try {
                     let url = `/searchActivityAdvanced?most=${param.most}`;
                     if(param.lastSeenId)url += `&lastSeenId=${param.lastSeenId}`;
-                    console.log([url, state.advanData]);
                     res = await apiService.post(url, state.advanData);
                 }catch(e){
                     if(e.errid && e.errid === 201){
@@ -93,8 +89,7 @@ const actions = {
             if(state.advanced && param.lastSeenId)commit(ADD_RECOMMEND, res);
             else commit(SET_RECOMMEND, res);
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     },
     async [FETCH_MORE_ACTIVITY]({state, commit, rootState}, param){
@@ -114,10 +109,10 @@ const actions = {
             }else{
                 res = await apiService.get('/getAllActivity', param);
             }
-            commit(ADD_MORE_ACTIVITY, res)
+            commit(ADD_MORE_ACTIVITY, res);
+            return res.activityList && res.activityList.length !== 0;
         }catch (e) {
-            if (e.errid && e.errid >= 500 && e.errid <= 599) rootState.errMsg = e.errmsg;
-            throw e;
+            handleNetExcept(e, true);
         }
     }
 

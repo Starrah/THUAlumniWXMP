@@ -3,7 +3,8 @@ import {SignupRule} from "@/apps/typesDeclare/SignupRule";
 export enum ActivityGlobalStatus {
     Except = 0, //异常情况（如活动被主动取消\管理员禁止等）
     Normal = 1, //正常情况
-    Finish = 2 //活动已结束
+    Finish = 2, //活动已结束
+    Audit = 3, //活动待审核
 }
 
 export enum ActivityJoinStatus{

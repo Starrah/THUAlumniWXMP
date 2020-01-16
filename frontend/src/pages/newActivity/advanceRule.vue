@@ -1,16 +1,11 @@
 <template>
   <view>
     <view class="cu-form-group margin-top-sm" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
-      <view class="title">活动名称</view>
-      <view>XXXXX活动</view>
-    </view>
-
-    <view class="cu-form-group margin-top-sm" style="border-left-width: 4px;border-left-style: solid; border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238)">
       <view class="title">默认规则</view>
       <view>
-        <radio-group @change="defaultRuleChanged" :disabled="!allowModify">
+        <radio-group @change="defaultRuleChanged">
           <label v-for="(item, idx) in rules" :key="item.value" style="margin-left: 5px">
-            <radio :value="item.value" :checked="idx === currentRuleIdx" />
+            <radio :class="idx === currentRuleIdx?'checked':'notchecked'" :value="item.value" :checked="idx === currentRuleIdx"  :disabled="!allowModify"/>
             {{item.text}}
           </label>
         </radio-group>
@@ -39,9 +34,6 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify" @click="acAdd" class="cu-btn line-green round cuIcon">
-          <text style="color: #555555">+</text>
-        </button>
         <button v-if="allowModify" @click="acRemove(idx)" class="cu-btn line-green round cuIcon">
           <text style="color: #555555">-</text>
         </button>
@@ -70,9 +62,6 @@
             入学年份从 {{yearList[rule.startIdx]}} 到 {{yearList[rule.endIdx]}}
           </view>
         </picker>
-        <button v-if="allowModify" @click="adAdd" class="cu-btn line-green round cuIcon">
-          <text style="color: #555555">+</text>
-        </button>
         <button v-if="allowModify" @click="adRemove(idx)" class="cu-btn line-green round cuIcon">
           <text style="color: #555555">-</text>
         </button>
@@ -106,7 +95,7 @@
         </button>
       </view>
     </view>
-    <view style="display: flex;justify-content: center">
+    <view style="display: flex;justify-content: center" class="margin-top margin-bottom-xl">
       <button type="primary" @click="save">保存</button>
     </view>
   </view>
@@ -114,7 +103,7 @@
 
 
 <script lang="ts">
-  import { SET_ADVANCE_RULE } from "@/store/mutation";
+  import {SET_ADVANCE_RULE, SET_ADVANCE_RULE_SAVED} from "@/store/mutation";
   import {OneSpecificSingupRule} from "@/apps/typesDeclare/SignupRule";
   import {FETCH_DEPARTMENT_LIST, FETCH_EDUCATION_LIST} from "@/store/action";
 
@@ -176,38 +165,44 @@ export default {
       acRuleList: [], //ruleList
       adRuleList: [], //ruleList
       rjRuleList: [], //ruleList
-      allowModify: 1
+      allowModify: 0
     };
   },
 
   async mounted() {
     if(!this.$store.state.departmentList.initialized)await this.$store.dispatch(FETCH_DEPARTMENT_LIST);
     if(!this.$store.state.educationTypesList.initialized)await this.$store.dispatch(FETCH_EDUCATION_LIST);
-    this.currentRuleIdx = this.$store.state.advancedRule.ruleType;
-    this.acRuleList = this.$store.state.advancedRule.accept.map((v: OneSpecificSingupRule): Rule=>{
-      return {
-        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
-        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
-        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
-        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
-      }
-    });
-    this.adRuleList = this.$store.state.advancedRule.needAudit.map((v: OneSpecificSingupRule): Rule=>{
-      return {
-        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
-        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
-        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
-        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
-      }
-    });
-    this.rjRuleList = this.$store.state.advancedRule.reject.map((v: OneSpecificSingupRule): Rule=>{
-      return {
-        enrollIdx: v.enrollmentType?this.educationList.indexOf(v.enrollmentType):0,
-        departIdx: v.enrollmentType?this.departmentList.indexOf(v.department):0,
-        startIdx: v.minEnrollmentYear?this.yearList.indexOf(v.minEnrollmentYear):0,
-        endIdx: v.maxEnrollmentYear?this.yearList.indexOf(v.maxEnrollmentYear):0
-      }
-    });
+    this.currentRuleIdx = this.$store.state.advancedRule.rule.ruleType;
+    if(this.$store.state.advancedRule.rule.accept) {
+      this.acRuleList = this.$store.state.advancedRule.rule.accept.map((v: OneSpecificSingupRule): Rule => {
+        return {
+          enrollIdx: v.enrollmentType ? this.educationList.indexOf(v.enrollmentType) : 0,
+          departIdx: v.enrollmentType ? this.departmentList.indexOf(v.department) : 0,
+          startIdx: v.minEnrollmentYear ? this.yearList.indexOf(v.minEnrollmentYear) : 0,
+          endIdx: v.maxEnrollmentYear ? this.yearList.indexOf(v.maxEnrollmentYear) : 0
+        }
+      });
+    }
+    if(this.$store.state.advancedRule.rule.needAudit) {
+      this.adRuleList = this.$store.state.advancedRule.rule.needAudit.map((v: OneSpecificSingupRule): Rule => {
+        return {
+          enrollIdx: v.enrollmentType ? this.educationList.indexOf(v.enrollmentType) : 0,
+          departIdx: v.enrollmentType ? this.departmentList.indexOf(v.department) : 0,
+          startIdx: v.minEnrollmentYear ? this.yearList.indexOf(v.minEnrollmentYear) : 0,
+          endIdx: v.maxEnrollmentYear ? this.yearList.indexOf(v.maxEnrollmentYear) : 0
+        }
+      });
+    }
+    if(this.$store.state.advancedRule.rule.reject) {
+      this.rjRuleList = this.$store.state.advancedRule.rule.reject.map((v: OneSpecificSingupRule): Rule => {
+        return {
+          enrollIdx: v.enrollmentType ? this.educationList.indexOf(v.enrollmentType) : 0,
+          departIdx: v.enrollmentType ? this.departmentList.indexOf(v.department) : 0,
+          startIdx: v.minEnrollmentYear ? this.yearList.indexOf(v.minEnrollmentYear) : 0,
+          endIdx: v.maxEnrollmentYear ? this.yearList.indexOf(v.maxEnrollmentYear) : 0
+        }
+      });
+    }
   },
 
   onLoad(param){
@@ -243,6 +238,7 @@ export default {
           }
         }),
       });
+      this.$store.commit(SET_ADVANCE_RULE_SAVED, true);
       uni.navigateBack();
     },
     ruleToList(rule: Rule) {
@@ -254,6 +250,7 @@ export default {
       ];
     },
     defaultRuleChanged(event) {
+      if(!this.allowModify)return;
       this.rules.forEach((r, idx) => {
         if (r.value === event.target.value) {
           this.currentRuleIdx = idx;
@@ -262,15 +259,12 @@ export default {
     },
     acChange({ detail }) {
       let { value } = detail;
-      console.log("acChange");
-      console.log(detail);
       this.acRuleList[this.acCurrentIdx].departIdx = value[0];
       this.acRuleList[this.acCurrentIdx].enrollIdx = value[1];
       this.acRuleList[this.acCurrentIdx].startIdx = value[2];
       this.acRuleList[this.acCurrentIdx].endIdx = value[3];
     },
     acClick(idx) {
-      console.log("acClick: acCurrentIdx" + this.acCurrentIdx + " idx: " + idx);
       this.acCurrentIdx = idx;
     },
     acAdd() {
@@ -282,15 +276,12 @@ export default {
     },
     adChange({ detail }) {
       let { value } = detail;
-      console.log("adChange");
-      console.log(detail);
       this.adRuleList[this.adCurrentIdx].departIdx = value[0];
       this.adRuleList[this.adCurrentIdx].enrollIdx = value[1];
       this.adRuleList[this.adCurrentIdx].startIdx = value[2];
       this.adRuleList[this.adCurrentIdx].endIdx =value[3];
     },
     adClick(idx) {
-      console.log("adClick: adCurrentIdx" + this.adCurrentIdx + " idx: " + idx);
       this.adCurrentIdx = idx;
     },
     adAdd() {
@@ -302,15 +293,12 @@ export default {
     },
     rjChange({ detail }) {
       let { value } = detail;
-      console.log("rjChange");
-      console.log(detail);
       this.rjRuleList[this.rjCurrentIdx].departIdx = value[0];
       this.rjRuleList[this.rjCurrentIdx].enrollIdx = value[1];
       this.rjRuleList[this.rjCurrentIdx].startIdx = value[2];
       this.rjRuleList[this.rjCurrentIdx].endIdx = value[3];
     },
     rjClick(idx) {
-      console.log("rjClick: rjCurrentIdx" + this.rjCurrentIdx + " idx: " + idx);
       this.rjCurrentIdx = idx;
     },
     rjAdd() {

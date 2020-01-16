@@ -28,5 +28,6 @@ interface ActivitySchema{
     ruleForMe?: string;
     needAuditCount?: number;
     tags: Array<string>; // 要求字符串中不能带逗号
-    description?: string
+    description?: string;
+    position?: string;
 }

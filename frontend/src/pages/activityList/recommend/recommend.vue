@@ -1,45 +1,8 @@
 <template>
     <view>
-        <!--        <text>{{debugCode}}</text>-->
-        <view class="cu-bar search bg-white">
-            <view class="search-form round">
-                <text class="cuIcon-search"></text>
-                <input :adjust-position="false" type="text" placeholder="搜索活动" v-model="tempSearchText"/>
-            </view>
-            <view class="action">
-                <button class="cu-btn bg-green shadow-blur round" @click="search">搜索</button>
-            </view>
-        </view>
-        <!--        <scroll-view scroll-y="true" :lower-threshold="100" :enable-back-to-top="true" @scrolltolower="loadMore" @scrolltoupper="loadMore">-->
-        <view class="cu-list menu">
-            <view class="cu-item arrow" style="flex-direction: row;display: flex;border-left-width: 4px;border-left-style: solid;border-left-color: rgb(238,238,238);border-right-width: 4px;border-right-style: solid;border-right-color: rgb(238,238,238);border-top-width: 4px;border-top-style: solid;border-top-color: rgb(238,238,238)" v-for="activity in activities_toShow" :key="activity.id" @click="jumpToActivityDetail($event, activity)">
-                <view style="flex-basis: 20%">
-                    <view class="cu-avatar radius" :style="'background-image:url('+fullUrl(activity.imageUrl)+');'"></view>
-                </view>
-                <view style="flex-basis: 60%">
-                    <view>
-                        <text class="cuIcon-activity"></text>
-                        <text class="text-black text-xl">{{activity.name}}</text>
-                    </view>
-                    <view style="display: flex;justify-content: space-between;">
-                        <view class="basis-df">
-                            <view class="text-grey text-xs" style="width: max-content">开始时间:{{activity.start.substr(0,16)}}</view>
-                            <view class="text-grey text-xs" style="width: max-content">结束时间:{{activity.end.substr(0,16)}}</view>
-                            <view class="text-grey text-xs">地点:{{activity.place}}</view>
-                        </view>
-                    </view>
-                </view>
-                <view style="flex-basis: 19%" class="basis-xs" :class="(activity.curUser<activity.maxUser||activity.maxUser===-1)?'cu-tag round bg-olive light':'cu-tag round bg-red light'">
-                    <text class="text-lg text-green">{{activity.curUser}}</text>
-                    <text class="text-lg text-black" :style="activity.maxUser===-1?'display:none':''">/</text>
-                    <text class="text-lg text-red" :style="activity.maxUser===-1?'display:none':''">{{activity.maxUser}}</text>
-                </view>
-            </view>
-            <view class="cu-item" v-if="isLoadingMore">
-                <text>加载中</text>
-            </view>
-        </view>
-        <!--        </scroll-view>-->
+        <SearchBar v-model="searchText"></SearchBar>
+        <ActivityListShow :list="activities_toShow"></ActivityListShow>
+        <view class="cu-load bg-white" :class="isLoadingMore" v-if="isLoadingMore"></view>
     </view>
 </template>
 
@@ -49,37 +12,43 @@
     import {ActivitySchema} from "@/apps/typesDeclare/ActivitySchema";
     import {FETCH_RECOMMEND} from "@/store/action";
     import initialGlobalData from "@/apps/typesDeclare/InitialGlobalData";
-    import {fullUrl} from "@/apps/utils/networkUtils";
+    import {fullUrl, handleNetExcept} from "@/apps/utils/networkUtils";
     import {SET_RECOMMEND_PAGE_ID} from "@/store/mutation";
+    import ActivityListShow from "@/components/ActivityListShow.vue";
+    import SearchBar from "@/components/SearchBar.vue";
+    import delay from 'delay';
 
-    @Component
+    @Component({
+        components: {SearchBar, ActivityListShow}
+    })
     export default class recommendList extends Vue{
         name!: "recommendList";
         fullUrl = fullUrl;
-        tempSearchText = "";
         searchText = "";
-        isLoadingMore: boolean = false;
+        isLoadingMore: string = null;
         onReachBottom(){
             this.loadMore();
         }
         async loadMore(){
-            console.log("loadMore");
-            this.isLoadingMore = true;
+            this.isLoadingMore = "loading";
             let allActivityes: Array<ActivitySchema> = this.activities_toShow;
             let lastSeenId = allActivityes.length > 0?allActivityes[allActivityes.length-1].id:undefined;
             try {
-                await this.$store.dispatch(FETCH_RECOMMEND, {
+                let haveMore = await this.$store.dispatch(FETCH_RECOMMEND, {
                     lastSeenId
                 });
-            }finally {
-                this.isLoadingMore = false;
+                if(haveMore){
+                    this.isLoadingMore = null;
+                }else{
+                    this.isLoadingMore = "over";
+                    await delay(1000);
+                    this.isLoadingMore = null;
+                }
+            }catch (e) {
+                this.isLoadingMore = "erro";
+                await delay(1000);
+                this.isLoadingMore = null;
             }
-        }
-        search(){
-            this.searchText = this.tempSearchText;
-        }
-        onShow(){
-            console.log("onsHOW");
         }
         get DEFAULT_ACTIVITY_URL(){
             return initialGlobalData.devData.DEFAULT_ACTIVITY_URL;
@@ -107,19 +76,10 @@
         }
         activityId: string = "";
         onLoad(param){
-            console.log("onLoad");
             this.activityId = param.activityId;
             this.$store.commit(SET_RECOMMEND_PAGE_ID, param);
             this.$store.dispatch(FETCH_RECOMMEND);
-            console.log(this.$store.state.recommendList);
         }
-
-        jumpToActivityDetail(event, a: ActivitySchema){
-            uni.navigateTo({
-                url: `/pages/activityList/activityDetail/activityDetail?activityId=${a.id}`
-            })
-        }
-
     }
 </script>
 
